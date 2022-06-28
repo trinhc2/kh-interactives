@@ -20,6 +20,7 @@ export function decomposeNumber(_els, _setup) {
         color = "#ff7f50";
         T: gsap.timeline;
         animationFinished = false;
+        animationStarted = false;
         drawnElements: SVGSVGElement
         assetScale = 3;
         goButton: SVGSVGElement
@@ -115,7 +116,7 @@ export function decomposeNumber(_els, _setup) {
                     this.T.resume();
                     console.log("resumed")
                 }
-                else{
+                else if(this.animationStarted){
                     this.T.pause();
                     console.log("paused")
                 }
@@ -187,6 +188,7 @@ export function decomposeNumber(_els, _setup) {
                 let xVal = xOffset
                 let maxXVal = 0;
 
+                this.animationStarted = true;
 
                 for (let i = startingNumber; i > decrementVal - 1;) {
 
@@ -237,10 +239,8 @@ export function decomposeNumber(_els, _setup) {
 
         reset(){
             if (this.T.isActive()){
-                console.log("still active")
                 this.T.kill()
                 this.T = gsap.timeline({ paused: false });
-                console.log(this.T)
             }
 
             gsap.set(this.sliderControls, { display: "none" })
@@ -248,8 +248,10 @@ export function decomposeNumber(_els, _setup) {
             gsap.set(this.goButton, { display: "block"})
             Array.from(this.drawnElements.childNodes).forEach(e => e.remove())
             this.animationFinished = false
+            this.animationStarted = false
             this.sliderOpen = false
             this.sliderValueHasBeenUpdated(self.min);
+            this.T.resume()
             
         }
         //#endregion
@@ -322,7 +324,7 @@ export function decomposeNumber(_els, _setup) {
                 }
 
             })
-            this.els.addEventListener("pointerdown", event => this.togglePause(event))
+            this.els.addEventListener("pointerdown", event => {if (this.animationStarted) {this.togglePause(event)}})
             this.goButton.addEventListener("pointerdown", e => this.decompose(this.numValue));
             this.els.getElementById("restart").addEventListener("pointerdown", e => this.reset())
 
