@@ -109,14 +109,16 @@ export function decomposeNumber(_els, _setup) {
             });
         }
 
-        togglePause() {
-            if (this.T.paused()) {
-                this.T.resume();
-                console.log("resumed")
-            }
-            else {
-                this.T.pause();
-                console.log("paused")
+        togglePause(e) {
+            if (e.target != this.goButton) {
+                if (this.T.paused()) {
+                    this.T.resume();
+                    console.log("resumed")
+                }
+                else{
+                    this.T.pause();
+                    console.log("paused")
+                }
             }
         }
 
@@ -185,6 +187,7 @@ export function decomposeNumber(_els, _setup) {
                 let xVal = xOffset
                 let maxXVal = 0;
 
+
                 for (let i = startingNumber; i > decrementVal - 1;) {
 
                     let decrementText = this.els.getElementById('decrementText' + decrementNumID);
@@ -233,8 +236,6 @@ export function decomposeNumber(_els, _setup) {
         }
 
         reset(){
-
-
             if (this.T.isActive()){
                 console.log("still active")
                 this.T.kill()
@@ -321,9 +322,8 @@ export function decomposeNumber(_els, _setup) {
                 }
 
             })
-
+            this.els.addEventListener("pointerdown", event => this.togglePause(event))
             this.goButton.addEventListener("pointerdown", e => this.decompose(this.numValue));
-            this.els.addEventListener("pointerdown", event => this.togglePause())
             this.els.getElementById("restart").addEventListener("pointerdown", e => this.reset())
 
         }
