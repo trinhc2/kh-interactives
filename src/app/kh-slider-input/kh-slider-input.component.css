@@ -1,0 +1,19 @@
+.number {
+    alignment-baseline: text-before-edge;
+    text-anchor: start;
+}
+
+#numberDisplay, #num, #buttons, #sliderBar {
+    cursor: pointer;
+}
+
+#num, #minText, #maxText {
+    user-select:none
+}
+
+svg {
+    height: auto;
+    width: auto;
+    max-width: 700px;
+    min-width: 300px;
+}

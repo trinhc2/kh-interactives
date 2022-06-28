@@ -1,0 +1,15 @@
+#farmGroup {
+    cursor: pointer
+}
+
+.color, .pointer, #grid {
+    cursor:pointer;
+    pointer-events: bounding-box;
+}
+
+svg {
+    height: auto;
+    width: auto;
+    max-width: 500px;
+    min-width: 300px;
+}

@@ -1,0 +1,101 @@
+<html>
+
+<head>
+</head>
+
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/gsap.min.js"></script>
+    <svg #renderEl viewBox="0 0 500 500">
+        <g id="farmGroup">
+            <g id="plot"></g>
+            <g id="fill"></g>
+            <g id="border"></g>
+            <g id="tens"></g>
+            <g id="hundreds"></g>
+            <g id="thousands"></g>
+        </g>
+        <g id="ui">
+            <rect
+                style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:1.0885;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                id="red" class="color" width="27.406019" height="27.406019" x="74.909752" y="1.0057381" />
+            <rect
+                style="fill:#800080;fill-opacity:1;stroke:#000000;stroke-width:1.0885;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                id="purple" class="color" width="27.406019" height="27.406019" x="102.31577" y="1.0057374" />
+            <rect
+                style="fill:#0000ff;fill-opacity:1;stroke:#000000;stroke-width:1.0885;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                id="blue" class="color" width="27.406019" height="27.406019" x="129.72179" y="1.0057381" />
+            <g id="zoom" class="pointer">
+                <rect
+                    style="fill:#93c47d;fill-opacity:1;stroke:#000000;stroke-width:1.08768;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                    id="rect2000" width="47.63755" height="27.406019" x="204.76535" y="1.0057374" />
+                <g aria-label="zoom" id="text4064"
+                    style="font-weight:600;font-size:4.7625px;line-height:1.25;font-family:poppins;-inkscape-font-specification:'poppins Semi-Bold';stroke-width:0.264583"
+                    transform="matrix(2.7406019,0,0,2.7406019,122.54729,1.0057378)">
+                    <path
+                        d="m 32.871303,5.9501188 h 1.281112 V 6.3073063 H 32.376003 V 5.9501188 l 1.266825,-1.9002374 h -1.2573 v -0.352425 h 1.757362 v 0.352425 z"
+                        style="font-weight:normal;-inkscape-font-specification:poppins" id="path8968" />
+                    <path
+                        d="m 35.852627,6.3501688 q -0.366712,0 -0.66675,-0.1666875 -0.295275,-0.1666875 -0.466725,-0.4714875 -0.166687,-0.3095625 -0.166687,-0.714375 0,-0.4000499 0.17145,-0.7048499 0.176212,-0.3095625 0.47625,-0.4714875 0.300037,-0.1666875 0.671512,-0.1666875 0.371475,0 0.671513,0.1666875 0.300037,0.161925 0.471487,0.466725 0.176213,0.3048 0.176213,0.7096124 0,0.4048125 -0.180975,0.714375 -0.176213,0.3048 -0.481013,0.4714875 -0.3048,0.1666875 -0.676275,0.1666875 z m 0,-0.381 q 0.233363,0 0.43815,-0.1095375 0.204788,-0.1095375 0.328613,-0.3286125 0.128587,-0.219075 0.128587,-0.5334 0,-0.3143249 -0.123825,-0.5333999 -0.123825,-0.219075 -0.32385,-0.32385 -0.200025,-0.1095375 -0.433387,-0.1095375 -0.238125,0 -0.43815,0.1095375 -0.195263,0.104775 -0.314325,0.32385 -0.119063,0.219075 -0.119063,0.5333999 0,0.3190875 0.1143,0.5381625 0.119063,0.219075 0.314325,0.3286125 0.195263,0.104775 0.428625,0.104775 z"
+                        style="font-weight:normal;-inkscape-font-specification:poppins" id="path8970" />
+                    <path
+                        d="m 38.900625,6.3501688 q -0.366713,0 -0.66675,-0.1666875 Q 37.9386,6.0167938 37.76715,5.7119938 37.600462,5.4024313 37.600462,4.9976188 q 0,-0.4000499 0.17145,-0.7048499 0.176213,-0.3095625 0.47625,-0.4714875 0.300038,-0.1666875 0.671513,-0.1666875 0.371475,0 0.671512,0.1666875 0.300038,0.161925 0.471488,0.466725 0.176212,0.3048 0.176212,0.7096124 0,0.4048125 -0.180975,0.714375 -0.176212,0.3048 -0.481012,0.4714875 -0.3048,0.1666875 -0.676275,0.1666875 z m 0,-0.381 q 0.233362,0 0.43815,-0.1095375 0.204787,-0.1095375 0.328612,-0.3286125 0.128588,-0.219075 0.128588,-0.5334 0,-0.3143249 -0.123825,-0.5333999 -0.123825,-0.219075 -0.32385,-0.32385 -0.200025,-0.1095375 -0.433388,-0.1095375 -0.238125,0 -0.43815,0.1095375 -0.195262,0.104775 -0.314325,0.32385 -0.119062,0.219075 -0.119062,0.5333999 0,0.3190875 0.1143,0.5381625 0.119062,0.219075 0.314325,0.3286125 0.195262,0.104775 0.428625,0.104775 z"
+                        style="font-weight:normal;-inkscape-font-specification:poppins" id="path8972" />
+                    <path
+                        d="m 43.948871,3.6498314 q 0.3048,0 0.542925,0.1285875 0.238125,0.123825 0.376238,0.3762375 0.138112,0.2524125 0.138112,0.6143625 v 1.5382874 h -0.428625 v -1.476375 q 0,-0.3905249 -0.195262,-0.5953124 -0.1905,-0.20955 -0.519113,-0.20955 -0.338137,0 -0.538162,0.219075 -0.200025,0.2143125 -0.200025,0.6238874 v 1.438275 h -0.428625 v -1.476375 q 0,-0.3905249 -0.195263,-0.5953124 -0.1905,-0.20955 -0.519112,-0.20955 -0.338138,0 -0.538163,0.219075 -0.200025,0.2143125 -0.200025,0.6238874 v 1.438275 H 40.810384 V 3.6974564 h 0.433387 v 0.3762375 q 0.128588,-0.2047875 0.3429,-0.314325 0.219075,-0.1095375 0.481013,-0.1095375 0.328612,0 0.581025,0.1476375 0.252412,0.1476375 0.376237,0.4333875 0.109538,-0.276225 0.36195,-0.428625 0.252413,-0.1524 0.561975,-0.1524 z"
+                        style="font-weight:normal;-inkscape-font-specification:poppins" id="path8974" />
+                </g>
+            </g>
+            <g id="plant" class="pointer">
+                <rect
+                    style="fill:#93c47d;fill-opacity:1;stroke:#000000;stroke-width:1.08768;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+                    id="rect2000-7-0" width="47.63755" height="27.406019" x="157.12781" y="1.0057369" />
+                <g aria-label="plant" id="text10768"
+                    style="font-size:13px;line-height:1.25;font-family:poppins;-inkscape-font-specification:poppins"
+                    transform="translate(-20.909607,0.4618969)">
+                    <path
+                        d="m 186.84118,11.55585 q 0.351,-0.611 1.04,-1.014 0.702,-0.416 1.625,-0.416 0.949,0 1.716,0.455 0.78,0.455 1.222,1.287 0.442,0.819 0.442,1.911 0,1.079 -0.442,1.924 -0.442,0.845 -1.222,1.313 -0.767,0.468 -1.716,0.468 -0.91,0 -1.612,-0.403 -0.689,-0.416 -1.053,-1.027 v 4.693 h -1.183 v -10.504 h 1.183 z m 4.836,2.223 q 0,-0.806 -0.325,-1.404 -0.325,-0.598 -0.884,-0.91 -0.546,-0.312 -1.209,-0.312 -0.65,0 -1.209,0.325 -0.546,0.312 -0.884,0.923 -0.325,0.598 -0.325,1.391 0,0.806 0.325,1.417 0.338,0.598 0.884,0.923 0.559,0.312 1.209,0.312 0.663,0 1.209,-0.312 0.559,-0.325 0.884,-0.923 0.325,-0.611 0.325,-1.43 z"
+                        id="path18103" />
+                    <path d="M 195.62919,7.7468499 V 17.36685 h -1.183 V 7.7468499 Z" id="path18105" />
+                    <path
+                        d="m 197.20219,13.77885 q 0,-1.092 0.442,-1.911 0.442,-0.832 1.209,-1.287 0.78,-0.455 1.729,-0.455 0.936,0 1.625,0.403 0.689,0.403 1.027,1.014 v -1.3 h 1.196 v 7.124 h -1.196 v -1.326 q -0.351,0.624 -1.053,1.04 -0.689,0.403 -1.612,0.403 -0.949,0 -1.716,-0.468 -0.767,-0.468 -1.209,-1.313 -0.442,-0.845 -0.442,-1.924 z m 6.032,0.013 q 0,-0.806 -0.325,-1.404 -0.325,-0.598 -0.884,-0.91 -0.546,-0.325 -1.209,-0.325 -0.663,0 -1.209,0.312 -0.546,0.312 -0.871,0.91 -0.325,0.598 -0.325,1.404 0,0.819 0.325,1.43 0.325,0.598 0.871,0.923 0.546,0.312 1.209,0.312 0.663,0 1.209,-0.312 0.559,-0.325 0.884,-0.923 0.325,-0.611 0.325,-1.417 z"
+                        id="path18107" />
+                    <path
+                        d="m 209.9032,10.11285 q 1.3,0 2.106,0.793 0.806,0.78 0.806,2.262 v 4.199 h -1.17 v -4.03 q 0,-1.066 -0.533,-1.625 -0.533,-0.572 -1.456,-0.572 -0.936,0 -1.495,0.585 -0.546,0.585 -0.546,1.703 v 3.939 h -1.183 v -7.124 h 1.183 v 1.014 q 0.351,-0.546 0.949,-0.845 0.611,-0.299 1.339,-0.299 z"
+                        id="path18109" />
+                    <path
+                        d="m 216.19519,11.21785 v 4.199 q 0,0.52 0.221,0.741 0.221,0.208 0.767,0.208 h 0.871 v 1.001 h -1.066 q -0.988,0 -1.482,-0.455 -0.494,-0.455 -0.494,-1.495 v -4.199 h -0.923 v -0.975 h 0.923 V 8.4488499 h 1.183 V 10.24285 h 1.859 v 0.975 z"
+                        id="path18111" />
+                </g>
+            </g>
+            <rect
+                style="fill:#ff0000;fill-opacity:1;stroke:#000000;stroke-width:1.0885;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                id="selectedColor" width="43.621784" height="43.621784" x="0.54425001" y="0.54425001" />
+            <g id="grid">
+                <rect
+                    style="fill:#93c47d;fill-opacity:1;stroke:#000000;stroke-width:1.0885;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+                    id="rect871" width="27.406021" height="27.406019" x="252.40291" y="1.0057361" />
+                <g id="g6042" transform="translate(230.25246,-66.299168)"
+                    style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.944882;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1">
+                    <rect
+                        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.944882;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                        id="rect5696" width="9.4488192" height="9.4488192" x="25.404364" y="70.670319" rx="1.8897638"
+                        ry="1.8897638" />
+                    <rect
+                        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.944882;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                        id="rect5696-9" width="9.4488192" height="9.4488192" x="36.853718" y="70.670319" rx="1.8897638"
+                        ry="1.8897638" />
+                    <rect
+                        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.944882;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                        id="rect5696-8" width="9.4488192" height="9.4488192" x="25.404364" y="81.89669" rx="1.8897638"
+                        ry="1.8897638" />
+                    <rect
+                        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.944882;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                        id="rect5696-6" width="9.4488192" height="9.4488192" x="36.853718" y="81.89669" rx="1.8897638"
+                        ry="1.8897638" />
+                </g>
+            </g>
+        </g>
+    </svg>
+</body>
+
+</html>

@@ -1,0 +1,69 @@
+<!-- 
+     <svg (click)="openDialog()" #renderEl
+       width="250"
+       height="350"
+       viewBox="0 0 500 700"
+       version="1.1"
+       id="boardID"
+       inkscape:version="1.1.1 (c3084ef, 2021-09-22)"
+       sodipodi:docname="board1.svg"
+       xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+       xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+       xmlns="http://www.w3.org/2000/svg"
+       xmlns:svg="http://www.w3.org/2000/svg">
+      <defs
+         id="defs845" />
+      <g
+         inkscape:label="Layer 1"
+         inkscape:groupmode="layer"
+         id="number1"
+         transform="translate(0,403)">
+        <g
+           id="g7115">
+          <path
+             id="rect3977"
+             style="fill:#008080;fill-opacity:0;stroke:#009bea;stroke-width:11.2032"
+             d="M 5.602379,-397.35401 H 494.50425 V 291.39915 H 5.602379 Z" />
+          <g
+             aria-label="1"
+             id="text3332"
+             style="font-size:600px;line-height:1.25;font-family:Poppins;-inkscape-font-specification:Poppins;fill:#008080;fill-opacity:0;stroke:#009bea;stroke-width:12;stroke-dasharray:24, 24">
+            <path
+               d="m 185.08888,-219.62318 v -49.8 h 112.8 v 433.8 h -55.2 v -384 z"
+               id="path8623" />
+          </g>
+        </g>
+      </g>
+    </svg> -->
+
+    <!-- Clickable SVG region -->
+    <head>
+      <link rel="preconnect" href="https://fonts.gstatic.com">
+      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    </head>
+
+    <div class="canvasImage" style="{{this.regionStyle}}">
+       <svg (click)="openDialog()" #renderEl width="250" height="350" viewBox="0 0 500 700"> </svg>
+   </div>
+
+
+    <div #Modal id="myModal" class="modal">
+
+      <!-- Modal content -->
+      <div class="modal-content" >
+        <span class="close" (click)="xClose()">&times;</span>
+
+        <div >
+          <button class = "dialogbuts" mat-raised-button color="warn" (click)="undoClicked()">Undo</button>
+          <button #saveBut class = "dialogbuts" mat-raised-button color="primary" (click)="saveClicked()">Save</button>
+        </div>
+   
+   
+        <div class="canvasImage" style="{{this.styleType}}" >
+          <canvas #canvasBGImage  id="{{this.setID}}" height = "{{this.canvasHeight}}" width="{{this.canvasWidth}}"></canvas>
+         </div>
+      </div>
+       
+   </div>
+
