@@ -29,14 +29,13 @@ export function farmAPI(_els, _setup) {
         farmGroup: SVGSVGElement
         isViewingThousands = true;
         isViewingHundreds = true
-        mousePosition = { x: 0, y: 0 }
         flowerColor = "rgb(255, 0, 0)"
         pointerState: any
         previousState: any
         zoom: HTMLElement
         plant: HTMLElement
-        isZoomedIn = false
-        ui: HTMLElement
+        zoomLevel = 0
+        ui: SVGSVGElement
         plotArray = Array.from(Array(20), () => new Array(50))
         colorDictionary: any
         colorCounter: any
@@ -53,7 +52,7 @@ export function farmAPI(_els, _setup) {
             this.farmGroup = this.els.getElementById("farmGroup") as SVGSVGElement
             this.zoom = this.els.getElementById("zoom") as HTMLElement
             this.plant = this.els.getElementById("plant") as HTMLElement
-            this.ui = this.els.getElementById("ui") as HTMLElement
+            this.ui = this.els.getElementById("ui") as SVGSVGElement
             this.pointerState = this.plant
             this.previousState = this.plant
             this.colorDictionary = { "rgb(255, 0, 0)": "red", "rgb(128, 0, 128)": "purple", "rgb(0, 0, 255)": "blue" }
@@ -105,7 +104,7 @@ export function farmAPI(_els, _setup) {
         }
         hitTest(e) {
             if (this.pointerState == this.zoom) {
-                this.handleZoom()
+                this.handleZoom(e)
             }
             else {
                 this.plantOrRemoveFlower(e)
@@ -451,17 +450,29 @@ export function farmAPI(_els, _setup) {
         }
         */
 
-        handleZoom() {
-            if (!this.isZoomedIn) {
-                let svgBBox = this.els.getBoundingClientRect()
-                gsap.to(this.els, { duration: 1, attr: { viewBox: `${(this.mousePosition.x - 25 - svgBBox.x)* (500/svgBBox.width)} ${(this.mousePosition.y - 25 - svgBBox.y)* (500/svgBBox.width)} 50 50` }, });
-                this.isZoomedIn = true
+        handleZoom(e) {
+            let svgBBox = this.els.getBoundingClientRect()
+
+            var pt = this.els.createSVGPoint()
+            pt.x = e.clientX
+            pt.y = e.clientY
+            pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
+            
+            if (this.zoomLevel == 0) {
+                gsap.to(this.els, { duration: 1, attr: { viewBox: `${(pt.x - 75 - svgBBox.x)} ${(pt.y - 75 - svgBBox.y)} 150 150` }, });
+                this.zoomLevel++
+                this.farmGroup.style.cursor = "zoom-in"
+                gsap.to(this.ui, { x: (pt.x - 75 - svgBBox.x) - 0.5, y: (pt.y - 75 - svgBBox.y) - 0.5, scale: 150/500, duration: 1 },)
+            }
+            else if (this.zoomLevel == 1) {
+                gsap.to(this.els, { duration: 1, attr: { viewBox: `${(pt.x - 25 - svgBBox.x)} ${(pt.y - 25 - svgBBox.y)} 50 50` }, });
+                this.zoomLevel++
                 this.farmGroup.style.cursor = "zoom-out"
-                gsap.to(this.ui, { x: (this.mousePosition.x - 25 - svgBBox.x)* (500/svgBBox.width) - 0.5, y: (this.mousePosition.y - 25 - svgBBox.y)* (500/svgBBox.width) - 0.5, scale: 0.1, duration: 1 },)
+                gsap.to(this.ui, { x: (pt.x - 25 - svgBBox.x) - 0.5, y: (pt.y - 25 - svgBBox.y) - 0.5, scale: 50/500, duration: 1 },)
             }
             else {
                 gsap.to(this.els, { duration: 1, attr: { viewBox: `0 0 500 500` }, });
-                this.isZoomedIn = false
+                this.zoomLevel = 0
                 this.farmGroup.style.cursor = "zoom-in"
                 gsap.to(this.ui, { x: 0, y: 0, scale: 1, duration: 1 },)
             }
@@ -493,7 +504,7 @@ export function farmAPI(_els, _setup) {
         handlePointerChange(element) {
             this.pointerState = element
             if (this.pointerState == this.zoom) {
-                if (this.isZoomedIn) {
+                if (this.zoomLevel == 2) {
                     this.farmGroup.style.cursor = "zoom-out"
                 }
                 else {
@@ -533,11 +544,7 @@ export function farmAPI(_els, _setup) {
                 }
             })
             this.els.getElementById("grid").addEventListener("pointerdown", e => this.handleGridToggle())
-            document.addEventListener("pointermove", e => {
-                this.mousePosition.x = e.clientX
-                this.mousePosition.y = e.clientY
 
-            })
             gsap.utils.toArray(".color").forEach(element => element.addEventListener("pointerdown", e => this.handleColorChange(element)))
             gsap.utils.toArray(".pointer").forEach(element => element.addEventListener("pointerdown", e => this.handlePointerChange(element)))
         }
