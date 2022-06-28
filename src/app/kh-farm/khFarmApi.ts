@@ -115,7 +115,7 @@ export function farmAPI(_els, _setup) {
             else if (this.pointerState == this.plant) {
                 this.plantOrRemoveFlower(e)
             }
-            else if (this.pointerState == this.zoom) {
+            else if (this.pointerState == this.move){
                 this.dragEnabled = true;
             }
         }
