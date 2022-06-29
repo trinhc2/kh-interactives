@@ -371,6 +371,7 @@ export function farmAPI(_els, _setup) {
             this.pointerState = element
             this.dragEnabled = false
             this.els.style.cursor = "default"
+            this.els.style.touchAction = "auto"
             
             if (this.pointerState == this.plant) {
                 this.farmGroup.style.cursor = "pointer"
@@ -386,6 +387,7 @@ export function farmAPI(_els, _setup) {
             }
             */
             else if (this.pointerState == this.move){
+                this.els.style.touchAction = "pinch-zoom";/*lets pointer events work with mobile. only allowing pinch zoom incase user gets locked out*/
                 this.dragEnabled = true
                 this.els.style.cursor = "move"
                 this.farmGroup.style.cursor = "move"
