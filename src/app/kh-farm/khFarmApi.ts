@@ -43,6 +43,8 @@ export function farmAPI(_els, _setup) {
         isDragging = false;
         dragEnabled = false;
         dragStart = { x: 0, y: 0 }
+        zoomIncrement = 75
+        svgDefaultWidthHeight = 500
 
         constructor(els, setup) {
             self = this
@@ -109,15 +111,14 @@ export function farmAPI(_els, _setup) {
         }
 
         hitTest(e) {
-            if (this.pointerState == this.zoom) {
-                this.handleZoom(e)
-            }
-            else if (this.pointerState == this.plant) {
+            if (this.pointerState == this.plant) {
                 this.plantOrRemoveFlower(e)
             }
-            else if (this.pointerState == this.move){
-                this.dragEnabled = true;
+            /*
+            else if (this.pointerState == this.zoom) {
+                this.handleZoom(e)
             }
+            */
         }
 
         startDrag(e) {
@@ -141,7 +142,7 @@ export function farmAPI(_els, _setup) {
                 pt.y = e.clientY
                 pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
                 gsap.set(this.els, { attr: { viewBox: `${baseViewbox["x"] + (this.dragStart.x - pt.x)} ${baseViewbox["y"] + (this.dragStart.y - pt.y)} ${baseViewbox["width"]} ${baseViewbox["height"]}`} });
-                gsap.to(this.ui, { duration: 0.3, x: baseViewbox["x"] + (this.dragStart.x - pt.x) - 0.5, y: baseViewbox["y"] + (this.dragStart.y - pt.y) - 0.5 });
+                gsap.to(this.ui, { duration: 0.5, x: baseViewbox["x"] + (this.dragStart.x - pt.x) - 0.5, y: baseViewbox["y"] + (this.dragStart.y - pt.y) - 0.5 });
             }
         }
 
@@ -294,6 +295,27 @@ export function farmAPI(_els, _setup) {
             element.remove()
         }
 
+        handleZoomIn(){
+            let svgBBox = this.els.getBoundingClientRect()
+            let baseViewbox = this.els.viewBox["baseVal"]
+            if (this.zoomLevel < 6){
+                gsap.to(this.els, { duration: 0, attr: { viewBox: `${(baseViewbox["x"] + this.zoomIncrement/2 - svgBBox.x)} ${(baseViewbox["y"] + this.zoomIncrement/2 - svgBBox.y)} ${(baseViewbox["width"] - this.zoomIncrement)} ${(baseViewbox["height"] - this.zoomIncrement)}`}});
+                this.zoomLevel++
+                gsap.to(this.ui, {duration: 0, x: (baseViewbox["x"]) - 0.5, y: (baseViewbox["y"]) - 0.5, scale: baseViewbox["width"] / this.svgDefaultWidthHeight })      
+            }
+        }
+
+        handleZoomOut(){
+            let svgBBox = this.els.getBoundingClientRect()
+            let baseViewbox = this.els.viewBox["baseVal"]
+            if (this.zoomLevel > -6){
+                gsap.to(this.els, { duration: 0, attr: { viewBox: `${(baseViewbox["x"] - this.zoomIncrement/2 - svgBBox.x)} ${(baseViewbox["y"] - this.zoomIncrement/2 - svgBBox.y)} ${(baseViewbox["width"] + this.zoomIncrement)} ${(baseViewbox["height"] + this.zoomIncrement)}` }});
+                this.zoomLevel--
+                gsap.to(this.ui, {duration: 0, x: baseViewbox["x"] - 0.5, y: baseViewbox["y"] - 0.5, scale: baseViewbox["width"] / this.svgDefaultWidthHeight })      
+            }
+
+        }
+
         handleZoom(e) {
             let svgBBox = this.els.getBoundingClientRect()
 
@@ -349,8 +371,12 @@ export function farmAPI(_els, _setup) {
             this.pointerState = element
             this.dragEnabled = false
             this.els.style.cursor = "default"
-
-            if (this.pointerState == this.zoom) {
+            
+            if (this.pointerState == this.plant) {
+                this.farmGroup.style.cursor = "pointer"
+            }
+            /*
+            else if (this.pointerState == this.zoom) {
                 if (this.zoomLevel == 2) {
                     this.farmGroup.style.cursor = "zoom-out"
                 }
@@ -358,10 +384,9 @@ export function farmAPI(_els, _setup) {
                     this.farmGroup.style.cursor = "zoom-in"
                 }
             }
-            else if (this.pointerState == this.plant) {
-                this.farmGroup.style.cursor = "pointer"
-            }
-            else {
+            */
+            else if (this.pointerState == this.move){
+                this.dragEnabled = true
                 this.els.style.cursor = "move"
                 this.farmGroup.style.cursor = "move"
             }
@@ -391,6 +416,9 @@ export function farmAPI(_els, _setup) {
             this.farmGroup.addEventListener("pointerdown", e => { this.hitTest(e) })
 
             this.els.getElementById("grid").addEventListener("pointerdown", e => this.handleGridToggle())
+
+            this.els.getElementById("zoomIn").addEventListener("pointerdown", e => this.handleZoomIn())
+            this.els.getElementById("zoomOut").addEventListener("pointerdown", e => this.handleZoomOut())
 
             this.els.addEventListener("pointerdown", e => this.startDrag(e))
             this.els.addEventListener("pointermove", e => this.whileDrag(e))

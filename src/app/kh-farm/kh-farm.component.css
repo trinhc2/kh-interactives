@@ -2,7 +2,7 @@
     cursor: pointer
 }
 
-.color, .pointer, #grid {
+.color, .pointer, #grid, #zoomIn, #zoomOut {
     cursor:pointer;
     pointer-events: bounding-box;
 }
