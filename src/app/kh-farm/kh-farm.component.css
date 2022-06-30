@@ -13,3 +13,11 @@ svg {
     max-width: 700px;
     min-width: 300px;
 }
+
+.upperRenderEl, .lowerRenderEl {
+    position: absolute;
+}
+
+.upperRenderEl {
+    pointer-events: none;
+}

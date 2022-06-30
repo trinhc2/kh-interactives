@@ -8,7 +8,8 @@ import { farmAPI, farmSetup} from "./khFarmApi"
 })
 
 export class KhFarmComponent implements AfterViewInit {
-  @ViewChild('renderEl') public renderEl?: ElementRef<SVGSVGElement>;
+  @ViewChild('lowerRenderEl') public lowerRenderEl?: ElementRef<SVGSVGElement>;
+  @ViewChild('upperRenderEl') public upperRenderEl?: ElementRef<SVGSVGElement>;
 
   constructor() { }
 
@@ -42,7 +43,7 @@ export class KhFarmComponent implements AfterViewInit {
       lineColor: this.lineColor
     } as farmSetup
 
-    const els = this.renderEl.nativeElement;
+    const els = [this.lowerRenderEl.nativeElement,this.upperRenderEl.nativeElement]
 
     const interactive = farmAPI(els, setup)
 

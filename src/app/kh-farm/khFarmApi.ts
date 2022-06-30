@@ -14,7 +14,9 @@ export function farmAPI(_els, _setup) {
     let self = {} as farmClass
 
     class farmClass {
-        els: SVGSVGElement;
+        els: (SVGSVGElement)[]
+        gsvg: SVGSVGElement
+        gsvgu: SVGSVGElement
         setup: farmSetup;
         svgns: string;
         outerLineStrokeWidth = 2;
@@ -36,7 +38,6 @@ export function farmAPI(_els, _setup) {
         plant: HTMLElement
         move: HTMLElement
         zoomLevel = 0
-        ui: SVGSVGElement
         plotArray = Array.from(Array(20), () => new Array(50))
         colorDictionary: any
         colorCounter: any
@@ -49,17 +50,18 @@ export function farmAPI(_els, _setup) {
         constructor(els, setup) {
             self = this
             this.els = els
+            this.gsvg = els[0]
+            this.gsvgu = els[1]
             this.setup = setup
             this.svgns = "http://www.w3.org/2000/svg";
-            this.border = this.els.getElementById("border") as HTMLElement
-            this.tens = this.els.getElementById("tens") as HTMLElement
-            this.hundreds = this.els.getElementById("hundreds") as HTMLElement
-            this.thousands = this.els.getElementById("thousands") as HTMLElement
-            this.farmGroup = this.els.getElementById("farmGroup") as SVGSVGElement
-            this.zoom = this.els.getElementById("zoom") as HTMLElement
-            this.plant = this.els.getElementById("plant") as HTMLElement
-            this.move = this.els.getElementById("move") as HTMLElement
-            this.ui = this.els.getElementById("ui") as SVGSVGElement
+            this.border = this.gsvg.getElementById("border") as HTMLElement
+            this.tens = this.gsvg.getElementById("tens") as HTMLElement
+            this.hundreds = this.gsvg.getElementById("hundreds") as HTMLElement
+            this.thousands = this.gsvg.getElementById("thousands") as HTMLElement
+            this.farmGroup = this.gsvg.getElementById("farmGroup") as SVGSVGElement
+            this.zoom = this.gsvgu.getElementById("zoom") as HTMLElement
+            this.plant = this.gsvgu.getElementById("plant") as HTMLElement
+            this.move = this.gsvgu.getElementById("move") as HTMLElement
             this.pointerState = this.plant
             this.previousState = this.plant
             this.colorDictionary = { "rgb(255, 0, 0)": "red", "rgb(128, 0, 128)": "purple", "rgb(0, 0, 255)": "blue" }
@@ -114,19 +116,14 @@ export function farmAPI(_els, _setup) {
             if (this.pointerState == this.plant) {
                 this.plantOrRemoveFlower(e)
             }
-            /*
-            else if (this.pointerState == this.zoom) {
-                this.handleZoom(e)
-            }
-            */
         }
 
         startDrag(e) {
             if (this.dragEnabled) {
-                var pt = this.els.createSVGPoint()
+                var pt = this.gsvg.createSVGPoint()
                 pt.x = e.clientX
                 pt.y = e.clientY
-                pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
+                pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
 
                 this.dragStart.x = pt.x
                 this.dragStart.y = pt.y
@@ -136,13 +133,12 @@ export function farmAPI(_els, _setup) {
 
         whileDrag(e) {
             if (this.isDragging) {
-                let baseViewbox = this.els.viewBox["baseVal"]
-                var pt = this.els.createSVGPoint()
+                let baseViewbox = this.gsvg.viewBox["baseVal"]
+                var pt = this.gsvg.createSVGPoint()
                 pt.x = e.clientX
                 pt.y = e.clientY
-                pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
-                gsap.set(this.els, { attr: { viewBox: `${baseViewbox["x"] + (this.dragStart.x - pt.x)} ${baseViewbox["y"] + (this.dragStart.y - pt.y)} ${baseViewbox["width"]} ${baseViewbox["height"]}`} });
-                gsap.to(this.ui, { duration: 0.5, x: baseViewbox["x"] + (this.dragStart.x - pt.x) - 0.5, y: baseViewbox["y"] + (this.dragStart.y - pt.y) - 0.5 });
+                pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
+                gsap.set(this.gsvg, { attr: { viewBox: `${baseViewbox["x"] + (this.dragStart.x - pt.x)} ${baseViewbox["y"] + (this.dragStart.y - pt.y)} ${baseViewbox["width"]} ${baseViewbox["height"]}`} });
             }
         }
 
@@ -161,7 +157,7 @@ export function farmAPI(_els, _setup) {
             var existingElementsToBeDeleted = []
 
             //Calculate original point
-            var pt = this.els.createSVGPoint()
+            var pt = this.gsvg.createSVGPoint()
             pt.x = e.clientX
             pt.y = e.clientY
             pt = pt.matrixTransform(this.farmGroup.getScreenCTM().inverse())
@@ -273,7 +269,7 @@ export function farmAPI(_els, _setup) {
                 }
 
                 gsap.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: rectWidth, height: 0, fill: this.flowerColor })
-                this.els.getElementById("fill").appendChild(rect)
+                this.gsvg.getElementById("fill").appendChild(rect)
                 gsap.to(rect, { height: rectHeight, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } })
             }
 
@@ -296,51 +292,20 @@ export function farmAPI(_els, _setup) {
         }
 
         handleZoomIn(){
-            let svgBBox = this.els.getBoundingClientRect()
-            let baseViewbox = this.els.viewBox["baseVal"]
+            let svgBBox = this.gsvg.getBoundingClientRect()
+            let baseViewbox = this.gsvg.viewBox["baseVal"]
             if (this.zoomLevel < 6){
-                gsap.to(this.els, { duration: 0, attr: { viewBox: `${(baseViewbox["x"] + this.zoomIncrement/2 - svgBBox.x)} ${(baseViewbox["y"] + this.zoomIncrement/2 - svgBBox.y)} ${(baseViewbox["width"] - this.zoomIncrement)} ${(baseViewbox["height"] - this.zoomIncrement)}`}});
-                this.zoomLevel++
-                gsap.to(this.ui, {duration: 0, x: (baseViewbox["x"]) - 0.5, y: (baseViewbox["y"]) - 0.5, scale: baseViewbox["width"] / this.svgDefaultWidthHeight })      
+                gsap.to(this.gsvg, { duration: 0, attr: { viewBox: `${(baseViewbox["x"] + this.zoomIncrement/2 - svgBBox.x)} ${(baseViewbox["y"] + this.zoomIncrement/2 - svgBBox.y)} ${(baseViewbox["width"] - this.zoomIncrement)} ${(baseViewbox["height"] - this.zoomIncrement)}`}});
+                this.zoomLevel++  
             }
         }
 
         handleZoomOut(){
-            let svgBBox = this.els.getBoundingClientRect()
-            let baseViewbox = this.els.viewBox["baseVal"]
+            let svgBBox = this.gsvg.getBoundingClientRect()
+            let baseViewbox = this.gsvg.viewBox["baseVal"]
             if (this.zoomLevel > -6){
-                gsap.to(this.els, { duration: 0, attr: { viewBox: `${(baseViewbox["x"] - this.zoomIncrement/2 - svgBBox.x)} ${(baseViewbox["y"] - this.zoomIncrement/2 - svgBBox.y)} ${(baseViewbox["width"] + this.zoomIncrement)} ${(baseViewbox["height"] + this.zoomIncrement)}` }});
-                this.zoomLevel--
-                gsap.to(this.ui, {duration: 0, x: baseViewbox["x"] - 0.5, y: baseViewbox["y"] - 0.5, scale: baseViewbox["width"] / this.svgDefaultWidthHeight })      
-            }
-
-        }
-
-        handleZoom(e) {
-            let svgBBox = this.els.getBoundingClientRect()
-
-            var pt = this.els.createSVGPoint()
-            pt.x = e.clientX
-            pt.y = e.clientY
-            pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
-
-            if (this.zoomLevel == 0) {
-                gsap.to(this.els, { duration: 1, attr: { viewBox: `${(pt.x - 75 - svgBBox.x)} ${(pt.y - 75 - svgBBox.y)} 150 150` }, });
-                this.zoomLevel++
-                this.farmGroup.style.cursor = "zoom-in"
-                gsap.to(this.ui, { x: (pt.x - 75 - svgBBox.x) - 0.5, y: (pt.y - 75 - svgBBox.y) - 0.5, scale: 150 / 500, duration: 1 },)
-            }
-            else if (this.zoomLevel == 1) {
-                gsap.to(this.els, { duration: 1, attr: { viewBox: `${(pt.x - 25 - svgBBox.x)} ${(pt.y - 25 - svgBBox.y)} 50 50` }, });
-                this.zoomLevel++
-                this.farmGroup.style.cursor = "zoom-out"
-                gsap.to(this.ui, { x: (pt.x - 25 - svgBBox.x) - 0.5, y: (pt.y - 25 - svgBBox.y) - 0.5, scale: 50 / 500, duration: 1 },)
-            }
-            else {
-                gsap.to(this.els, { duration: 1, attr: { viewBox: `0 0 500 500` }, });
-                this.zoomLevel = 0
-                this.farmGroup.style.cursor = "zoom-in"
-                gsap.to(this.ui, { x: 0, y: 0, scale: 1, duration: 1 },)
+                gsap.to(this.gsvg, { duration: 0, attr: { viewBox: `${(baseViewbox["x"] - this.zoomIncrement/2 - svgBBox.x)} ${(baseViewbox["y"] - this.zoomIncrement/2 - svgBBox.y)} ${(baseViewbox["width"] + this.zoomIncrement)} ${(baseViewbox["height"] + this.zoomIncrement)}` }});
+                this.zoomLevel--    
             }
         }
 
@@ -364,32 +329,22 @@ export function farmAPI(_els, _setup) {
         handleColorChange(element) {
             let fillColor = getComputedStyle(element).fill
             this.flowerColor = fillColor;
-            (this.els.getElementById("selectedColor") as SVGSVGElement).style.fill = fillColor
+            (this.gsvgu.getElementById("selectedColor") as SVGSVGElement).style.fill = fillColor
         }
 
         handlePointerChange(element) {
             this.pointerState = element
             this.dragEnabled = false
-            this.els.style.cursor = "default"
-            this.els.style.touchAction = "auto"
+            this.gsvg.style.cursor = "default"
+            this.gsvg.style.touchAction = "auto"
             
             if (this.pointerState == this.plant) {
                 this.farmGroup.style.cursor = "pointer"
             }
-            /*
-            else if (this.pointerState == this.zoom) {
-                if (this.zoomLevel == 2) {
-                    this.farmGroup.style.cursor = "zoom-out"
-                }
-                else {
-                    this.farmGroup.style.cursor = "zoom-in"
-                }
-            }
-            */
             else if (this.pointerState == this.move){
-                this.els.style.touchAction = "pinch-zoom";/*lets pointer events work with mobile. only allowing pinch zoom incase user gets locked out*/
+                this.gsvg.style.touchAction = "pinch-zoom";/*lets pointer events work with mobile. only allowing pinch zoom incase user gets locked out*/
                 this.dragEnabled = true
-                this.els.style.cursor = "move"
+                this.gsvg.style.cursor = "move"
                 this.farmGroup.style.cursor = "move"
             }
             this.previousState.style.fill = "#000000"
@@ -400,15 +355,15 @@ export function farmAPI(_els, _setup) {
         init() {
             let farmPlot = document.createElementNS(this.svgns, "rect")
             gsap.set(farmPlot, { attr: { id: "farmPlot" }, width: this.setup.plotWidth, height: this.setup.plotHeight, fill: this.setup.plotColor })
-            this.els.getElementById("plot").appendChild(farmPlot)
+            this.gsvg.getElementById("plot").appendChild(farmPlot)
 
-            this.plotBBox = (this.els.getElementById("farmPlot") as SVGSVGElement).getBBox()
+            this.plotBBox = (this.gsvg.getElementById("farmPlot") as SVGSVGElement).getBBox()
             this.plotIncrementWidth = this.plotBBox.width / 10;
             this.plotIncrementHeight = this.plotBBox.height / 10;
 
             this.generateLines()
 
-            gsap.set(this.els, { backgroundColor: "rgb(147,196,125)" })
+            gsap.set(this.gsvg, { backgroundColor: "rgb(147,196,125)" })
             this.plant.style.fill = "#ffffff"
 
             //fill-box allows rotation about center
@@ -417,14 +372,14 @@ export function farmAPI(_els, _setup) {
 
             this.farmGroup.addEventListener("pointerdown", e => { this.hitTest(e) })
 
-            this.els.getElementById("grid").addEventListener("pointerdown", e => this.handleGridToggle())
+            this.gsvgu.getElementById("grid").addEventListener("pointerdown", e => this.handleGridToggle())
 
-            this.els.getElementById("zoomIn").addEventListener("pointerdown", e => this.handleZoomIn())
-            this.els.getElementById("zoomOut").addEventListener("pointerdown", e => this.handleZoomOut())
+            this.gsvgu.getElementById("zoomIn").addEventListener("pointerdown", e => this.handleZoomIn())
+            this.gsvgu.getElementById("zoomOut").addEventListener("pointerdown", e => this.handleZoomOut())
 
-            this.els.addEventListener("pointerdown", e => this.startDrag(e))
-            this.els.addEventListener("pointermove", e => this.whileDrag(e))
-            this.els.addEventListener("pointerup", e => this.endDrag(e))
+            this.gsvg.addEventListener("pointerdown", e => this.startDrag(e))
+            this.gsvg.addEventListener("pointermove", e => this.whileDrag(e))
+            this.gsvg.addEventListener("pointerup", e => this.endDrag(e))
 
             gsap.utils.toArray(".color").forEach(element => element.addEventListener("pointerdown", e => this.handleColorChange(element)))
             gsap.utils.toArray(".pointer").forEach(element => element.addEventListener("pointerdown", e => this.handlePointerChange(element)))
