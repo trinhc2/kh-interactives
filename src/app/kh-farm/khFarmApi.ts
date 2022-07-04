@@ -29,6 +29,9 @@ export function farmAPI(_els, _setup) {
         hundreds: HTMLElement
         thousands: HTMLElement
         farmGroup: SVGSVGElement
+        combines: SVGSVGElement
+        largeCombine: SVGSVGElement
+        smallCombine: SVGSVGElement
         isViewingThousands = true;
         isViewingHundreds = true
         flowerColor = "rgb(255, 0, 0)"
@@ -46,6 +49,7 @@ export function farmAPI(_els, _setup) {
         dragStart = { x: 0, y: 0 }
         zoomIncrement = 75
         svgDefaultWidthHeight = 500
+        TL = gsap.timeline({onComplete: this.resetCombine})
 
         constructor(els, setup) {
             self = this
@@ -59,6 +63,9 @@ export function farmAPI(_els, _setup) {
             this.hundreds = this.gsvg.getElementById("hundreds") as HTMLElement
             this.thousands = this.gsvg.getElementById("thousands") as HTMLElement
             this.farmGroup = this.gsvg.getElementById("farmGroup") as SVGSVGElement
+            this.combines = this.gsvg.getElementById("combines") as SVGSVGElement
+            this.largeCombine = this.gsvg.getElementById("largeCombine") as SVGSVGElement
+            this.smallCombine = this.gsvg.getElementById("smallCombine") as SVGSVGElement
             this.zoom = this.gsvgu.getElementById("zoom") as HTMLElement
             this.plant = this.gsvgu.getElementById("plant") as HTMLElement
             this.move = this.gsvgu.getElementById("move") as HTMLElement
@@ -160,7 +167,12 @@ export function farmAPI(_els, _setup) {
             var pt = this.gsvg.createSVGPoint()
             pt.x = e.clientX
             pt.y = e.clientY
+            //console.log("a", pt, this.farmGroup.getScreenCTM(), this.largeCombine.getScreenCTM())
             pt = pt.matrixTransform(this.farmGroup.getScreenCTM().inverse())
+
+            var largeCombineBBox = this.largeCombine.getBBox()
+            var smallCombineBBox = this.smallCombine.getBBox()
+            //console.log("bb", largeCombineBBox)
             //console.log(pt)
 
             //checks bounds so that rects cannot be placed outside of plot
@@ -176,6 +188,7 @@ export function farmAPI(_els, _setup) {
             else if (pt.y > this.setup.plotWidth) {
                 pt.y = this.setup.plotWidth - 1
             }
+            //console.log("point after inverse", pt)
 
             let rect = document.createElementNS(this.svgns, "rect")
 
@@ -191,15 +204,20 @@ export function farmAPI(_els, _setup) {
             rectID = `thousands${i}-${j}`
 
             if (this.plotArray[i][j]) {
-                gsap.to(this.plotArray[i][j][1], { height: 0, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray, this.plotArray[i][j][1]] })
+                if (this.plotArray[i][j][1].id.startsWith("tens")){
+                    gsap.to(this.plotArray[i][j][1], { width: 0, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray, this.plotArray[i][j][1]] })
+                }
+                else {
+                    gsap.to(this.plotArray[i][j][1], { height: 0, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray, this.plotArray[i][j][1]] })
+                }
             }
             else {
                 if (this.isViewingThousands) {
-                    rectWidth = this.plotIncrementWidth / 5 + 0.1
+                    rectWidth = this.plotIncrementWidth / 5 + 0.2
                     rectHeight = (this.plotIncrementHeight / 2)
 
 
-                    xVal = xGridQuadrant * innerGridIncrementX + (0.4 - ((xGridQuadrant % 5) * 0.2))
+                    xVal = xGridQuadrant * innerGridIncrementX + (0.3 - ((xGridQuadrant % 5) * 0.2))
                     yVal = yGridQuadrant * innerGridIncrementY
 
                     if ((xGridQuadrant % 5) == 0) {
@@ -220,7 +238,7 @@ export function farmAPI(_els, _setup) {
                     let xGridQuadrant = Math.floor(pt.x / this.plotIncrementWidth)
                     let yGridQuadrant = Math.floor(pt.y / this.plotIncrementHeight)
 
-                    rectWidth = this.plotIncrementWidth + 0.1
+                    rectWidth = this.plotIncrementWidth + 0.5
                     rectHeight = this.plotIncrementHeight + 0.5
 
                     xVal = xGridQuadrant * this.plotIncrementWidth
@@ -241,6 +259,7 @@ export function farmAPI(_els, _setup) {
                             this.colorCounter[this.colorDictionary[this.plotArray[index][jIndex][0]]]++
                         }
                     }
+                    
                 }
                 else {//working with tens
                     let GridQuadrant = Math.floor(pt.y / this.plotIncrementWidth)
@@ -268,15 +287,88 @@ export function farmAPI(_els, _setup) {
                     }
                 }
 
-                gsap.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: rectWidth, height: 0, fill: this.flowerColor })
-                this.gsvg.getElementById("fill").appendChild(rect)
-                gsap.to(rect, { height: rectHeight, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } })
+                if (rectID.startsWith("tens")) {
+
+                    pt.x = xVal - largeCombineBBox.width
+                    pt.y = yVal + 5
+                    //console.log("c", pt)
+                    let newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
+                    newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
+                    //console.log("c2", newPt)
+                
+                    this.TL.set(this.largeCombine, {x: newPt.x, y: newPt.y})
+                    //console.log(this.largeCombine.getBoundingClientRect())
+                    
+                    this.TL.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: 0, height: rectHeight, fill: this.flowerColor })
+                    this.gsvg.getElementById("fill").appendChild(rect)
+
+                    pt.x += rectWidth
+                    newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
+                    newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
+
+                    this.TL.to(this.largeCombine, {x: newPt.x, y: newPt.y, duration: 1.5})
+                    this.TL.to(rect, { width: rectWidth, duration: 1.5, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
+                }
+                else if (rectID.startsWith("hundreds")){
+                    gsap.set(this.largeCombine, {scaleX: -1})
+                    
+                    pt.x = xVal + 5
+                    pt.y = yVal - largeCombineBBox.width
+                    //console.log("c", pt)
+                    let newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
+                    newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
+                    //console.log("c2", newPt)
+                
+                    this.TL.set(this.largeCombine, {x: newPt.x, y: newPt.y})
+                    //console.log(this.largeCombine.getBoundingClientRect())
+
+                    this.TL.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: rectWidth, height: 0, fill: this.flowerColor })
+                    this.gsvg.getElementById("fill").appendChild(rect)
+
+                    pt.y += rectHeight
+                    newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
+                    newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
+
+                    this.TL.to(this.largeCombine, {x: newPt.x, y: newPt.y, duration: 1})
+                    this.TL.to(rect, { height: rectHeight, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
+                }
+                else {
+                    //var temp={val:0}
+                    
+                    pt.x = xVal - smallCombineBBox.width/2
+                    pt.y = yVal - smallCombineBBox.height/2
+                    //console.log(this.smallCombine.getBBox())
+                    //console.log("c point reset", pt)
+                    let newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
+                    newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
+                    //console.log("c point after transform", newPt)
+                
+                    this.TL.set(this.smallCombine, {x: newPt.x, y: newPt.y})
+                    //console.log(this.smallCombine.getBoundingClientRect())
+
+                    this.TL.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: rectWidth, height: 0, fill: this.flowerColor })
+                    this.gsvg.getElementById("fill").appendChild(rect)
+
+                    pt.y += rectHeight
+                    newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
+                    newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
+
+                    this.TL.to(this.smallCombine, {x: newPt.x, y: newPt.y, duration: 1})
+                    this.TL.to(rect, { height: rectHeight, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
+                    //gsap.to(temp, {val: 100, onUpdate: function() {console.log(temp.val)}})
+
+                }
             }
 
 
-            console.log("i = " + i, "j = " + j)
-            console.log("filled: ", this.colorCounter)
-            console.log(this.plotArray)
+            //console.log("i = " + i, "j = " + j)
+            //console.log("filled: ", this.colorCounter)
+            //console.log(this.plotArray)
+        }
+
+        resetCombine(){
+            gsap.set(self.largeCombine, {x: 0, y:0, scaleX:1})
+            gsap.set(self.smallCombine, {x: 50, y:0, scaleX:1})
         }
 
         removeElement(arr, element) {// can optimize more, place i,j,type as attributes and perform the respective for loops
@@ -369,6 +461,9 @@ export function farmAPI(_els, _setup) {
             //fill-box allows rotation about center
             gsap.set(this.farmGroup, { transformOrigin: "center", transformBox: "fill-box", rotate: 45, skewX: 345, skewY: 345 })
             gsap.set(this.farmGroup, { x: 100, y: 100 })
+
+            //console.log(this.combines.getBBox(), this.combines.getBoundingClientRect())
+            gsap.set(this.combines, {x: 100, y: 100})
 
             this.farmGroup.addEventListener("pointerdown", e => { this.hitTest(e) })
 

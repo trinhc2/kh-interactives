@@ -21,3 +21,7 @@ svg {
 .upperRenderEl {
     pointer-events: none;
 }
+
+#combines {
+    pointer-events: none;
+}
