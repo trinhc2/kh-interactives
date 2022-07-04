@@ -204,12 +204,23 @@ export function farmAPI(_els, _setup) {
             rectID = `thousands${i}-${j}`
 
             if (this.plotArray[i][j]) {
-                if (this.plotArray[i][j][1].id.startsWith("tens")){
-                    gsap.to(this.plotArray[i][j][1], { width: 0, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray, this.plotArray[i][j][1]] })
+                if (this.TL && this.TL.isActive()) {
+                    if (this.plotArray[i][j][1].id.startsWith("tens")){
+                        this.TL.to(this.plotArray[i][j][1], { width: 0, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray, this.plotArray[i][j][1]] })
+                    }
+                    else {
+                        this.TL.to(this.plotArray[i][j][1], { height: 0, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray, this.plotArray[i][j][1]] })
+                    }     
                 }
                 else {
-                    gsap.to(this.plotArray[i][j][1], { height: 0, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray, this.plotArray[i][j][1]] })
+                    if (this.plotArray[i][j][1].id.startsWith("tens")){
+                        gsap.to(this.plotArray[i][j][1], { width: 0, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray, this.plotArray[i][j][1]] })
+                    }
+                    else {
+                        gsap.to(this.plotArray[i][j][1], { height: 0, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray, this.plotArray[i][j][1]] })
+                    }
                 }
+
             }
             else {
                 if (this.isViewingThousands) {
@@ -288,7 +299,7 @@ export function farmAPI(_els, _setup) {
                 }
 
                 if (rectID.startsWith("tens")) {
-
+                    this.TL.set(this.largeCombine, {scaleX: 1})
                     pt.x = xVal - largeCombineBBox.width
                     pt.y = yVal + 5
                     //console.log("c", pt)
@@ -310,7 +321,7 @@ export function farmAPI(_els, _setup) {
                     this.TL.to(rect, { width: rectWidth, duration: 1.5, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
                 }
                 else if (rectID.startsWith("hundreds")){
-                    gsap.set(this.largeCombine, {scaleX: -1})
+                    this.TL.set(this.largeCombine, {scaleX: -1})
                     
                     pt.x = xVal + 5
                     pt.y = yVal - largeCombineBBox.width
@@ -367,8 +378,8 @@ export function farmAPI(_els, _setup) {
         }
 
         resetCombine(){
-            gsap.set(self.largeCombine, {x: 0, y:0, scaleX:1})
-            gsap.set(self.smallCombine, {x: 50, y:0, scaleX:1})
+            gsap.set(self.largeCombine, {x: 0, y:0, scaleX: 1})
+            gsap.set(self.smallCombine, {x: 50, y:0})
         }
 
         removeElement(arr, element) {// can optimize more, place i,j,type as attributes and perform the respective for loops
