@@ -31,6 +31,7 @@ export function farmAPI(_els, _setup) {
         farmGroup: SVGSVGElement
         combines: SVGSVGElement
         largeCombine: SVGSVGElement
+        largeCombineText: SVGSVGElement
         smallCombine: SVGSVGElement
         isViewingThousands = true;
         isViewingHundreds = true
@@ -50,6 +51,10 @@ export function farmAPI(_els, _setup) {
         zoomIncrement = 75
         svgDefaultWidthHeight = 500
         TL = gsap.timeline({onComplete: this.resetCombine})
+        harvested = 0
+        harvestDuration = 5
+        lastHarvestedIndex:number
+        harvestTotal: SVGSVGElement
 
         constructor(els, setup) {
             self = this
@@ -65,6 +70,7 @@ export function farmAPI(_els, _setup) {
             this.farmGroup = this.gsvg.getElementById("farmGroup") as SVGSVGElement
             this.combines = this.gsvg.getElementById("combines") as SVGSVGElement
             this.largeCombine = this.gsvg.getElementById("largeCombine") as SVGSVGElement
+            this.largeCombineText = this.gsvg.getElementById("largeCombineText") as SVGSVGElement
             this.smallCombine = this.gsvg.getElementById("smallCombine") as SVGSVGElement
             this.zoom = this.gsvgu.getElementById("zoom") as HTMLElement
             this.plant = this.gsvgu.getElementById("plant") as HTMLElement
@@ -73,6 +79,7 @@ export function farmAPI(_els, _setup) {
             this.previousState = this.plant
             this.colorDictionary = { "rgb(255, 0, 0)": "red", "rgb(128, 0, 128)": "purple", "rgb(0, 0, 255)": "blue" }
             this.colorCounter = { "red": 0, "purple": 0, "blue": 0 }
+            this.harvestTotal = this.gsvg.getElementById("harvestTotal") as SVGSVGElement
 
 
 
@@ -167,13 +174,10 @@ export function farmAPI(_els, _setup) {
             var pt = this.gsvg.createSVGPoint()
             pt.x = e.clientX
             pt.y = e.clientY
-            //console.log("a", pt, this.farmGroup.getScreenCTM(), this.largeCombine.getScreenCTM())
             pt = pt.matrixTransform(this.farmGroup.getScreenCTM().inverse())
 
             var largeCombineBBox = this.largeCombine.getBBox()
             var smallCombineBBox = this.smallCombine.getBBox()
-            //console.log("bb", largeCombineBBox)
-            //console.log(pt)
 
             //checks bounds so that rects cannot be placed outside of plot
             if (pt.x < 0) {
@@ -198,13 +202,28 @@ export function farmAPI(_els, _setup) {
             let yGridQuadrant = Math.floor(pt.y / innerGridIncrementY)
             let xGridQuadrant = Math.floor(pt.x / innerGridIncrementX)
 
-            i = Math.floor(pt.y / innerGridIncrementY);
-            j = Math.floor(pt.x / innerGridIncrementX)
+            i = 19 - Math.floor(pt.y / innerGridIncrementY);
+            j = 49 - Math.floor(pt.x / innerGridIncrementX)
 
             rectID = `thousands${i}-${j}`
 
             //if element exists where clicking, remove it
             if (this.plotArray[i][j]) {
+                pt.x = this.setup.plotWidth - (this.outerLineStrokeWidth) + largeCombineBBox.width 
+                pt.y = (Math.floor((19 - i) / 2) * innerGridIncrementY) * 2 + 20
+
+                let newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
+                let x1 =newPt.x
+                newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
+                gsap.set(this.largeCombineText, {x: newPt.x, y: newPt.y})
+
+                pt.x -= this.setup.plotWidth - (this.outerLineStrokeWidth)
+                newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
+                let x2 = newPt.x
+                newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
+
+                gsap.to(this.largeCombineText, {x: newPt.x, y: newPt.y, duration: self.harvestDuration, onUpdate: self.handleHarvest, onUpdateParams: [x1, (x2-x1) / 49, Math.floor(i/2)], ease:"linear"})
+                /*
                 if (this.TL && this.TL.isActive()) {
                     if (this.plotArray[i][j][1].id.startsWith("tens")){
                         this.TL.to(this.plotArray[i][j][1], { width: 0, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray, this.plotArray[i][j][1]] })
@@ -221,6 +240,7 @@ export function farmAPI(_els, _setup) {
                         gsap.to(this.plotArray[i][j][1], { height: 0, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray, this.plotArray[i][j][1]] })
                     }
                 }
+                */
 
             }
             else {
@@ -256,8 +276,8 @@ export function farmAPI(_els, _setup) {
                     xVal = xGridQuadrant * this.plotIncrementWidth
                     yVal = yGridQuadrant * this.plotIncrementHeight
 
-                    i = Math.floor(pt.y / this.plotIncrementWidth)
-                    j = Math.floor(pt.x / this.plotIncrementHeight)
+                    i = 9 - Math.floor(pt.y / this.plotIncrementWidth)
+                    j = 9 -Math.floor(pt.x / this.plotIncrementHeight)
 
                     rectID = `hundreds${i}-${j}`
 
@@ -276,13 +296,13 @@ export function farmAPI(_els, _setup) {
                 else {//working with tens
                     let GridQuadrant = Math.floor(pt.y / this.plotIncrementWidth)
 
-                    rectWidth = this.setup.plotHeight - (this.outerLineStrokeWidth)
+                    rectWidth = this.setup.plotWidth - (this.outerLineStrokeWidth)
                     rectHeight = (this.plotIncrementWidth - this.outerLineStrokeWidth);
 
                     yVal = GridQuadrant * this.plotIncrementWidth + this.outerLineStrokeWidth / 2
                     xVal = this.outerLineStrokeWidth / 2
 
-                    i = GridQuadrant
+                    i = 9 - GridQuadrant
                     j = 0
 
                     rectID = `tens${i}-${j}`
@@ -300,6 +320,7 @@ export function farmAPI(_els, _setup) {
                 }
 
                 if (rectID.startsWith("tens")) {
+                    /*
                     this.TL.set(this.largeCombine, {scaleX: 1})
                     pt.x = xVal - largeCombineBBox.width
                     pt.y = yVal + 5
@@ -310,18 +331,22 @@ export function farmAPI(_els, _setup) {
                 
                     this.TL.set(this.largeCombine, {x: newPt.x, y: newPt.y})
                     //console.log(this.largeCombine.getBoundingClientRect())
+                    */
                     
-                    this.TL.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: 0, height: rectHeight, fill: this.flowerColor })
+                    gsap.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: 0, height: rectHeight, fill: this.flowerColor })
                     this.gsvg.getElementById("fill").appendChild(rect)
 
+                    /*
                     pt.x += rectWidth
                     newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
                     newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
 
                     this.TL.to(this.largeCombine, {x: newPt.x, y: newPt.y, duration: 1.5, ease:"linear"})
-                    this.TL.to(rect, { width: rectWidth, duration: 1.5, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
+                    */
+                    gsap.to(rect, { width: rectWidth, duration: 1.5, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } })
                 }
                 else if (rectID.startsWith("hundreds")){
+                    /*
                     this.TL.set(this.largeCombine, {scaleX: -1})
                     
                     pt.x = xVal + 5
@@ -333,19 +358,20 @@ export function farmAPI(_els, _setup) {
                 
                     this.TL.set(this.largeCombine, {x: newPt.x, y: newPt.y})
                     //console.log(this.largeCombine.getBoundingClientRect())
-
-                    this.TL.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: rectWidth, height: 0, fill: this.flowerColor })
+                    */
+                    gsap.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: rectWidth, height: 0, fill: this.flowerColor })
                     this.gsvg.getElementById("fill").appendChild(rect)
-
+                    /*
                     pt.y += rectHeight
                     newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
                     newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
 
                     //this.TL.to(this.largeCombine, {x: newPt.x, y: newPt.y, duration: 1})
-                    this.TL.to(rect, { height: rectHeight, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
+                    */
+                    gsap.to(rect, { height: rectHeight, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } })
                 }
                 else {
-                    //var temp={val:0}
+                    /*
                     
                     pt.x = xVal - smallCombineBBox.width/2
                     pt.y = yVal - smallCombineBBox.height/2
@@ -357,17 +383,18 @@ export function farmAPI(_els, _setup) {
                 
                     this.TL.set(this.smallCombine, {x: newPt.x, y: newPt.y})
                     //console.log(this.smallCombine.getBoundingClientRect())
-
-                    this.TL.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: rectWidth, height: 0, fill: this.flowerColor })
+                    */
+                    gsap.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: rectWidth, height: 0, fill: this.flowerColor })
                     this.gsvg.getElementById("fill").appendChild(rect)
 
+                    /*
                     pt.y += rectHeight
                     newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
                     newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
 
                     this.TL.to(this.smallCombine, {x: newPt.x, y: newPt.y, duration: 1})
-                    this.TL.to(rect, { height: rectHeight, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
-                    //gsap.to(temp, {val: 100, onUpdate: function() {console.log(temp.val)}})
+                    */
+                    gsap.to(rect, { height: rectHeight, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } })
 
                 }
             }
@@ -375,24 +402,81 @@ export function farmAPI(_els, _setup) {
 
             //console.log("i = " + i, "j = " + j)
             //console.log("filled: ", this.colorCounter)
-            //console.log(this.plotArray)
+            console.log(this.plotArray)
+        }
+
+        handleHarvest(startingX, increment, i){
+            var dur;
+            var add = 1
+            let currentX = self.largeCombine.getBoundingClientRect().x
+            let j = Math.round((currentX - startingX) / increment)
+
+            if (j != self.lastHarvestedIndex) {
+                if (self.plotArray[i*2][j]){
+                    if (self.plotArray[i*2][j][1].id.startsWith("thousands")){
+                        dur = self.harvestDuration / 10 / 5
+                    }
+                    else if (self.plotArray[i*2][j][1].id.startsWith("hundreds")){
+                        dur = self.harvestDuration / 10
+                        add = 2
+                    }
+                    else {
+                        dur = self.harvestDuration
+                        add = 2
+                    }
+                    self.harvested += add
+                    self.TL.to(self.plotArray[i*2][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i*2][j][1], i*2, j], ease:"linear"})
+                }
+                if (self.plotArray[i*2+1][j]){
+                    if (self.plotArray[i*2+1][j][1].id.startsWith("thousands")){
+                        dur = self.harvestDuration / 10 / 5
+                        self.harvested += add
+                        gsap.to(self.plotArray[i*2+1][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i*2+1][j][1], i*2+1, j], ease:"linear"})
+                    }
+                }
+                self.harvestTotal.textContent = String(self.harvested)
+                gsap.set(self.harvestTotal, { x:- self.harvestTotal.getBBox().width/2})
+                self.lastHarvestedIndex = j
+            }
+        
         }
 
         resetCombine(){
-            //gsap.set(self.largeCombine, {x: 0, y:0, scaleX: 1})
+            gsap.set(self.largeCombine, {x: 0, y:0, scaleX: 1})
             gsap.set(self.smallCombine, {x: 50, y:0})
         }
 
-        removeElement(arr, element) {// can optimize more, place i,j,type as attributes and perform the respective for loops
-            for (let i = 0; i < arr.length; i++) {
-                for (let j = 0; j < arr[0].length; j++) {
-                    if (arr[i][j] != null && arr[i][j][1] == element) {
-                        self.colorCounter[self.colorDictionary[arr[i][j][0]]]--
-                        arr[i][j] = null
+        removeElement(element, i, j) {// can optimize more, place i,j,type as attributes and perform the respective for loops
+            console.log("call", self.TL.isActive(), i, j)
+            if (element.id.startsWith("thousands")){
+                self.colorCounter[self.colorDictionary[self.plotArray[i][j][0]]]--
+                self.plotArray[i][j] = null
+            }
+            else if (element.id.startsWith("hundreds")){
+                for (let index = i; index < i + 2; index++) {
+                    for (let jIndex = j; jIndex < j + 5; jIndex++) {
+                        if (self.plotArray[index][jIndex]) {
+                            self.colorCounter[self.colorDictionary[self.plotArray[index][jIndex][0]]]--
+                            self.plotArray[index][jIndex] = null
+
+                        }
                     }
                 }
+                self.TL.clear() //prevents function from being called more than once in handleHarvest
+            }
+            else {
+                for (let index = i; index < i + 2; index++) {
+                    for (let jIndex = 0; jIndex < 50; jIndex++) {
+                        if (self.plotArray[index][jIndex]) {
+                            self.colorCounter[self.colorDictionary[self.plotArray[index][jIndex][0]]]--
+                            self.plotArray[index][jIndex] = null
+                        }
+                    }
+                }
+                self.TL.clear() //prevents function from being called more than once in handleHarvest
             }
             element.remove()
+
         }
 
         handleZoomIn(){
@@ -471,12 +555,12 @@ export function farmAPI(_els, _setup) {
             this.plant.style.fill = "#ffffff"
 
             //fill-box allows rotation about center
-            gsap.set(this.farmGroup, { transformOrigin: "center", transformBox: "fill-box", rotate: 45, skewX: 345, skewY: 345 })
+            gsap.set(this.farmGroup, { transformOrigin: "center", transformBox: "fill-box", rotate: 45, skewX: 165, skewY: 165 })
             gsap.set(this.farmGroup, { x: 100, y: 100 })
 
-            //console.log(this.combines.getBBox(), this.combines.getBoundingClientRect())
             gsap.set(this.combines, {x: 100, y: 100})
 
+            gsap.set(this.harvestTotal, { x:- this.harvestTotal.getBBox().width/2})
             this.farmGroup.addEventListener("pointerdown", e => { this.hitTest(e) })
 
             this.gsvgu.getElementById("grid").addEventListener("pointerdown", e => this.handleGridToggle())
