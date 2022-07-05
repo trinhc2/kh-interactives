@@ -1,4 +1,3 @@
-import { Linear } from "gsap"
 import { gsap } from "gsap/all"
 
 export interface farmSetup {
@@ -319,7 +318,7 @@ export function farmAPI(_els, _setup) {
                     newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
                     newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
 
-                    this.TL.to(this.largeCombine, {x: newPt.x, y: newPt.y, duration: 1.5, ease:Linear.easeNone})
+                    this.TL.to(this.largeCombine, {x: newPt.x, y: newPt.y, duration: 1.5, ease:"linear"})
                     this.TL.to(rect, { width: rectWidth, duration: 1.5, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
                 }
                 else if (rectID.startsWith("hundreds")){
