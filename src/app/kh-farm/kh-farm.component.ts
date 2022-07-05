@@ -26,10 +26,10 @@ export class KhFarmComponent implements AfterViewInit {
   private plotHeight: number = 250
 
   @Input()
-  private plotColor: string = "#fff2cc"
+  private plotColor: string = "rgb(140, 254, 140)"
 
   @Input()
-  private lineColor: string = "#898989"
+  private lineColor: string = "rgb(52, 128, 104)"
 
   ngAfterViewInit(): void {
 

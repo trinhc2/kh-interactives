@@ -1,3 +1,4 @@
+import { Linear } from "gsap"
 import { gsap } from "gsap/all"
 
 export interface farmSetup {
@@ -203,6 +204,7 @@ export function farmAPI(_els, _setup) {
 
             rectID = `thousands${i}-${j}`
 
+            //if element exists where clicking, remove it
             if (this.plotArray[i][j]) {
                 if (this.TL && this.TL.isActive()) {
                     if (this.plotArray[i][j][1].id.startsWith("tens")){
@@ -317,7 +319,7 @@ export function farmAPI(_els, _setup) {
                     newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
                     newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
 
-                    this.TL.to(this.largeCombine, {x: newPt.x, y: newPt.y, duration: 1.5})
+                    this.TL.to(this.largeCombine, {x: newPt.x, y: newPt.y, duration: 1.5, ease:Linear.easeNone})
                     this.TL.to(rect, { width: rectWidth, duration: 1.5, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
                 }
                 else if (rectID.startsWith("hundreds")){
@@ -340,7 +342,7 @@ export function farmAPI(_els, _setup) {
                     newPt = pt.matrixTransform(this.farmGroup.getScreenCTM())
                     newPt = newPt.matrixTransform(this.combines.getScreenCTM().inverse())
 
-                    this.TL.to(this.largeCombine, {x: newPt.x, y: newPt.y, duration: 1})
+                    //this.TL.to(this.largeCombine, {x: newPt.x, y: newPt.y, duration: 1})
                     this.TL.to(rect, { height: rectHeight, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
                 }
                 else {
@@ -378,7 +380,7 @@ export function farmAPI(_els, _setup) {
         }
 
         resetCombine(){
-            gsap.set(self.largeCombine, {x: 0, y:0, scaleX: 1})
+            //gsap.set(self.largeCombine, {x: 0, y:0, scaleX: 1})
             gsap.set(self.smallCombine, {x: 50, y:0})
         }
 
@@ -466,7 +468,7 @@ export function farmAPI(_els, _setup) {
 
             this.generateLines()
 
-            gsap.set(this.gsvg, { backgroundColor: "rgb(147,196,125)" })
+            gsap.set(this.gsvg, { backgroundColor: "rgb(33, 192, 96)" })
             this.plant.style.fill = "#ffffff"
 
             //fill-box allows rotation about center
