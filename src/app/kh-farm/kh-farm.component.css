@@ -22,10 +22,6 @@ svg {
     pointer-events: none;
 }
 
-#combines {
-    pointer-events: none;
-}
-
 #harvestTotal {
     user-select: none;
 }
