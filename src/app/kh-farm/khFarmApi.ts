@@ -354,6 +354,7 @@ export function farmAPI(_els, _setup) {
 
             let baseViewbox = self.gsvg.viewBox["baseVal"]
             var dur;
+            let del = 0.1
             var add = 0.001
             let currentX = combine.getBoundingClientRect().x
             let j = Math.round((currentX - startingX) / increment)
@@ -364,6 +365,7 @@ export function farmAPI(_els, _setup) {
                     if (self.plotArray[i][j]) {
                         if (self.plotArray[i][j][1].id.startsWith("thousands")) {
                             dur = self.harvestDuration / 10 / 5
+                            del = 0.06
                         }
                         else if (self.plotArray[i][j][1].id.startsWith("hundreds")) {
                             dur = self.harvestDuration / 10
@@ -374,14 +376,14 @@ export function farmAPI(_els, _setup) {
                             add = 0.002
                         }
                         self.harvested += add
-                        self.TL.to(self.plotArray[i][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i][j][1], i, j], ease: "linear" })
+                        self.TL.to(self.plotArray[i][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i][j][1], i, j], ease: "linear", delay: del})
                     }
                     if (self.plotArray[i + 1][j]) {
                         if (self.plotArray[i + 1][j][1].id.startsWith("thousands")) {
                             console.log("hit", i, j)
                             dur = self.harvestDuration / 10 / 5
                             self.harvested += add
-                            gsap.to(self.plotArray[i + 1][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i + 1][j][1], i + 1, j], ease: "linear" })
+                            gsap.to(self.plotArray[i + 1][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i + 1][j][1], i + 1, j], ease: "linear", delay:0.1})
                         }
                     }
                     harvestTotal.textContent = String(parseFloat(self.harvested.toFixed(3)))

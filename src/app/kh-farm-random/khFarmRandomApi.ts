@@ -353,7 +353,8 @@ export function farmAPI(_els, _setup) {
             //const {animVal} = tween._targets[0].scale
 
             let baseViewbox = self.gsvg.viewBox["baseVal"]
-            var dur;
+            var dur
+            let del = 0.1
             var add = 0.001
             let currentX = combine.getBoundingClientRect().x
             let j = Math.round((currentX - startingX) / increment)
@@ -364,9 +365,9 @@ export function farmAPI(_els, _setup) {
                     //console.log(i, j, currentX, currentX + baseViewbox["x"], startingX + baseViewbox["x"], baseViewbox["x"])
                     //console.log(tween, tween._targets[0].scale, currentX)
                     if (self.plotArray[i][j]) {
-                        console.log("hit", i, j)
                         if (self.plotArray[i][j][1].id.startsWith("thousands")) {
                             dur = self.harvestDuration / 10 / 5
+                            del = 0.06
                         }
                         else if (self.plotArray[i][j][1].id.startsWith("hundreds")) {
                             dur = self.harvestDuration / 10
@@ -377,14 +378,15 @@ export function farmAPI(_els, _setup) {
                             add = 0.002
                         }
                         self.harvested += add
-                        self.TL.to(self.plotArray[i][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i][j][1], i, j], ease: "linear" })
+                        //attached to TL instead of gsap because callbacks will keep on happening instead ofb eing queued in the tL
+                        self.TL.to(self.plotArray[i][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i][j][1], i, j], ease: "linear", delay: del})
                     }
                     if (self.plotArray[i + 1][j]) {
                         if (self.plotArray[i + 1][j][1].id.startsWith("thousands")) {
                             console.log("hit", i, j)
                             dur = self.harvestDuration / 10 / 5
                             self.harvested += add
-                            gsap.to(self.plotArray[i + 1][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i + 1][j][1], i + 1, j], ease: "linear" })
+                            gsap.to(self.plotArray[i + 1][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i + 1][j][1], i + 1, j], ease: "linear", delay: 0.1 })
                         }
                     }
                     harvestTotal.textContent = String(parseFloat(self.harvested.toFixed(3)))
@@ -466,7 +468,7 @@ export function farmAPI(_els, _setup) {
                     gsap.to(self.smallCombineText, { x: smallpt.x, y: smallpt.y, duration: self.harvestDuration + 1, ease: "linear", onUpdate: self.handleHarvest, onUpdateParams: [smallx1, (smallx2 - smallx1) / 49, smalli, self.smallCombine, self.harvestTotalSmall] })
                 }
                 else {
-                    console.log("yellow combine is not snapped")
+                    //console.log("yellow combine is not snapped")
                 }
                 self.animationPlaying = true;
             }
@@ -474,7 +476,6 @@ export function farmAPI(_els, _setup) {
         }
 
         removeElement(element, i, j) {// can optimize more, place i,j,type as attributes and perform the respective for loops
-            console.log("call", self.TL.isActive(), i, j)
             if (element.id.startsWith("thousands")) {
                 self.colorCounter[self.colorDictionary[self.plotArray[i][j][0]]]--
                 self.plotArray[i][j] = null
@@ -576,6 +577,86 @@ export function farmAPI(_els, _setup) {
             this.previousState = element
         }
 
+        generateRandomIndices() {
+            let arr = []
+            for (let i = 0; i < self.plotArray.length; i++) {
+                for (let j = 0; j < self.plotArray[0].length; j++) {
+                    //console.log(i,j)
+                    arr.push(i);
+                    arr.push(j);
+                }
+            }
+
+            let n = Math.floor(Math.random() * (700 - 300 + 1)) + 300
+
+            let els = []
+            let arrCopy = [...arr]
+            for (let i = 0; i < n; i++) {
+                let l = arrCopy.length;
+                let int = Math.round(Math.random() * l)
+                var temp;
+                if (int % 2 == 0) {
+                    if (int == l){//if int is the last element 
+                        temp = [arrCopy[int-2], arrCopy[int-1]]
+                        arrCopy.splice(int-2, 2)
+                        els.push(temp)
+                        
+                    }
+                    else {
+                        temp = [arrCopy[int], arrCopy[int+1]]
+                        arrCopy.splice(int, 2)
+                        els.push(temp)
+                    }
+                }
+                else {
+                    temp = [arrCopy[int-1], arrCopy[int]]
+                    arrCopy.splice(int-1, 2)
+                    els.push(temp)
+                }
+                
+            }
+            return els
+        }
+
+        generateFlowerBeds() {
+            let indices = this.generateRandomIndices()
+            //console.log(indices)
+            //let indices = [[0,0],[1,1],[0,2],[1,3],[0,4],[0,5],[1,6],[0,7],[1,8],[0,9]]
+
+            let innerGridIncrementX = this.plotIncrementWidth / 5;
+            let innerGridIncrementY = this.plotIncrementHeight / 2
+
+            //current grid is rotated for plant/harvest animation, (0,0 is actually 19,49)
+            for (let index = 0; index < indices.length; index++) {
+                let rect = document.createElementNS(this.svgns, "rect")
+
+                let rectWidth = this.plotIncrementWidth / 5 + 0.2 //0.2 to cover edges better
+                let rectHeight = (this.plotIncrementHeight / 2)
+
+                let i = indices[index][0]
+                let j = indices[index][1]
+                let rectID = `thousands${i}-${j}`
+                //console.log(rectID, i, j, index)
+
+                let xVal = (49 - j) * innerGridIncrementX + (0.3 - (((49 - j) % 5) * 0.2))
+                let yVal = (19 - i) * innerGridIncrementY
+                if ((j % 5) == 0) {
+                    rectWidth += 0.5
+                    xVal += 0.25
+                }
+                if ((j % 5) == 4) {
+                    rectWidth += 0.5
+                    xVal -=0.25
+                }
+                this.plotArray[i][j] = [this.flowerColor, rect]
+                this.colorCounter[this.colorDictionary[this.plotArray[i][j][0]]]++
+                gsap.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: rectWidth, height: rectHeight, fill: this.flowerColor })
+                this.gsvg.getElementById("fill").appendChild(rect)
+            }
+
+            console.log(this.plotArray)
+        }
+
         init() {
             gsap.registerPlugin(Draggable)
 
@@ -591,6 +672,8 @@ export function farmAPI(_els, _setup) {
             //generating grid lines
             this.generateLines()
 
+            this.generateFlowerBeds()
+
             //setting colors
             gsap.set(this.gsvg, { backgroundColor: "rgb(33, 192, 96)" })
             this.plant.style.fill = "#ffffff"
@@ -600,8 +683,8 @@ export function farmAPI(_els, _setup) {
             gsap.set(this.farmGroup, { x: 125, y: 100 })
 
             //combine start pos
-            gsap.set(this.largeCombineText, { attr:{count: 0}, x: 50, y: 60 })
-            gsap.set(this.smallCombineText, { attr:{count: 0}, x: 400, y: 80 , display: "none"})
+            gsap.set(this.largeCombineText, { attr: { count: 0 }, x: 50, y: 60 })
+            gsap.set(this.smallCombineText, { attr: { count: 0 }, x: 400, y: 80, display: "none" })
 
             //harvest number init
             this.harvestTotalLarge.textContent = "0"
