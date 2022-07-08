@@ -7,6 +7,7 @@ import { KhFarmComponent } from './kh-farm/kh-farm.component';
 import { KhSliderInputComponent } from './kh-slider-input/kh-slider-input.component';
 import { MoonfactoryComponent } from './moonfactory/moonfactory.component';
 import { PlanetfactoryComponent } from './planetfactory/planetfactory.component';
+import { KhFarmRandomComponent } from './kh-farm-random/kh-farm-random.component';
 
 
 const routes: Routes = [
@@ -16,7 +17,8 @@ const routes: Routes = [
   { path: 'planetFactory', component: PlanetfactoryComponent },
   { path: 'moonFactory', component: MoonfactoryComponent },
   { path: 'decompose', component: KhDecomposeNumberComponent },
-  { path: 'draw', component: ContainerComponent }
+  { path: 'draw', component: ContainerComponent },
+  { path: 'farmrand', component: KhFarmRandomComponent}
 ]
 
 @NgModule({

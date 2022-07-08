@@ -361,7 +361,10 @@ export function farmAPI(_els, _setup) {
             //let i = index 
             if (j < 50) {
                 if (j != self.lastHarvestedIndex) {
+                    //console.log(i, j, currentX, currentX + baseViewbox["x"], startingX + baseViewbox["x"], baseViewbox["x"])
+                    //console.log(tween, tween._targets[0].scale, currentX)
                     if (self.plotArray[i][j]) {
+                        console.log("hit", i, j)
                         if (self.plotArray[i][j][1].id.startsWith("thousands")) {
                             dur = self.harvestDuration / 10 / 5
                         }
@@ -597,8 +600,8 @@ export function farmAPI(_els, _setup) {
             gsap.set(this.farmGroup, { x: 125, y: 100 })
 
             //combine start pos
-            gsap.set(this.largeCombineText, { attr: { count: 0 }, x: 50, y: 60 })
-            gsap.set(this.smallCombineText, { attr: { count: 0 }, x: 400, y: 80, display: "none" })
+            gsap.set(this.largeCombineText, { attr:{count: 0}, x: 50, y: 60 })
+            gsap.set(this.smallCombineText, { attr:{count: 0}, x: 400, y: 80 , display: "none"})
 
             //harvest number init
             this.harvestTotalLarge.textContent = "0"
