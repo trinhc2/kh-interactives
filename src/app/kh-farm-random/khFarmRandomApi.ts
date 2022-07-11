@@ -163,6 +163,37 @@ export function farmAPI(_els, _setup) {
             this.isDragging = false;
         }
 
+        removeElement(element, i, j) {// can optimize more, place i,j,type as attributes and perform the respective for loops
+            if (element.id.startsWith("thousands")) {
+                self.colorCounter[self.colorDictionary[self.plotArray[i][j][0]]]--
+                self.plotArray[i][j] = null
+            }
+            else if (element.id.startsWith("hundreds")) {
+                for (let index = Math.floor(i / 2) * 2; index < Math.floor(i / 2) * 2 + 2; index++) {
+                    for (let jIndex = Math.floor(j / 5) * 5; jIndex < Math.floor(j / 5) * 5 + 5; jIndex++) {
+                        if (self.plotArray[index][jIndex]) {
+                            self.colorCounter[self.colorDictionary[self.plotArray[index][jIndex][0]]]--
+                            self.plotArray[index][jIndex] = null
+
+                        }
+                    }
+                }
+                self.TL.clear() //prevents function from being called more than once in handleHarvest
+            }
+            else {
+                for (let index = Math.floor(i / 2) * 2; index < Math.floor(i / 2) * 2 + 2; index++) {
+                    for (let jIndex = 0; jIndex < 50; jIndex++) {
+                        if (self.plotArray[index][jIndex]) {
+                            self.colorCounter[self.colorDictionary[self.plotArray[index][jIndex][0]]]--
+                            self.plotArray[index][jIndex] = null
+                        }
+                    }
+                }
+                self.TL.clear() //prevents function from being called more than once in handleHarvest
+            }
+            self.gsvg.getElementById(element.id).remove()//makes sure to remove all elements with name, spam clicking would sometimes create unreachable element
+        }
+
         plantOrRemoveFlower(e) {
             var xVal;
             var yVal;
@@ -352,38 +383,38 @@ export function farmAPI(_els, _setup) {
             //const tween = this as gsap.Tween;
             //const {animVal} = tween._targets[0].scale
 
-            let baseViewbox = self.gsvg.viewBox["baseVal"]
             var dur
             let del = 0.1
-            var add = 0.001
+            var add = 0.002
             let currentX = combine.getBoundingClientRect().x
             let j = Math.round((currentX - startingX) / increment)
             let i = Math.floor(index * 2 / 2) * 2
+            var timeline = self.TL;
             //let i = index 
+
+            self.largeCombineDraggable[0].disable()
             if (j < 50) {
                 if (j != self.lastHarvestedIndex) {
-                    //console.log(i, j, currentX, currentX + baseViewbox["x"], startingX + baseViewbox["x"], baseViewbox["x"])
-                    //console.log(tween, tween._targets[0].scale, currentX)
                     if (self.plotArray[i][j]) {
                         if (self.plotArray[i][j][1].id.startsWith("thousands")) {
                             dur = self.harvestDuration / 10 / 5
                             del = 0.06
+                            add = 0.001
+                            timeline = gsap
                         }
                         else if (self.plotArray[i][j][1].id.startsWith("hundreds")) {
                             dur = self.harvestDuration / 10
-                            add = 0.002
                         }
                         else {
                             dur = self.harvestDuration
-                            add = 0.002
                         }
                         self.harvested += add
                         //attached to TL instead of gsap because callbacks will keep on happening instead ofb eing queued in the tL
-                        self.TL.to(self.plotArray[i][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i][j][1], i, j], ease: "linear", delay: del})
+                        timeline.to(self.plotArray[i][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i][j][1], i, j], ease: "linear", delay: del})
                     }
                     if (self.plotArray[i + 1][j]) {
                         if (self.plotArray[i + 1][j][1].id.startsWith("thousands")) {
-                            console.log("hit", i, j)
+                            //console.log("hit", i, j)
                             dur = self.harvestDuration / 10 / 5
                             self.harvested += add
                             gsap.to(self.plotArray[i + 1][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i + 1][j][1], i + 1, j], ease: "linear", delay: 0.1 })
@@ -396,6 +427,7 @@ export function farmAPI(_els, _setup) {
             }
             else {
                 self.animationPlaying = false;
+                self.largeCombineDraggable[0].enable()
             }
         }
 
@@ -475,37 +507,6 @@ export function farmAPI(_els, _setup) {
 
         }
 
-        removeElement(element, i, j) {// can optimize more, place i,j,type as attributes and perform the respective for loops
-            if (element.id.startsWith("thousands")) {
-                self.colorCounter[self.colorDictionary[self.plotArray[i][j][0]]]--
-                self.plotArray[i][j] = null
-            }
-            else if (element.id.startsWith("hundreds")) {
-                for (let index = Math.floor(i / 2) * 2; index < Math.floor(i / 2) * 2 + 2; index++) {
-                    for (let jIndex = Math.floor(j / 5) * 5; jIndex < Math.floor(j / 5) * 5 + 5; jIndex++) {
-                        if (self.plotArray[index][jIndex]) {
-                            self.colorCounter[self.colorDictionary[self.plotArray[index][jIndex][0]]]--
-                            self.plotArray[index][jIndex] = null
-
-                        }
-                    }
-                }
-                self.TL.clear() //prevents function from being called more than once in handleHarvest
-            }
-            else {
-                for (let index = Math.floor(i / 2) * 2; index < Math.floor(i / 2) * 2 + 2; index++) {
-                    for (let jIndex = 0; jIndex < 50; jIndex++) {
-                        if (self.plotArray[index][jIndex]) {
-                            self.colorCounter[self.colorDictionary[self.plotArray[index][jIndex][0]]]--
-                            self.plotArray[index][jIndex] = null
-                        }
-                    }
-                }
-                self.TL.clear() //prevents function from being called more than once in handleHarvest
-            }
-            element.remove()
-
-        }
 
         handleZoomIn() {
             if (!this.animationPlaying) {
@@ -572,8 +573,8 @@ export function farmAPI(_els, _setup) {
                 this.smallCombineDraggable[0].disable()
 
             }
-            this.previousState.style.fill = "#000000"
-            element.style.fill = "#ffffff"
+            gsap.utils.toArray("rect", this.previousState)[0].style.fill = "#93c47d"
+            gsap.utils.toArray("rect", element)[0].style.fill = "#c3e7b3"
             this.previousState = element
         }
 
@@ -676,7 +677,7 @@ export function farmAPI(_els, _setup) {
 
             //setting colors
             gsap.set(this.gsvg, { backgroundColor: "rgb(33, 192, 96)" })
-            this.plant.style.fill = "#ffffff"
+            gsap.utils.toArray("rect", this.plant)[0].style.fill = "#c3e7b3"
 
             //fill-box allows rotation about center
             gsap.set(this.farmGroup, { transformOrigin: "center", transformBox: "fill-box", rotate: 45, skewX: 165, skewY: 165 })
