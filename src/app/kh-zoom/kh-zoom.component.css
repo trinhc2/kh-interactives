@@ -1,0 +1,12 @@
+.upperRenderEl, .lowerRenderEl {
+    position: absolute;
+}
+
+.upperRenderEl {
+    pointer-events: none;
+}
+
+#zoomIn, #zoomOut{
+    cursor:pointer;
+    pointer-events: bounding-box;
+}
