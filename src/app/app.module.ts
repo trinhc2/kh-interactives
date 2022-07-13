@@ -15,6 +15,7 @@ import { MoonfactoryComponent } from  "./moonfactory/moonfactory.component"
 import { DrawingInputComponent} from "./drawing-input/drawing-input.component"
 import {MatButtonModule} from '@angular/material/button';
 import { KhFarmRandomComponent } from './kh-farm-random/kh-farm-random.component';
+import { KhZoomComponent } from './kh-zoom/kh-zoom.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { KhFarmRandomComponent } from './kh-farm-random/kh-farm-random.component
     PlanetfactoryComponent,
     MoonfactoryComponent,
     DrawingInputComponent,
-    KhFarmRandomComponent
+    KhFarmRandomComponent,
+    KhZoomComponent
   ],
   imports: [
     BrowserModule,
