@@ -416,7 +416,7 @@ export function farmAPI(_els, _setup) {
                         if (self.plotArray[i + 1][j][1].id.startsWith("thousands")) {
                             //console.log("hit", i, j)
                             dur = self.harvestDuration / 10 / 5
-                            self.harvested += add
+                            self.harvested += 0.001
                             gsap.to(self.plotArray[i + 1][j][1], { width: 0, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i + 1][j][1], i + 1, j], ease: "linear", delay: 0.1 })
                         }
                     }
@@ -472,6 +472,7 @@ export function farmAPI(_els, _setup) {
 
 
                     gsap.to(self.largeCombineText, { x: largept.x, y: largept.y, duration: self.harvestDuration + 0.5, ease: "linear", onUpdate: self.handleHarvest, onUpdateParams: [largex1, (largex2 - largex1) / 49, largei, self.largeCombine, self.harvestTotalLarge] })
+                    self.animationPlaying = true;
                 }
                 else {
                     console.log("orange combine is not snapped")
@@ -502,7 +503,6 @@ export function farmAPI(_els, _setup) {
                 else {
                     //console.log("yellow combine is not snapped")
                 }
-                self.animationPlaying = true;
             }
 
         }
@@ -693,6 +693,8 @@ export function farmAPI(_els, _setup) {
 
             this.harvestTotalSmall.textContent = "0"
             gsap.set(this.harvestTotalSmall, { x: - this.harvestTotalSmall.getBBox().width / 2 })
+
+            console.log(this.gsvg.getBBox(), this.gsvg.getBoundingClientRect())
 
             //calculate snap locations for combine
 
