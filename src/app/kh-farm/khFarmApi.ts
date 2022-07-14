@@ -1,5 +1,5 @@
 import { gsap, Draggable } from "gsap/all"
-import { connectableObservableDescriptor } from "rxjs/internal/observable/ConnectableObservable"
+
 
 export interface farmSetup {
     height: number
@@ -64,6 +64,7 @@ export function farmAPI(_els, _setup) {
         pinkFlowerBed: SVGSVGElement
         purpleFlowerBed: SVGSVGElement
         blueFlowerBed: SVGSVGElement
+        wheat: SVGSVGElement
 
         constructor(els, setup) {
             self = this
@@ -85,13 +86,14 @@ export function farmAPI(_els, _setup) {
             this.move = this.gsvgu.getElementById("move") as HTMLElement
             this.pointerState = this.plant
             this.previousState = this.plant
-            this.colorDictionary = { "rgb(239, 90, 104)": "pink", "rgb(103, 78, 167)": "purple", "rgb(0, 169, 211)": "blue" }
-            this.colorCounter = { "pink": 0, "purple": 0, "blue": 0 }
+            this.colorDictionary = { "rgb(239, 90, 104)": "pink", "rgb(103, 78, 167)": "purple", "rgb(0, 169, 211)": "blue", "rgb(254, 201, 0)": "wheat" }
+            this.colorCounter = { "pink": 0, "purple": 0, "blue": 0, "wheat": 0 }
             this.harvestTotalLarge = this.gsvg.getElementById("harvestTotalLarge") as SVGSVGElement
             this.harvestTotalSmall = this.gsvg.getElementById("harvestTotalSmall") as SVGSVGElement
             this.pinkFlowerBed = this.gsvg.getElementById("pinkFlowerBed") as SVGSVGElement
             this.purpleFlowerBed = this.gsvg.getElementById("purpleFlowerBed") as SVGSVGElement
             this.blueFlowerBed = this.gsvg.getElementById("blueFlowerBed") as SVGSVGElement
+            this.wheat = this.gsvg.getElementById("wheat") as SVGSVGElement
             this.selectedFlower = this.pinkFlowerBed
 
             this.init()
@@ -257,7 +259,7 @@ export function farmAPI(_els, _setup) {
 
                     gsap.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block" })
                     this.gsvg.getElementById("fill").appendChild(flowerBed)
-                    gsap.to(flowerBed, { scaleX: 0.22, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } })
+                    gsap.to(flowerBed, { scaleX: 0.22, duration: 1,})
                 }
 
                 else if (this.isViewingHundreds) {//working with hundreds
@@ -288,8 +290,7 @@ export function farmAPI(_els, _setup) {
                             this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI][plotArrayJ][0]]]++
                             temp.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<+=0.05")
                             this.gsvg.getElementById("fill").appendChild(flowerBed)
-                            temp.to(flowerBed, { scaleX: 0.22, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
-                            //console.log("yup")
+                            temp.to(flowerBed, { scaleX: 0.22, duration: 1 }, "<")
 
 
                             yVal = (index - 1) * (innerGridIncrementY) + (0.8)
@@ -304,8 +305,9 @@ export function farmAPI(_els, _setup) {
                             this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI+1][plotArrayJ][0]]]++
                             temp.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<")
                             this.gsvg.getElementById("fill").appendChild(flowerBed)
-                            temp.to(flowerBed, { scaleX: 0.22, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
+                            temp.to(flowerBed, { scaleX: 0.22, duration: 1}, "<")
                         }
+                        temp.call(function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) })
 
                 }
                 else {//working with tens
@@ -334,7 +336,7 @@ export function farmAPI(_els, _setup) {
                             this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI][plotArrayJ][0]]]++
                             temp.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<+=0.05")
                             this.gsvg.getElementById("fill").appendChild(flowerBed)
-                            temp.to(flowerBed, { scaleX: 0.22, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
+                            temp.to(flowerBed, { scaleX: 0.22, duration: 1 }, "<")
 
                             yVal = (index - 1) * (innerGridIncrementY) + (0.8)
                             rectID = `tens${plotArrayI+1}-${plotArrayJ}`
@@ -348,8 +350,10 @@ export function farmAPI(_els, _setup) {
                             this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI+1][plotArrayJ][0]]]++
                             temp.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<")
                             this.gsvg.getElementById("fill").appendChild(flowerBed)
-                            temp.to(flowerBed, { scaleX: 0.22, duration: 1, onComplete: function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) } }, "<")
+                            temp.to(flowerBed, { scaleX: 0.22, duration: 1 }, "<")
+                            console.log("test")
                         }
+                        temp.call(function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) })
 
                 }
             }
@@ -373,14 +377,15 @@ export function farmAPI(_els, _setup) {
             self.largeCombineDraggable[0].disable()
             if (j < 50) {
                 if (j != self.lastHarvestedIndex) {
+                    console.log(i,j)
                     if (self.plotArray[i][j]) {
-                        //console.log("hit", i, j)
+                        console.log("hit", i, j)
                         self.harvested += add
                         //attached to TL instead of gsap because callbacks will keep on happening instead ofb eing queued in the tL
                         gsap.to(self.plotArray[i][j][1], { scaleX: 0.01, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i][j][1], i, j], ease: "linear", delay: del })
                     }
                     if (self.plotArray[i + 1][j]) {
-                        //console.log("hit", i + 1, j)
+                        console.log("hit", i + 1, j)
                         self.harvested += add
                         gsap.to(self.plotArray[i + 1][j][1], { scaleX: 0.01, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i + 1][j][1], i + 1, j], ease: "linear", delay: del })
                     }
@@ -520,6 +525,7 @@ export function farmAPI(_els, _setup) {
 
         handleColorChange(element) {
             let fillColor = getComputedStyle(element).fill
+            console.log(fillColor)
             this.flowerColor = fillColor;
             (this.gsvgu.getElementById("selectedColor") as SVGSVGElement).style.fill = fillColor;
 
@@ -529,8 +535,11 @@ export function farmAPI(_els, _setup) {
             else if (this.colorDictionary[this.flowerColor] == "purple") {
                 this.selectedFlower = this.purpleFlowerBed
             }
-            else {
+            else  if (this.colorDictionary[this.flowerColor] == "blue") {
                 this.selectedFlower = this.blueFlowerBed
+            }
+            else {
+                this.selectedFlower = this.wheat
             }
         }
 
@@ -542,16 +551,16 @@ export function farmAPI(_els, _setup) {
 
             if (this.pointerState == this.plant) {
                 this.farmGroup.style.cursor = "pointer"
-                this.largeCombineDraggable[0].enable()
-                this.smallCombineDraggable[0].enable()
+                //this.largeCombineDraggable[0].enable()
+                //this.smallCombineDraggable[0].enable()
             }
             else if (this.pointerState == this.move) {
                 this.gsvg.style.touchAction = "pinch-zoom";/*lets pointer events work with mobile. only allowing pinch zoom incase user gets locked out*/
                 this.dragEnabled = true
                 this.gsvg.style.cursor = "move"
                 this.farmGroup.style.cursor = "move"
-                this.largeCombineDraggable[0].disable()
-                this.smallCombineDraggable[0].disable()
+                //this.largeCombineDraggable[0].disable()
+                //this.smallCombineDraggable[0].disable()
 
             }
             gsap.utils.toArray("rect", this.previousState)[0].style.fill = "#93c47d"
@@ -597,6 +606,7 @@ export function farmAPI(_els, _setup) {
             gsap.set(this.pinkFlowerBed, { display: "none" })
             gsap.set(this.purpleFlowerBed, { display: "none" })
             gsap.set(this.blueFlowerBed, { display: "none" })
+            gsap.set(this.wheat, {display: "none"})
             //calculate snap locations for combine
 
             var pt = this.gsvg.createSVGPoint()
@@ -629,6 +639,16 @@ export function farmAPI(_els, _setup) {
                     points: largeCombineSnapPoints,
                     radius: 50
                 },
+                onPress: function () {
+                    if (self.pointerState == self.move) {
+                        self.dragEnabled = false
+                    }
+                },
+                onRelease: function() {
+                    if (self.pointerState == self.move) {
+                        self.dragEnabled = true
+                    }
+                }
             })
 
             this.smallCombineDraggable = Draggable.create(this.smallCombineText, {
