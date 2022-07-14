@@ -44,8 +44,7 @@ export function farmAPI(_els, _setup) {
         move: HTMLElement
         zoomLevel = 0
         plotArray = Array.from(Array(20), () => new Array(50))
-        colorDictionary: any
-        colorCounter: any
+        colorDictionary = { "rgb(239, 90, 104)": "pink", "rgb(103, 78, 167)": "purple", "rgb(0, 169, 211)": "blue", "rgb(254, 201, 0)": "wheat" }
         isDragging = false;
         dragEnabled = false;
         dragStart = { x: 0, y: 0 }
@@ -65,6 +64,7 @@ export function farmAPI(_els, _setup) {
         purpleFlowerBed: SVGSVGElement
         blueFlowerBed: SVGSVGElement
         wheat: SVGSVGElement
+        harvestedElements = []
 
         constructor(els, setup) {
             self = this
@@ -86,8 +86,6 @@ export function farmAPI(_els, _setup) {
             this.move = this.gsvgu.getElementById("move") as HTMLElement
             this.pointerState = this.plant
             this.previousState = this.plant
-            this.colorDictionary = { "rgb(239, 90, 104)": "pink", "rgb(103, 78, 167)": "purple", "rgb(0, 169, 211)": "blue", "rgb(254, 201, 0)": "wheat" }
-            this.colorCounter = { "pink": 0, "purple": 0, "blue": 0, "wheat": 0 }
             this.harvestTotalLarge = this.gsvg.getElementById("harvestTotalLarge") as SVGSVGElement
             this.harvestTotalSmall = this.gsvg.getElementById("harvestTotalSmall") as SVGSVGElement
             this.pinkFlowerBed = this.gsvg.getElementById("pinkFlowerBed") as SVGSVGElement
@@ -216,14 +214,14 @@ export function farmAPI(_els, _setup) {
 
             //if element exists where clicking, remove it
             if (this.plotArray[i][j]) {
-                if (this.plotArray[i][j][1].id.startsWith("thousands")) {
-                    gsap.to(this.plotArray[i][j][1], { scaleX: 0.01, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray[i][j][1], i, j] })
+                if (this.plotArray[i][j].id.startsWith("thousands")) {
+                    gsap.to(this.plotArray[i][j], { scaleX: 0.01, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray[i][j], i, j] })
                 }
-                else if (this.plotArray[i][j][1].id.startsWith("hundreds")) {
+                else if (this.plotArray[i][j].id.startsWith("hundreds")) {
                     for (let index = Math.floor(i / 2) * 2; index < Math.floor(i / 2) * 2 + 2; index++) {
                         for (let jIndex = Math.floor(j / 5) * 5; jIndex < Math.floor(j / 5) * 5 + 5; jIndex++) {
                             if (self.plotArray[index][jIndex]) {
-                                gsap.to(this.plotArray[index][jIndex][1], { scaleX: 0.01, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray[index][jIndex][1], index, jIndex] })
+                                gsap.to(this.plotArray[index][jIndex], { scaleX: 0.01, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray[index][jIndex], index, jIndex] })
 
                             }
                         }
@@ -233,7 +231,7 @@ export function farmAPI(_els, _setup) {
                     for (let index = Math.floor(i / 2) * 2; index < Math.floor(i / 2) * 2 + 2; index++) {
                         for (let jIndex = 0; jIndex < 50; jIndex++) {
                             if (self.plotArray[index][jIndex]) {
-                                gsap.to(this.plotArray[index][jIndex][1], { scaleX: 0.01, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray[index][jIndex][1], index, jIndex] })
+                                gsap.to(this.plotArray[index][jIndex], { scaleX: 0.01, duration: 1, onComplete: this.removeElement, onCompleteParams: [this.plotArray[index][jIndex], index, jIndex] })
                             }
                         }
                     }
@@ -254,8 +252,7 @@ export function farmAPI(_els, _setup) {
                     }
                     let flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
 
-                    this.plotArray[i][j] = [this.flowerColor, flowerBed]
-                    this.colorCounter[this.colorDictionary[this.plotArray[i][j][0]]]++
+                    this.plotArray[i][j] = flowerBed
 
                     gsap.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block" })
                     this.gsvg.getElementById("fill").appendChild(flowerBed)
@@ -275,34 +272,33 @@ export function farmAPI(_els, _setup) {
                             let plotArrayI = 19 - index
                             let plotArrayJ = jIndex - 1
 
-
                             xVal = (50 - jIndex) * (innerGridIncrementX) + (1 - ((50 - jIndex) % 5) * 0.2)
                             yVal = (index) * (innerGridIncrementY) + (0.8)
                             //console.log(19 - index, 49 - jIndex)
                             rectID = `hundreds${plotArrayI}-${plotArrayJ}`
 
                             let flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
+
+                            //handle increment/decrement of color counter
                             if (this.plotArray[plotArrayI][plotArrayJ]) {
-                                this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI][plotArrayJ][0]]]--
-                                existingElementsToBeDeleted.push(this.plotArray[plotArrayI][plotArrayJ][1])
+                                existingElementsToBeDeleted.push(this.plotArray[plotArrayI][plotArrayJ])
                             }
-                            this.plotArray[plotArrayI][plotArrayJ] = [this.flowerColor, flowerBed]
-                            this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI][plotArrayJ][0]]]++
+                            this.plotArray[plotArrayI][plotArrayJ] = flowerBed
+
+                            //animate flower
                             temp.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<+=0.05")
                             this.gsvg.getElementById("fill").appendChild(flowerBed)
                             temp.to(flowerBed, { scaleX: 0.22, duration: 1 }, "<")
 
-
+                            //REPEAT OF ABOVE, CREATES 2 FLOWERS PER ITERATION
                             yVal = (index - 1) * (innerGridIncrementY) + (0.8)
                             rectID = `hundreds${plotArrayI+1}-${plotArrayJ}`
 
                             flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
                             if (this.plotArray[plotArrayI+1][plotArrayJ]) {
-                                this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI+1][plotArrayJ][0]]]--
-                                existingElementsToBeDeleted.push(this.plotArray[plotArrayI+1][plotArrayJ][1])
+                                existingElementsToBeDeleted.push(this.plotArray[plotArrayI+1][plotArrayJ])
                             }
-                            this.plotArray[plotArrayI+1][plotArrayJ] = [this.flowerColor, flowerBed]
-                            this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI+1][plotArrayJ][0]]]++
+                            this.plotArray[plotArrayI+1][plotArrayJ] = flowerBed
                             temp.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<")
                             this.gsvg.getElementById("fill").appendChild(flowerBed)
                             temp.to(flowerBed, { scaleX: 0.22, duration: 1}, "<")
@@ -320,6 +316,7 @@ export function farmAPI(_els, _setup) {
                     let index = 19 - i*2
 
                         for (let jIndex = 50; jIndex > 0; jIndex--) {
+                            //console.log(temp)
                             let plotArrayI = 19 - index
                             let plotArrayJ = jIndex - 1
 
@@ -328,30 +325,32 @@ export function farmAPI(_els, _setup) {
                             rectID = `tens${plotArrayI}-${plotArrayJ}`
 
                             let flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
+
+                            //increment/decrement of color counter
                             if (this.plotArray[plotArrayI][plotArrayJ]) {
-                                this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI][plotArrayJ][0]]]--
-                                existingElementsToBeDeleted.push(this.plotArray[plotArrayI][plotArrayJ][1])
+                                existingElementsToBeDeleted.push(this.plotArray[plotArrayI][plotArrayJ])
                             }
-                            this.plotArray[plotArrayI][plotArrayJ] = [this.flowerColor, flowerBed]
-                            this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI][plotArrayJ][0]]]++
-                            temp.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<+=0.05")
+                            this.plotArray[plotArrayI][plotArrayJ] = flowerBed
+
+                            //animate flower
+                            temp.set(flowerBed, { attr: { id: rectID, i: plotArrayI, j:plotArrayJ}, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<+=0.05")
                             this.gsvg.getElementById("fill").appendChild(flowerBed)
                             temp.to(flowerBed, { scaleX: 0.22, duration: 1 }, "<")
 
+
+                            //REPEAT OF ABOVE, CREATES 2 FLOWERS PER ITERATION
                             yVal = (index - 1) * (innerGridIncrementY) + (0.8)
                             rectID = `tens${plotArrayI+1}-${plotArrayJ}`
 
                             flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
                             if (this.plotArray[plotArrayI+1][plotArrayJ]) {
-                                this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI+1][plotArrayJ][0]]]--
-                                existingElementsToBeDeleted.push(this.plotArray[plotArrayI+1][plotArrayJ][1])
+                                existingElementsToBeDeleted.push(this.plotArray[plotArrayI+1][plotArrayJ])
                             }
-                            this.plotArray[plotArrayI+1][plotArrayJ] = [this.flowerColor, flowerBed]
-                            this.colorCounter[this.colorDictionary[this.plotArray[plotArrayI+1][plotArrayJ][0]]]++
-                            temp.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<")
+                            this.plotArray[plotArrayI+1][plotArrayJ] = flowerBed
+                            temp.set(flowerBed, { attr: { id: rectID, i: plotArrayI, j:plotArrayJ }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<")
                             this.gsvg.getElementById("fill").appendChild(flowerBed)
                             temp.to(flowerBed, { scaleX: 0.22, duration: 1 }, "<")
-                            console.log("test")
+                            //console.log("test")
                         }
                         temp.call(function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) })
 
@@ -360,44 +359,38 @@ export function farmAPI(_els, _setup) {
 
 
             //console.log("i = " + i, "j = " + j)
-            //console.log("filled: ", this.colorCounter)
             console.log(this.plotArray)
         }
 
-        handleHarvest(startingX, increment, index, combine, harvestTotal) {
-
-            var dur = self.harvestDuration / 10 / 5
-            let del = 0.1
-            var add = 0.001
-            let currentX = combine.getBoundingClientRect().x
-            let j = Math.round((currentX - startingX) / increment)
-            let i = Math.floor(index * 2 / 2) * 2
+        handleHarvest(startingX, increment, i, combine, harvestTotal) {
+            //const tween = this as gsap.tween
+            //let del = 0.1
+            //let j = Math.round(tween.time()*10)
+            //console.log(j)
+            
+            let currentX = combine.getBoundingClientRect().x// try to use time to calculate i, j instead of pos
+            let j = Math.floor((currentX - startingX) / increment)
             //let i = index 
 
-            self.largeCombineDraggable[0].disable()
-            if (j < 50) {
-                if (j != self.lastHarvestedIndex) {
-                    console.log(i,j)
+                if (j != self.lastHarvestedIndex && j < 50) {
+                    //console.log(i,j, self.harvestedElements)
                     if (self.plotArray[i][j]) {
-                        console.log("hit", i, j)
-                        self.harvested += add
-                        //attached to TL instead of gsap because callbacks will keep on happening instead ofb eing queued in the tL
-                        gsap.to(self.plotArray[i][j][1], { scaleX: 0.01, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i][j][1], i, j], ease: "linear", delay: del })
+                        //console.log("hit", i, j)
+                        self.harvested += 0.001
+                        gsap.set(self.plotArray[i][j], {visibility: "hidden"})
+                        
+                        //gsap.to(self.plotArray[i][j][1], {visibility:"hidden", duration: dur, ease: "linear", delay: del, onComplete: function() {self.harvestedElements.push(self.plotArray[i][j][1])} })
                     }
                     if (self.plotArray[i + 1][j]) {
-                        console.log("hit", i + 1, j)
-                        self.harvested += add
-                        gsap.to(self.plotArray[i + 1][j][1], { scaleX: 0.01, duration: dur, onComplete: self.removeElement, onCompleteParams: [self.plotArray[i + 1][j][1], i + 1, j], ease: "linear", delay: del })
+                        //console.log("hit", i + 1, j)
+                        self.harvested += 0.001
+                        gsap.set(self.plotArray[i+1][j], {visibility: "hidden"})
+                        //gsap.to(self.plotArray[i + 1][j][1], {visibility:"hidden", duration: dur, ease: "linear", delay: del, onComplete: function() {self.harvestedElements.push(self.plotArray[i + 1][j][1])}})
                     }
                     harvestTotal.textContent = String(parseFloat(self.harvested.toFixed(3)))
                     gsap.set(harvestTotal, { x: - harvestTotal.getBBox().width / 2 })
                     self.lastHarvestedIndex = j
                 }
-            }
-            else {
-                self.animationPlaying = false;
-                self.largeCombineDraggable[0].enable()
-            }
         }
 
         handlePlay(largeArr, smallArr, largeDragEl, smallDragEl) {
@@ -439,8 +432,17 @@ export function farmAPI(_els, _setup) {
                     largept = largept.matrixTransform(self.farmGroup.getScreenCTM())
                     largept = largept.matrixTransform(self.gsvg.getScreenCTM().inverse())
 
+                    self.largeCombineDraggable[0].disable()
 
-                    gsap.to(self.largeCombineText, { x: largept.x, y: largept.y, duration: self.harvestDuration + 0.5, ease: "linear", onUpdate: self.handleHarvest, onUpdateParams: [largex1, (largex2 - largex1) / 49, largei, self.largeCombine, self.harvestTotalLarge] })
+                    gsap.to(self.largeCombineText, { x: largept.x, y: largept.y, duration: self.harvestDuration + 0.5, ease: "linear",
+                     onUpdate: self.handleHarvest, onUpdateParams: [largex1, (largex2 - largex1) / 49,Math.floor(largei * 2 / 2) * 2, self.largeCombine, self.harvestTotalLarge],
+                    onComplete: function() {
+                        self.harvestedElements.forEach(e => { console.log("remove", e);e.remove() }); 
+                        console.log(self.harvestedElements)
+                        self.animationPlaying = false;
+                        self.largeCombineDraggable[0].enable()
+                    }
+                    })
                     self.animationPlaying = true;
                 }
                 else {
@@ -478,10 +480,8 @@ export function farmAPI(_els, _setup) {
 
         removeElement(element, i, j) {// can optimize more, place i,j,type as attributes and perform the respective for loops
             //console.log("call", self.TL.isActive(), i, j)
-            self.colorCounter[self.colorDictionary[self.plotArray[i][j][0]]]--
             self.plotArray[i][j] = null
             self.gsvg.getElementById(element.id).remove()//makes sure to remove all elements with name, spam clicking would sometimes create unreachable element
-
         }
 
         handleZoomIn() {
@@ -525,7 +525,6 @@ export function farmAPI(_els, _setup) {
 
         handleColorChange(element) {
             let fillColor = getComputedStyle(element).fill
-            console.log(fillColor)
             this.flowerColor = fillColor;
             (this.gsvgu.getElementById("selectedColor") as SVGSVGElement).style.fill = fillColor;
 
@@ -551,16 +550,12 @@ export function farmAPI(_els, _setup) {
 
             if (this.pointerState == this.plant) {
                 this.farmGroup.style.cursor = "pointer"
-                //this.largeCombineDraggable[0].enable()
-                //this.smallCombineDraggable[0].enable()
             }
             else if (this.pointerState == this.move) {
                 this.gsvg.style.touchAction = "pinch-zoom";/*lets pointer events work with mobile. only allowing pinch zoom incase user gets locked out*/
                 this.dragEnabled = true
                 this.gsvg.style.cursor = "move"
                 this.farmGroup.style.cursor = "move"
-                //this.largeCombineDraggable[0].disable()
-                //this.smallCombineDraggable[0].disable()
 
             }
             gsap.utils.toArray("rect", this.previousState)[0].style.fill = "#93c47d"
