@@ -245,9 +245,7 @@ export function farmAPI(_els, _setup) {
                     
                 }
                 else if (this.isViewingHundreds) {
-                    console.log(self.plotArray[i][j].style.visibility, i, j)
                     if (self.plotArray[i][j].style.visibility == "hidden"){
-                        console.log("call hidden")
                         let index = Math.floor(i / 2) * 2
                             for (let jIndex = Math.floor(j / 5) * 5 + 4; jIndex >= Math.floor(j / 5) * 5; jIndex--) {
                                 timeline.set(this.plotArray[index][jIndex], {visibility: "visible"}, "<+=0.05")
@@ -259,7 +257,6 @@ export function farmAPI(_els, _setup) {
                         
                     }
                     else {
-                        console.log("call visible")
                         let index = Math.floor(i / 2) * 2
                             for (let jIndex = Math.floor(j / 5) * 5; jIndex < Math.floor(j / 5) * 5 + 5; jIndex++) {
                                 timeline.to(this.plotArray[index][jIndex], { scaleX: 0, duration: 1, onComplete: function () {timeline.set(self.plotArray[index][jIndex], {visibility: "hidden"})}}, "<+=0.05",)
@@ -302,7 +299,7 @@ export function farmAPI(_els, _setup) {
             //let j = Math.round(tween.time()*10)
             //console.log(j)
             
-            let currentX = combine.getBoundingClientRect().x// try to use time to calculate i, j instead of pos
+            let currentX = combine.getBoundingClientRect().x
             let j = Math.floor((currentX - startingX) / increment)
             //let i = index 
 
@@ -325,9 +322,12 @@ export function farmAPI(_els, _setup) {
 
         handlePlay(largeArr, smallArr, largeDragEl, smallDragEl) {
             if (!self.animationPlaying) {
+                
                 var largei, smalli;
                 var largept = this.gsvg.createSVGPoint()
                 var smallpt = this.gsvg.createSVGPoint()
+
+                gsap.set(this.gsvg, { attr: { viewBox: "0 0 500 500"} })
 
                 for (let index = 0; index < largeArr.length; index++) {
                     if (Math.round(largeDragEl.x) == Math.round(largeArr[index].x)) {
@@ -364,8 +364,31 @@ export function farmAPI(_els, _setup) {
 
                     self.largeCombineDraggable[0].disable()
 
+                    let T = gsap.timeline()
+            
+                    const arr = []
+                    for (let j = 0; j < 50; j++) {
+                        //console.log(Math.floor(largei * 2 / 2) * 2, Math.floor(largei * 2 / 2) * 2 + 1, j)
+                        let temp = [this.plotArray[Math.floor(largei * 2 / 2) * 2][j], this.plotArray[Math.floor(largei * 2 / 2) * 2 + 1][j]]
+                        //console.log(temp)
+                        arr.push(temp)
+                    }
+
+                    arr.forEach(e => {T.to(e, {visibility: "hidden", scaleX: 0, duration: (self.harvestDuration-1)/50, delay:0.01, 
+                    onStart: function() {
+                        if (e[0].style.visibility == "visible") {
+                            self.harvested += 0.001
+                        }
+                        if (e[1].style.visibility == "visible") {
+                            self.harvested += 0.001
+                        }
+                        self.harvestTotalLarge.textContent = String(parseFloat(self.harvested.toFixed(3)))
+                        gsap.set(self.harvestTotalLarge, { x: - self.harvestTotalLarge.getBBox().width / 2 })
+                    }
+                })})
+
                     gsap.to(self.largeCombineText, { x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear",
-                     onUpdate: self.handleHarvest, onUpdateParams: [largex1, (largex2 - largex1) / 49,Math.floor(largei * 2 / 2) * 2, self.largeCombine, self.harvestTotalLarge],
+                     
                     onComplete: function() {
                         self.animationPlaying = false;
                         self.largeCombineDraggable[0].enable()
