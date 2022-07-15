@@ -250,13 +250,12 @@ export function farmAPI(_els, _setup) {
                     if ((xGridQuadrant % 5) == 4) {
                         //xVal -= 0.4
                     }
-                    let flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
+                    let png = document.createElementNS(this.svgns, "use")
+                    gsap.set(png, {attr: { id: rectID, href: "#purple"}, x: xVal, y: yVal, scaleX: 0.01, scaleY: 0.24,})
+                    this.gsvg.getElementById("fill").appendChild(png)
+                    gsap.to(png, { scaleX: 0.22, duration: 1 })
 
-                    this.plotArray[i][j] = flowerBed
-
-                    gsap.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block" })
-                    this.gsvg.getElementById("fill").appendChild(flowerBed)
-                    gsap.to(flowerBed, { scaleX: 0.22, duration: 1,})
+                    this.plotArray[i][j] = png
                 }
 
                 else if (this.isViewingHundreds) {//working with hundreds
@@ -277,31 +276,32 @@ export function farmAPI(_els, _setup) {
                             //console.log(19 - index, 49 - jIndex)
                             rectID = `hundreds${plotArrayI}-${plotArrayJ}`
 
-                            let flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
-
                             //handle increment/decrement of color counter
                             if (this.plotArray[plotArrayI][plotArrayJ]) {
                                 existingElementsToBeDeleted.push(this.plotArray[plotArrayI][plotArrayJ])
                             }
-                            this.plotArray[plotArrayI][plotArrayJ] = flowerBed
 
                             //animate flower
-                            temp.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<+=0.05")
-                            this.gsvg.getElementById("fill").appendChild(flowerBed)
-                            temp.to(flowerBed, { scaleX: 0.22, duration: 1 }, "<")
+                            let png = document.createElementNS(this.svgns, "use")
+                            temp.set(png, {attr: { id: rectID, href: "#purple"}, x: xVal, y: yVal, scaleX: 0.01, scaleY: 0.24,}, "<+=0.05")
+                            this.gsvg.getElementById("fill").appendChild(png)
+                            temp.to(png, { scaleX: 0.22, duration: 1 }, "<")
+
+                            this.plotArray[plotArrayI][plotArrayJ] = png
 
                             //REPEAT OF ABOVE, CREATES 2 FLOWERS PER ITERATION
                             yVal = (index - 1) * (innerGridIncrementY) + (0.8)
                             rectID = `hundreds${plotArrayI+1}-${plotArrayJ}`
 
-                            flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
                             if (this.plotArray[plotArrayI+1][plotArrayJ]) {
                                 existingElementsToBeDeleted.push(this.plotArray[plotArrayI+1][plotArrayJ])
                             }
-                            this.plotArray[plotArrayI+1][plotArrayJ] = flowerBed
-                            temp.set(flowerBed, { attr: { id: rectID }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<")
-                            this.gsvg.getElementById("fill").appendChild(flowerBed)
-                            temp.to(flowerBed, { scaleX: 0.22, duration: 1}, "<")
+                            png = document.createElementNS(this.svgns, "use")
+                            temp.set(png, {attr: { id: rectID, href: "#purple"}, x: xVal, y: yVal, scaleX: 0.01, scaleY: 0.24,}, "<")
+                            this.gsvg.getElementById("fill").appendChild(png)
+                            temp.to(png, { scaleX: 0.22, duration: 1 }, "<")
+
+                            this.plotArray[plotArrayI+1][plotArrayJ] = png
                         }
                         temp.call(function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) })
 
@@ -324,32 +324,41 @@ export function farmAPI(_els, _setup) {
                             yVal = (index) * (innerGridIncrementY) + (0.8)
                             rectID = `tens${plotArrayI}-${plotArrayJ}`
 
-                            let flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
+                            //let flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
 
                             //increment/decrement of color counter
                             if (this.plotArray[plotArrayI][plotArrayJ]) {
                                 existingElementsToBeDeleted.push(this.plotArray[plotArrayI][plotArrayJ])
                             }
-                            this.plotArray[plotArrayI][plotArrayJ] = flowerBed
 
                             //animate flower
+                            let png = document.createElementNS(this.svgns, "use")
+                            temp.set(png, {attr: { id: rectID, href: "#purple"}, x: xVal, y: yVal, scaleX: 0.01, scaleY: 0.24,}, "<+=0.05")
+                            this.gsvg.getElementById("fill").appendChild(png)
+                            temp.to(png, { scaleX: 0.22, duration: 1 }, "<")
+
+                            this.plotArray[plotArrayI][plotArrayJ] = png
+
+                            /*
                             temp.set(flowerBed, { attr: { id: rectID, i: plotArrayI, j:plotArrayJ}, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<+=0.05")
                             this.gsvg.getElementById("fill").appendChild(flowerBed)
                             temp.to(flowerBed, { scaleX: 0.22, duration: 1 }, "<")
-
+                            */
 
                             //REPEAT OF ABOVE, CREATES 2 FLOWERS PER ITERATION
                             yVal = (index - 1) * (innerGridIncrementY) + (0.8)
                             rectID = `tens${plotArrayI+1}-${plotArrayJ}`
 
-                            flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
+                            //flowerBed = self.selectedFlower.cloneNode(true) as SVGSVGElement
                             if (this.plotArray[plotArrayI+1][plotArrayJ]) {
                                 existingElementsToBeDeleted.push(this.plotArray[plotArrayI+1][plotArrayJ])
                             }
-                            this.plotArray[plotArrayI+1][plotArrayJ] = flowerBed
-                            temp.set(flowerBed, { attr: { id: rectID, i: plotArrayI, j:plotArrayJ }, x: xVal - this.selectedFlower.getBBox().x, y: yVal - this.selectedFlower.getBBox().y, scaleX: 0.01, scaleY: 0.24, display: "block"}, "<")
-                            this.gsvg.getElementById("fill").appendChild(flowerBed)
-                            temp.to(flowerBed, { scaleX: 0.22, duration: 1 }, "<")
+                            png = document.createElementNS(this.svgns, "use")
+                            temp.set(png, {attr: { id: rectID, href: "#purple"}, x: xVal, y: yVal, scaleX: 0.01, scaleY: 0.24,}, "<")
+                            this.gsvg.getElementById("fill").appendChild(png)
+                            temp.to(png, { scaleX: 0.22, duration: 1 }, "<")
+
+                            this.plotArray[plotArrayI+1][plotArrayJ] = png
                             //console.log("test")
                         }
                         temp.call(function () { existingElementsToBeDeleted.forEach(e => { e.remove() }) })
@@ -363,6 +372,7 @@ export function farmAPI(_els, _setup) {
         }
 
         handleHarvest(startingX, increment, i, combine, harvestTotal) {
+            //console.log("call")
             //const tween = this as gsap.tween
             //let del = 0.1
             //let j = Math.round(tween.time()*10)
