@@ -13,12 +13,17 @@ export function zoomAPI(_els) {
         zoomLevel = 0
         zoomIncrementX:number
         zoomIncrementY:number
+        zoomIn: SVGSVGElement
+        zoomOut: SVGSVGElement
 
         constructor(els) {
             self = this
             this.els = els
             this.gsvgu = els[0]
             //this.gsvgu = els[1]
+
+            this.zoomIn = this.gsvgu.getElementById("zoomIn") as SVGSVGElement
+            this.zoomOut = this.gsvgu.getElementById("zoomOut") as SVGSVGElement
 
             this.init()
         }
@@ -36,6 +41,8 @@ export function zoomAPI(_els) {
                     this.zoomLevel++
                     console.log(this.zoomIncrementX, this.zoomIncrementY)
                 }
+                this.zoomIncrementX = baseViewbox["width"] / 3
+                this.zoomIncrementY = baseViewbox["height"] / 3
         }
 
         handleZoomOut() {
@@ -52,6 +59,9 @@ export function zoomAPI(_els) {
                     this.zoomLevel--
                     console.log(this.zoomIncrementX, this.zoomIncrementY)
                 }
+
+                this.zoomIncrementX = baseViewbox["width"] / 3
+                this.zoomIncrementY = baseViewbox["height"] / 3
         }
 
         startDrag(e) {
@@ -83,7 +93,9 @@ export function zoomAPI(_els) {
         getSVG() {
                         //https://stackoverflow.com/questions/45240363/can-i-use-javascript-fetch-to-insert-an-inline-svg-in-the-dom
                         let el = document.querySelector("#lowerRender")
-                        return fetch('https://res.cloudinary.com/duim8wwno/image/upload/v1635449409/Zoom_kh7c7e.svg')
+                        //return fetch('https://res.cloudinary.com/duim8wwno/image/upload/v1635449409/Zoom_kh7c7e.svg')
+                        //return fetch("http://127.0.0.1:8887/farmPlotsRasteredFlowersMorePixel.svg")
+                        return fetch("https://res.cloudinary.com/numbershapes/image/upload/v1658172000/farmPlotsRasteredAllFlowersMorePixel_b7n8pg.svg")
                             .then(r => r.text())
                             .then(text => {
                                 el.innerHTML = text;
@@ -94,14 +106,19 @@ export function zoomAPI(_els) {
         }
 
         async init() {
-            await this.getSVG()
+            gsap.set(this.zoomIn, {visibility: "hidden"})
+            gsap.set(this.zoomOut, {visibility: "hidden"})
+            await this.getSVG()// need this to finish because it sets the fetched svg
 
             let baseViewbox = this.fetchedSVG.viewBox["baseVal"]
             let svgBBox = this.fetchedSVG.getBoundingClientRect()
             console.log(svgBBox)
 
-            this.zoomIncrementX = baseViewbox["width"] / 10
-            this.zoomIncrementY = baseViewbox["height"] / 10
+            gsap.set(this.zoomIn, {x: 0 - this.zoomIn.getBBox().x, visibility: "visible"})
+            gsap.set(this.zoomOut, {x: 0 - this.zoomOut.getBBox().x + this.zoomOut.getBBox().width + 3, visibility: "visible"})
+
+            this.zoomIncrementX = baseViewbox["width"] / 3
+            this.zoomIncrementY = baseViewbox["height"] / 3
 
             this.fetchedSVG.addEventListener("pointerdown", e => this.startDrag(e))
             this.fetchedSVG.addEventListener("pointermove", e => this.whileDrag(e))
@@ -109,12 +126,6 @@ export function zoomAPI(_els) {
 
             this.gsvgu.getElementById("zoomIn").addEventListener("pointerdown", e => this.handleZoomIn())
             this.gsvgu.getElementById("zoomOut").addEventListener("pointerdown", e => this.handleZoomOut())
-
-            let zoomin = this.gsvgu.getElementById("zoomIn") as SVGSVGElement
-            let zoomout = this.gsvgu.getElementById("zoomOut") as SVGSVGElement
-
-            gsap.set(zoomin, {x: 0 - zoomin.getBBox().x})
-            gsap.set(zoomout, {x: 0 - zoomout.getBBox().x + zoomout.getBoundingClientRect().width})
         }
         
 
