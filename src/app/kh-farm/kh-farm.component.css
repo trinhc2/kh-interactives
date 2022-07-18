@@ -2,11 +2,6 @@
     cursor: pointer;
 }
 
-.color, .pointer, #grid, #zoomIn, #zoomOut, #playButton {
-    cursor:pointer;
-    pointer-events: bounding-box;
-}
-
 svg {
     height: auto;
     width: auto;
@@ -20,6 +15,11 @@ svg {
 
 .upperRenderEl {
     pointer-events: none;
+}
+
+.color, .pointer, #grid, #zoomIn, #zoomOut, #playButton {
+    cursor:pointer;
+    pointer-events: all;
 }
 
 #harvestTotalLarge, #harvestTotalSmall {

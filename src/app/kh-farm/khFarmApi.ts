@@ -561,9 +561,9 @@ export function farmAPI(_els, _setup) {
             let largeCombineSnapPoints = []
             for (let i = 1; i < 11; i++) {
                 //for (let i = 1; i < 20; i++) {
-                pt.x = this.setup.plotWidth + this.largeCombine.getBBox().width
+                pt.x = this.setup.plotWidth + this.largeCombine.getBBox().width - 3
                 //pt.y = ((19 - i) * (this.plotIncrementHeight / 2)) + 20
-                pt.y = (Math.floor((20 - i * 2) / 2) * (this.plotIncrementHeight / 2) * 2) + 20
+                pt.y = (Math.floor((20 - i * 2) / 2) * (this.plotIncrementHeight / 2) * 2) + 20 //+20 for offset
                 pt = pt.matrixTransform(this.farmGroup.getScreenCTM())
                 pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
                 let temp = { x: pt.x, y: pt.y }
