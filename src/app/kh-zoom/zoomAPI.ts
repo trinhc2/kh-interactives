@@ -11,8 +11,8 @@ export function zoomAPI(_els) {
         isDragging = false;
         dragStart = { x: 0, y: 0 }
         zoomLevel = 0
-        zoomIncrementX:number
-        zoomIncrementY:number
+        zoomIncrementX = []
+        zoomIncrementY = []
         zoomIn: SVGSVGElement
         zoomOut: SVGSVGElement
 
@@ -31,37 +31,49 @@ export function zoomAPI(_els) {
             console.log("call")
                 let svgBBox = this.fetchedSVG.getBoundingClientRect()
                 let baseViewbox = this.fetchedSVG.viewBox["baseVal"]
+                let index = 11
+
+                if (this.zoomLevel < 0) {
+                    index = Math.abs(this.zoomLevel) - 1 //use the index-1 if we are already zoomed out
+                }
+                else if (this.zoomLevel > 0) {
+                    index = this.zoomLevel + 11
+                }
                 if (this.zoomLevel < 10) {
-                    let x = (baseViewbox["x"] + this.zoomIncrementX / 2 - svgBBox.x)
-                    let y = (baseViewbox["y"] + this.zoomIncrementY / 2 - svgBBox.y)
-                    let width = Math.max((baseViewbox["width"] - this.zoomIncrementX),5)
-                    let height = Math.max((baseViewbox["height"] - this.zoomIncrementY),5)
+                    console.log(this.zoomIncrementX[index], this.zoomIncrementY[index])
+                    let x = (baseViewbox["x"] + this.zoomIncrementX[index] / 2 - svgBBox.x)
+                    let y = (baseViewbox["y"] + this.zoomIncrementY[index] / 2 - svgBBox.y)
+                    let width = Math.max((baseViewbox["width"] - this.zoomIncrementX[index]),5)
+                    let height = Math.max((baseViewbox["height"] - this.zoomIncrementY[index]),5)
                     let temp = `${x} ${y} ${width} ${height}`
                     gsap.set(this.fetchedSVG, { attr: { viewBox: temp } });
                     this.zoomLevel++
-                    console.log(this.zoomIncrementX, this.zoomIncrementY)
+                    console.log(this.fetchedSVG.viewBox, this.zoomIncrementX, this.zoomIncrementY, this.zoomLevel)
                 }
-                this.zoomIncrementX = baseViewbox["width"] / 3
-                this.zoomIncrementY = baseViewbox["height"] / 3
         }
 
         handleZoomOut() {
             console.log("call")
                 let svgBBox = this.fetchedSVG.getBoundingClientRect()
                 let baseViewbox = this.fetchedSVG.viewBox["baseVal"]
+                let index = 0
+                if (this.zoomLevel < 0) {
+                    index = Math.abs(this.zoomLevel)
+                }
+                else if (this.zoomLevel > 0){
+                    index = this.zoomLevel + 11 - 1 //use the index-1 if we are already zoomed in
+                }
                 if (this.zoomLevel > -10) {
-                    let x = (baseViewbox["x"] - this.zoomIncrementX / 2 - svgBBox.x)
-                    let y = (baseViewbox["y"] - this.zoomIncrementY / 2 - svgBBox.y)
-                    let width = Math.max((baseViewbox["width"] + this.zoomIncrementX), 5)
-                    let height = Math.max((baseViewbox["height"] + this.zoomIncrementY), 5)
+                    console.log(this.zoomIncrementX[index], this.zoomIncrementY[index])
+                    let x = (baseViewbox["x"] - this.zoomIncrementX[index] / 2 - svgBBox.x)
+                    let y = (baseViewbox["y"] - this.zoomIncrementY[index] / 2 - svgBBox.y)
+                    let width = Math.max((baseViewbox["width"] + this.zoomIncrementX[index]) , 5)
+                    let height = Math.max((baseViewbox["height"] + this.zoomIncrementY[index]) , 5)
                     let temp = `${x} ${y} ${width} ${height}`
                     gsap.set(this.fetchedSVG, {attr: { viewBox: temp } });
                     this.zoomLevel--
-                    console.log(this.zoomIncrementX, this.zoomIncrementY)
+                    console.log(this.fetchedSVG.viewBox, this.zoomIncrementX, this.zoomIncrementY,this.zoomLevel )
                 }
-
-                this.zoomIncrementX = baseViewbox["width"] / 3
-                this.zoomIncrementY = baseViewbox["height"] / 3
         }
 
         startDrag(e) {
@@ -94,8 +106,9 @@ export function zoomAPI(_els) {
                         //https://stackoverflow.com/questions/45240363/can-i-use-javascript-fetch-to-insert-an-inline-svg-in-the-dom
                         let el = document.querySelector("#lowerRender")
                         //return fetch('https://res.cloudinary.com/duim8wwno/image/upload/v1635449409/Zoom_kh7c7e.svg')
-                        //return fetch("http://127.0.0.1:8887/farmPlotsRasteredFlowersMorePixel.svg")
+                        //return fetch("http://127.0.0.1:8887/farmtwoAcreNoRaster.svg")
                         return fetch("https://res.cloudinary.com/numbershapes/image/upload/v1658172000/farmPlotsRasteredAllFlowersMorePixel_b7n8pg.svg")
+                        //return fetch("https://app.knowledgehook.com/Content/Images/6e2e3cac-30ed-ea11-974a-0050568c42b6/farmtwoacrenoraster.svg")
                             .then(r => r.text())
                             .then(text => {
                                 el.innerHTML = text;
@@ -105,6 +118,36 @@ export function zoomAPI(_els) {
 
         }
 
+        calculateZoomIncrements(){
+            let baseViewbox = this.fetchedSVG.viewBox["baseVal"]
+            const arr = [];
+            const arr2 = []
+            let lastWidth = baseViewbox["width"]
+            let lastHeight = baseViewbox["height"]
+            for (let i = 0; i < 11; i++){
+                let temp = lastWidth / 3;
+                this.zoomIncrementX.push(temp);
+                lastWidth += temp
+
+                temp = lastHeight / 3;
+                this.zoomIncrementY.push(temp);
+                lastHeight += temp
+            }
+
+            lastWidth = baseViewbox["width"]
+            lastHeight = baseViewbox["height"]
+            for (let i = 0; i < 11; i++){
+                let temp = lastWidth / 3;
+                this.zoomIncrementX.push(temp);
+                lastWidth -= temp
+
+                temp = lastHeight / 3;
+                this.zoomIncrementY.push(temp);
+                lastHeight -= temp
+            }
+            console.log(this.zoomIncrementX, this.zoomIncrementY)
+        }
+
         async init() {
             gsap.set(this.zoomIn, {visibility: "hidden"})
             gsap.set(this.zoomOut, {visibility: "hidden"})
@@ -112,13 +155,12 @@ export function zoomAPI(_els) {
 
             let baseViewbox = this.fetchedSVG.viewBox["baseVal"]
             let svgBBox = this.fetchedSVG.getBoundingClientRect()
-            console.log(svgBBox)
+            console.log(this.fetchedSVG.viewBox["baseVal"])
+
+            this.calculateZoomIncrements()
 
             gsap.set(this.zoomIn, {x: 0 - this.zoomIn.getBBox().x, visibility: "visible"})
             gsap.set(this.zoomOut, {x: 0 - this.zoomOut.getBBox().x + this.zoomOut.getBBox().width + 3, visibility: "visible"})
-
-            this.zoomIncrementX = baseViewbox["width"] / 3
-            this.zoomIncrementY = baseViewbox["height"] / 3
 
             this.fetchedSVG.addEventListener("pointerdown", e => this.startDrag(e))
             this.fetchedSVG.addEventListener("pointermove", e => this.whileDrag(e))
