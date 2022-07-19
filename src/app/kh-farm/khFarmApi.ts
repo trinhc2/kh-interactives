@@ -34,12 +34,11 @@ export function farmAPI(_els, _setup) {
         largeCombineText: SVGSVGElement
         smallCombine: SVGSVGElement
         smallCombineText: SVGSVGElement
-        isViewingThousands = true;
-        isViewingHundreds = true
+        gridState: any
         flowerColor = "rgb(239, 90, 104)"
         pointerState: any
         previousState: any
-        zoom: HTMLElement
+        zoomControls: SVGSVGElement
         plant: HTMLElement
         move: HTMLElement
         zoomLevel = 0
@@ -64,6 +63,9 @@ export function farmAPI(_els, _setup) {
         //purpleFlowerBed: SVGSVGElement
         //blueFlowerBed: SVGSVGElement
         //wheat: SVGSVGElement
+        beds: SVGSVGElement
+        plots: SVGSVGElement
+        rows: SVGSVGElement
 
         constructor(els, setup) {
             self = this
@@ -87,11 +89,16 @@ export function farmAPI(_els, _setup) {
             this.previousState = this.plant
             this.harvestTotalLarge = this.gsvg.getElementById("harvestTotalLarge") as SVGSVGElement
             this.harvestTotalSmall = this.gsvg.getElementById("harvestTotalSmall") as SVGSVGElement
+            this.zoomControls = this.gsvgu.getElementById("zoomControls") as SVGSVGElement
             //this.pinkFlowerBed = this.gsvg.getElementById("pinkFlowerBed") as SVGSVGElement
             //this.purpleFlowerBed = this.gsvg.getElementById("purpleFlowerBed") as SVGSVGElement
             //this.blueFlowerBed = this.gsvg.getElementById("blueFlowerBed") as SVGSVGElement
             //this.wheat = this.gsvg.getElementById("wheat") as SVGSVGElement
             //this.selectedFlower = this.pinkFlowerBed
+            this.beds = this.gsvgu.getElementById("beds") as SVGSVGElement
+            this.plots = this.gsvgu.getElementById("plots") as SVGSVGElement
+            this.rows = this.gsvgu.getElementById("rows") as SVGSVGElement
+            this.gridState = this.beds
 
             this.init()
         }
@@ -148,7 +155,7 @@ export function farmAPI(_els, _setup) {
                     let plotArrayJ = jIndex - 1
 
                     let xVal = (50 - jIndex) * (innerGridIncrementX) + (1 - ((50 - jIndex) % 5) * 0.2)
-                    let yVal = (index) * (innerGridIncrementY) + (0.8)
+                    let yVal = (index) * (innerGridIncrementY) + (0.8 - (index % 2) * 0.5)
                     let rectID = `${plotArrayI}-${plotArrayJ}`
 
                     //animate flower
@@ -233,7 +240,7 @@ export function farmAPI(_els, _setup) {
             //if element exists where clicking, remove it
             if (this.plotArray[i][j]) {
                 let timeline = gsap.timeline()
-                if (this.isViewingThousands) {
+                if (this.gridState == this.beds) {
                     if (self.plotArray[i][j].style.visibility == "hidden"){
                         gsap.set(this.plotArray[i][j], {visibility: "visible",})
                         gsap.to(this.plotArray[i][j], { scaleX: 0.22, duration: 1,})
@@ -244,7 +251,7 @@ export function farmAPI(_els, _setup) {
                     }
                     
                 }
-                else if (this.isViewingHundreds) {
+                else if (this.gridState == this.plots) {
                     if (self.plotArray[i][j].style.visibility == "hidden"){
                         let index = Math.floor(i / 2) * 2
                             for (let jIndex = Math.floor(j / 5) * 5 + 4; jIndex >= Math.floor(j / 5) * 5; jIndex--) {
@@ -457,40 +464,25 @@ export function farmAPI(_els, _setup) {
             }
         }
 
-        handleGridToggle() {
-            if (this.isViewingThousands) {
-                gsap.set(this.thousands, { display: "none" })
-                this.isViewingThousands = false
-            }
-            else if (this.isViewingHundreds) {
-                gsap.set(this.hundreds, { display: "none" })
-                this.isViewingHundreds = false
-            }
-            else {
+        handleGridToggle(element) {
+            gsap.utils.toArray("rect", this.gridState)[0].style.fill = "#93c47d"
+            this.gridState = element
+            if (this.gridState == this.beds) {
                 gsap.set(this.thousands, { display: "block" })
-                this.isViewingThousands = true
                 gsap.set(this.hundreds, { display: "block" })
-                this.isViewingHundreds = true
+                gsap.utils.toArray("rect", this.beds)[0].style.fill = "#c3e7b3"
             }
-        }
-
-        handleColorChange(element) {
-            let fillColor = getComputedStyle(element).fill
-            this.flowerColor = fillColor;
-            (this.gsvgu.getElementById("selectedColor") as SVGSVGElement).style.fill = fillColor;
-
-            if (this.colorDictionary[this.flowerColor] == "pink") {
-                //this.selectedFlower = this.pinkFlowerBed
-            }
-            else if (this.colorDictionary[this.flowerColor] == "purple") {
-                //this.selectedFlower = this.purpleFlowerBed
-            }
-            else  if (this.colorDictionary[this.flowerColor] == "blue") {
-                //this.selectedFlower = this.blueFlowerBed
+            else if (this.gridState == this.plots) {
+                gsap.set(this.thousands, { display: "none" })
+                gsap.set(this.hundreds, { display: "block" })
+                gsap.utils.toArray("rect", this.plots)[0].style.fill = "#c3e7b3"
             }
             else {
-                //this.selectedFlower = this.wheat
+                gsap.set(this.thousands, { display: "none" })
+                gsap.set(this.hundreds, { display: "none" })
+                gsap.utils.toArray("rect", this.rows)[0].style.fill = "#c3e7b3"
             }
+
         }
 
         handlePointerChange(element) {
@@ -509,8 +501,8 @@ export function farmAPI(_els, _setup) {
                 this.farmGroup.style.cursor = "move"
 
             }
-            gsap.utils.toArray("rect", this.previousState)[0].style.fill = "#93c47d"
-            gsap.utils.toArray("rect", element)[0].style.fill = "#c3e7b3"
+            gsap.utils.toArray("circle", this.previousState)[0].style.fill = "#93c47d"
+            gsap.utils.toArray("circle", element)[0].style.fill = "#c3e7b3"
             this.previousState = element
         }
 
@@ -526,20 +518,26 @@ export function farmAPI(_els, _setup) {
             this.plotIncrementWidth = this.plotBBox.width / 10;
             this.plotIncrementHeight = this.plotBBox.height / 10;
 
+            //zoom init
+            //gsap.set(this.zoomControls, {x: 250 - this.zoomControls.getBBox().x - this.zoomControls.getBBox().width/2, y: 450 - this.zoomControls.getBBox().y})
+            //let uiBBox = (this.gsvgu.getElementById("ui") as SVGSVGElement).getBBox()
+            //gsap.set(this.gsvgu.getElementById("ui"), {x: 250 - uiBBox.x - uiBBox.width/2})
+
             //generating grid lines
             this.generateLines()
             this.fillPlot()
 
             //setting colors
             gsap.set(this.gsvg, { backgroundColor: "rgb(33, 192, 96)" })
-            gsap.utils.toArray("rect", this.plant)[0].style.fill = "#c3e7b3"
+            gsap.utils.toArray("circle", this.plant)[0].style.fill = "#c3e7b3"
+            gsap.utils.toArray("rect", this.beds)[0].style.fill = "#c3e7b3"
 
             //fill-box allows rotation about center
             gsap.set(this.farmGroup, { transformOrigin: "center", transformBox: "fill-box", rotate: 45, skewX: 165, skewY: 165 })
             gsap.set(this.farmGroup, { x: 125, y: 100 })
 
             //combine start pos
-            gsap.set(this.largeCombineText, { attr: { count: 0 }, x: 50, y: 60 })
+            gsap.set(this.largeCombineText, { attr: { count: 0 }, x: 50, y: 80 })
             gsap.set(this.smallCombineText, { attr: { count: 0 }, x: 400, y: 80, display: "none" })
 
             //harvest number init
@@ -609,7 +607,7 @@ export function farmAPI(_els, _setup) {
             //event listeners
             this.farmGroup.addEventListener("pointerdown", e => { this.hitTest(e) })
 
-            this.gsvgu.getElementById("grid").addEventListener("pointerdown", e => this.handleGridToggle())
+            //this.gsvgu.getElementById("grid").addEventListener("pointerdown", e => this.handleGridToggle())
 
             this.gsvgu.getElementById("zoomIn").addEventListener("pointerdown", e => this.handleZoomIn())
             this.gsvgu.getElementById("zoomOut").addEventListener("pointerdown", e => this.handleZoomOut())
@@ -620,8 +618,8 @@ export function farmAPI(_els, _setup) {
 
             this.gsvgu.getElementById("playButton").addEventListener("pointerdown", e => this.handlePlay(largeCombineSnapPoints, smallCombineSnapPoints, this.largeCombineDraggable[0], this.smallCombineDraggable[0]))
 
-            gsap.utils.toArray(".color").forEach(element => element.addEventListener("pointerdown", e => this.handleColorChange(element)))
             gsap.utils.toArray(".pointer").forEach(element => element.addEventListener("pointerdown", e => this.handlePointerChange(element)))
+            gsap.utils.toArray(".grid").forEach(element => element.addEventListener("pointerdown", e => this.handleGridToggle(element)))
         }
 
     }

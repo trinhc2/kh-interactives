@@ -11,13 +11,15 @@ svg {
 
 .upperRenderEl, .lowerRenderEl {
     position: absolute;
+    left: 0px;
+    top: 0px;
 }
 
 .upperRenderEl {
     pointer-events: none;
 }
 
-.color, .pointer, #grid, #zoomIn, #zoomOut, #playButton {
+.pointer, .grid, #zoomIn, #zoomOut, #playButton {
     cursor:pointer;
     pointer-events: all;
 }

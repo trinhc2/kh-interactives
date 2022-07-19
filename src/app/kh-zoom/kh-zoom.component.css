@@ -11,6 +11,10 @@
     bottom: 0px;
 }
 
+.lowerRenderEl {
+    touch-action: pinch-zoom;
+}
+
 #zoomIn, #zoomOut{
     cursor:pointer;
     pointer-events: bounding-box;
