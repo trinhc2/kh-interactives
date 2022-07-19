@@ -334,7 +334,7 @@ export function farmAPI(_els, _setup) {
                 var largept = this.gsvg.createSVGPoint()
                 var smallpt = this.gsvg.createSVGPoint()
 
-                gsap.set(this.gsvg, { attr: { viewBox: "0 0 500 500"} })
+                //gsap.set(this.gsvg, { attr: { viewBox: "0 0 500 500"} })
 
                 for (let index = 0; index < largeArr.length; index++) {
                     if (Math.round(largeDragEl.x) == Math.round(largeArr[index].x)) {
