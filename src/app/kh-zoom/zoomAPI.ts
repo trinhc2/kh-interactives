@@ -15,6 +15,7 @@ export function zoomAPI(_els) {
         zoomIncrementY = []
         zoomIn: SVGSVGElement
         zoomOut: SVGSVGElement
+        zoomControls: SVGSVGElement
 
         constructor(els) {
             self = this
@@ -24,6 +25,7 @@ export function zoomAPI(_els) {
 
             this.zoomIn = this.gsvgu.getElementById("zoomIn") as SVGSVGElement
             this.zoomOut = this.gsvgu.getElementById("zoomOut") as SVGSVGElement
+            this.zoomControls = this.gsvgu.getElementById("zoomControls") as SVGSVGElement
 
             this.init()
         }
@@ -149,8 +151,14 @@ export function zoomAPI(_els) {
         }
 
         async init() {
-            gsap.set(this.zoomIn, {visibility: "hidden"})
-            gsap.set(this.zoomOut, {visibility: "hidden"})
+            //gsap.set(this.zoomIn, {visibility: "hidden"})
+            //gsap.set(this.zoomOut, {visibility: "hidden"})
+            console.log(this.zoomControls.getBBox(), this.zoomControls.getBoundingClientRect())
+            gsap.set(this.zoomControls, {x: 250 - this.zoomControls.getBBox().x - this.zoomControls.getBBox().width/2, y: 450 - this.zoomControls.getBBox().y})
+            //gsap.set(this.zoomControls, {x: 10})
+            //gsap.to(this.zoomControls, {yPercent:-50, xPercent:-50})
+
+            //gsap.set(this.zoomControls, {x: "100%"})
             await this.getSVG()// need this to finish because it sets the fetched svg
 
             let baseViewbox = this.fetchedSVG.viewBox["baseVal"]
@@ -159,8 +167,9 @@ export function zoomAPI(_els) {
 
             this.calculateZoomIncrements()
 
-            gsap.set(this.zoomIn, {x: 0 - this.zoomIn.getBBox().x, visibility: "visible"})
-            gsap.set(this.zoomOut, {x: 0 - this.zoomOut.getBBox().x + this.zoomOut.getBBox().width + 3, visibility: "visible"})
+
+            //gsap.set(this.zoomIn, {x: 0 - this.zoomIn.getBBox().x, visibility: "visible"})
+            //gsap.set(this.zoomOut, {x: 0 - this.zoomOut.getBBox().x + this.zoomOut.getBBox().width + 3, visibility: "visible"})
 
             this.fetchedSVG.addEventListener("pointerdown", e => this.startDrag(e))
             this.fetchedSVG.addEventListener("pointermove", e => this.whileDrag(e))
