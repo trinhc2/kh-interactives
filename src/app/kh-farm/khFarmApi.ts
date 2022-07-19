@@ -389,7 +389,7 @@ export function farmAPI(_els, _setup) {
                         if (e[1].style.visibility == "visible") {
                             self.harvested += 0.001
                         }
-                        self.harvestTotalLarge.textContent = String(parseFloat(self.harvested.toFixed(3)))
+                        self.harvestTotalLarge.textContent = String(self.harvested.toFixed(3))
                         gsap.set(self.harvestTotalLarge, { x: - self.harvestTotalLarge.getBBox().width / 2 })
                     }
                 })})
