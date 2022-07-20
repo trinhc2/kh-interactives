@@ -32,10 +32,7 @@ export function farmAPI(_els, _setup) {
         farmGroup: SVGSVGElement
         largeCombine: SVGSVGElement
         largeCombineText: SVGSVGElement
-        smallCombine: SVGSVGElement
-        smallCombineText: SVGSVGElement
         gridState: any
-        flowerColor = "rgb(239, 90, 104)"
         pointerState: any
         previousState: any
         zoomControls: SVGSVGElement
@@ -56,13 +53,7 @@ export function farmAPI(_els, _setup) {
         harvestTotalLarge: SVGSVGElement
         harvestTotalSmall: SVGSVGElement
         largeCombineDraggable: any
-        smallCombineDraggable: any
         animationPlaying = false
-        //selectedFlower: SVGSVGElement
-        //pinkFlowerBed: SVGSVGElement
-        //purpleFlowerBed: SVGSVGElement
-        //blueFlowerBed: SVGSVGElement
-        //wheat: SVGSVGElement
         beds: SVGSVGElement
         plots: SVGSVGElement
         rows: SVGSVGElement
@@ -81,8 +72,6 @@ export function farmAPI(_els, _setup) {
             this.farmGroup = this.gsvg.getElementById("farmGroup") as SVGSVGElement
             this.largeCombine = this.gsvg.getElementById("largeCombine") as SVGSVGElement
             this.largeCombineText = this.gsvg.getElementById("largeCombineText") as SVGSVGElement
-            this.smallCombine = this.gsvg.getElementById("smallCombine") as SVGSVGElement
-            this.smallCombineText = this.gsvg.getElementById("smallCombineText") as SVGSVGElement
             this.plant = this.gsvgu.getElementById("plant") as HTMLElement
             this.move = this.gsvgu.getElementById("move") as HTMLElement
             this.pointerState = this.plant
@@ -90,11 +79,6 @@ export function farmAPI(_els, _setup) {
             this.harvestTotalLarge = this.gsvg.getElementById("harvestTotalLarge") as SVGSVGElement
             this.harvestTotalSmall = this.gsvg.getElementById("harvestTotalSmall") as SVGSVGElement
             this.zoomControls = this.gsvgu.getElementById("zoomControls") as SVGSVGElement
-            //this.pinkFlowerBed = this.gsvg.getElementById("pinkFlowerBed") as SVGSVGElement
-            //this.purpleFlowerBed = this.gsvg.getElementById("purpleFlowerBed") as SVGSVGElement
-            //this.blueFlowerBed = this.gsvg.getElementById("blueFlowerBed") as SVGSVGElement
-            //this.wheat = this.gsvg.getElementById("wheat") as SVGSVGElement
-            //this.selectedFlower = this.pinkFlowerBed
             this.beds = this.gsvgu.getElementById("beds") as SVGSVGElement
             this.plots = this.gsvgu.getElementById("plots") as SVGSVGElement
             this.rows = this.gsvgu.getElementById("rows") as SVGSVGElement
@@ -299,40 +283,11 @@ export function farmAPI(_els, _setup) {
             console.log(this.plotArray)
         }
 
-        handleHarvest(startingX, increment, i, combine, harvestTotal) {
-            //console.log("call")
-            //const tween = this as gsap.tween
-            let del = 0.1
-            //let j = Math.round(tween.time()*10)
-            //console.log(j)
-            
-            let currentX = combine.getBoundingClientRect().x
-            let j = Math.floor((currentX - startingX) / increment)
-            //let i = index 
-
-                if (j != self.lastHarvestedIndex && j < 50) {
-                    if (self.plotArray[i][j].style.visibility == "visible") {
-                        //console.log("hit", i, j)
-                        self.harvested += 0.001
-                        gsap.set(self.plotArray[i][j], {visibility: "hidden", delay: del})
-                    }
-                    if (self.plotArray[i+1][j].style.visibility == "visible") {
-                        //console.log("hit", i + 1, j)
-                        self.harvested += 0.001
-                        gsap.set(self.plotArray[i+1][j], {visibility: "hidden", delay: del})
-                    }
-                    harvestTotal.textContent = String(parseFloat(self.harvested.toFixed(3)))
-                    gsap.set(harvestTotal, { x: - harvestTotal.getBBox().width / 2 })
-                    self.lastHarvestedIndex = j
-                }
-        }
-
-        handlePlay(largeArr, smallArr, largeDragEl, smallDragEl) {
+        handlePlay(largeArr, largeDragEl) {
             if (!self.animationPlaying) {
                 
-                var largei, smalli;
+                var largei
                 var largept = this.gsvg.createSVGPoint()
-                var smallpt = this.gsvg.createSVGPoint()
 
                 //gsap.set(this.gsvg, { attr: { viewBox: "0 0 500 500"} })
 
@@ -343,28 +298,17 @@ export function farmAPI(_els, _setup) {
                     }
                 }
 
-                for (let index = 0; index < smallArr.length; index++) {
-                    if (Math.round(smallDragEl.x) == Math.round(smallArr[index].x)) {
-                        smalli = index
-                        break;
-                    }
-                }
-
                 if (largei != null) {//if i is null then it means that the combine is not snapped
+
+                    //calculating end position
                     largept.x = largeDragEl.x
                     largept.y = largeDragEl.y
 
                     //current point is transformed 1.farmgroup 2. screenMatrix inverse
                     largept = largept.matrixTransform(self.gsvg.getScreenCTM()) //undo screenmatrix to get position relative to farm
-                    let largex1 = largept.x //get start point
                     largept = largept.matrixTransform(self.farmGroup.getScreenCTM().inverse()) //undo farmgroup to calculate end position
 
-                    largept.x -= self.setup.plotWidth
-                    largept = largept.matrixTransform(self.farmGroup.getScreenCTM())
-                    let largex2 = largept.x //set end point before applying combine matrix
-
-                    largept = largept.matrixTransform(self.farmGroup.getScreenCTM().inverse())
-                    largept.x -= this.largeCombine.getBBox().width / 2
+                    largept.x -= self.setup.plotWidth + this.largeCombine.getBBox().width / 2
 
                     largept = largept.matrixTransform(self.farmGroup.getScreenCTM())
                     largept = largept.matrixTransform(self.gsvg.getScreenCTM().inverse())
@@ -372,14 +316,26 @@ export function farmAPI(_els, _setup) {
                     self.largeCombineDraggable[0].disable()
 
                     let T = gsap.timeline()
+
+                    let preCount = 0;
             
                     const arr = []
                     for (let j = 0; j < 50; j++) {
-                        //console.log(Math.floor(largei * 2 / 2) * 2, Math.floor(largei * 2 / 2) * 2 + 1, j)
-                        let temp = [this.plotArray[Math.floor(largei * 2 / 2) * 2][j], this.plotArray[Math.floor(largei * 2 / 2) * 2 + 1][j]]
+                        let el1 = this.plotArray[Math.floor(largei * 2 / 2) * 2][j]
+                        let el2 = this.plotArray[Math.floor(largei * 2 / 2) * 2 + 1][j]
+
+                        if (el1.style.visibility == "visible"){
+                            preCount += 0.001
+                        }
+                        if (el2.style.visibility == "visible"){
+                            preCount += 0.001
+                        }
+                        let temp = [el1, el2]
                         //console.log(temp)
                         arr.push(temp)
                     }
+
+                    let postCount = self.harvested + preCount
 
                     arr.forEach(e => {T.to(e, {visibility: "hidden", scaleX: 0, duration: (self.harvestDuration-1)/50, delay:0.01, 
                     onStart: function() {
@@ -395,42 +351,20 @@ export function farmAPI(_els, _setup) {
                 })})
 
                     gsap.to(self.largeCombineText, { x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear",
-                     
                     onComplete: function() {
                         self.animationPlaying = false;
                         self.largeCombineDraggable[0].enable()
+                        if (self.harvested != postCount) {
+                            self.harvested = postCount
+                            self.harvestTotalLarge.textContent = String(self.harvested.toFixed(3))
+                            gsap.set(self.harvestTotalLarge, { x: - self.harvestTotalLarge.getBBox().width / 2 })
+                        }
                     }
                     })
                     self.animationPlaying = true;
                 }
                 else {
                     console.log("orange combine is not snapped")
-                }
-
-                if (smalli != null) {//if i is null then it means that the combine is not snapped
-
-                    smallpt.x = smallDragEl.x
-                    smallpt.y = smallDragEl.y
-
-                    //current point is transformed 1.farmgroup 2. combinematrix inverse
-                    smallpt = smallpt.matrixTransform(self.gsvg.getScreenCTM()) //undo combinematrix to get position relative to farm
-                    let smallx1 = smallpt.x //get start point
-                    smallpt = smallpt.matrixTransform(self.farmGroup.getScreenCTM().inverse()) //undo farmgroup to calculate end position
-
-                    smallpt.x -= self.setup.plotWidth
-                    smallpt = smallpt.matrixTransform(self.farmGroup.getScreenCTM())
-                    let smallx2 = smallpt.x //set end point before applying combine matrix
-
-                    smallpt = smallpt.matrixTransform(self.farmGroup.getScreenCTM().inverse())
-                    smallpt.x -= this.smallCombine.getBBox().width / 2
-
-                    smallpt = smallpt.matrixTransform(self.farmGroup.getScreenCTM())
-                    smallpt = smallpt.matrixTransform(self.gsvg.getScreenCTM().inverse())
-
-                    gsap.to(self.smallCombineText, { x: smallpt.x, y: smallpt.y, duration: self.harvestDuration + 1, ease: "linear", onUpdate: self.handleHarvest, onUpdateParams: [smallx1, (smallx2 - smallx1) / 49, smalli, self.smallCombine, self.harvestTotalSmall] })
-                }
-                else {
-                    //console.log("yellow combine is not snapped")
                 }
             }
 
@@ -518,11 +452,6 @@ export function farmAPI(_els, _setup) {
             this.plotIncrementWidth = this.plotBBox.width / 10;
             this.plotIncrementHeight = this.plotBBox.height / 10;
 
-            //zoom init
-            //gsap.set(this.zoomControls, {x: 250 - this.zoomControls.getBBox().x - this.zoomControls.getBBox().width/2, y: 450 - this.zoomControls.getBBox().y})
-            //let uiBBox = (this.gsvgu.getElementById("ui") as SVGSVGElement).getBBox()
-            //gsap.set(this.gsvgu.getElementById("ui"), {x: 250 - uiBBox.x - uiBBox.width/2})
-
             //generating grid lines
             this.generateLines()
             this.fillPlot()
@@ -538,21 +467,10 @@ export function farmAPI(_els, _setup) {
 
             //combine start pos
             gsap.set(this.largeCombineText, { attr: { count: 0 }, x: 50, y: 80 })
-            gsap.set(this.smallCombineText, { attr: { count: 0 }, x: 400, y: 80, display: "none" })
 
             //harvest number init
             this.harvestTotalLarge.textContent = "0"
             gsap.set(this.harvestTotalLarge, { x: - this.harvestTotalLarge.getBBox().width / 2 })
-
-            this.harvestTotalSmall.textContent = "0"
-            gsap.set(this.harvestTotalSmall, { x: - this.harvestTotalSmall.getBBox().width / 2 })
-
-            //hide flower elements
-            //gsap.set(this.pinkFlowerBed, { display: "none" })
-            //gsap.set(this.purpleFlowerBed, { display: "none" })
-            //gsap.set(this.blueFlowerBed, { display: "none" })
-            //gsap.set(this.wheat, {display: "none"})
-            //calculate snap locations for combine
 
             var pt = this.gsvg.createSVGPoint()
 
@@ -566,16 +484,6 @@ export function farmAPI(_els, _setup) {
                 pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
                 let temp = { x: pt.x, y: pt.y }
                 largeCombineSnapPoints.push(temp)
-            }
-
-            let smallCombineSnapPoints = []
-            for (let i = 1; i < 21; i++) {
-                pt.x = this.setup.plotWidth + this.smallCombine.getBBox().width
-                pt.y = ((19 - i) * (this.plotIncrementHeight / 2)) + 20
-                pt = pt.matrixTransform(this.farmGroup.getScreenCTM())
-                pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
-                let temp = { x: pt.x, y: pt.y }
-                smallCombineSnapPoints.push(temp)
             }
 
             this.largeCombineDraggable = Draggable.create(this.largeCombineText, {
@@ -596,14 +504,6 @@ export function farmAPI(_els, _setup) {
                 }
             })
 
-            this.smallCombineDraggable = Draggable.create(this.smallCombineText, {
-                type: "x, y",
-                liveSnap: {
-                    points: smallCombineSnapPoints,
-                    radius: 50
-                },
-            })
-
             //event listeners
             this.farmGroup.addEventListener("pointerdown", e => { this.hitTest(e) })
 
@@ -616,7 +516,7 @@ export function farmAPI(_els, _setup) {
             this.gsvg.addEventListener("pointermove", e => this.whileDrag(e))
             this.gsvg.addEventListener("pointerup", e => this.endDrag(e))
 
-            this.gsvgu.getElementById("playButton").addEventListener("pointerdown", e => this.handlePlay(largeCombineSnapPoints, smallCombineSnapPoints, this.largeCombineDraggable[0], this.smallCombineDraggable[0]))
+            this.gsvgu.getElementById("playButton").addEventListener("pointerdown", e => this.handlePlay(largeCombineSnapPoints, this.largeCombineDraggable[0]))
 
             gsap.utils.toArray(".pointer").forEach(element => element.addEventListener("pointerdown", e => this.handlePointerChange(element)))
             gsap.utils.toArray(".grid").forEach(element => element.addEventListener("pointerdown", e => this.handleGridToggle(element)))
