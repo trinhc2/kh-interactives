@@ -28,3 +28,11 @@ svg {
 #harvestTotalLarge, #harvestTotalSmall {
     user-select: none;
 }
+
+.grid:hover rect, .pointer:hover circle, #playButton:hover circle{
+    fill: #c3e7b3 !important;
+}
+
+#zoomOut:hover path, #zoomIn:hover path, #zoomOut:hover circle, #zoomIn:hover circle {
+    stroke: #c3e7b3 !important;
+}
