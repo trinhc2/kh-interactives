@@ -23,7 +23,6 @@
     "@angular/platform-browser-dynamic": "~10.0.14",
     "@angular/router": "~10.0.14",
     "express": "^4.18.1",
-    "fabric": "^5.2.1",
     "gsap": "^3.10.3",
     "path": "^0.12.7",
     "pixi.js": "^5.3.3",

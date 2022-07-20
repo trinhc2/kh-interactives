@@ -10,9 +10,6 @@ import { TestComponent } from './test/test.component';
 import { KhDecomposeNumberComponent } from './kh-decompose-number/kh-decompose-number.component';
 import { KhSliderInputComponent } from './kh-slider-input/kh-slider-input.component';
 import { KhFarmComponent } from './kh-farm/kh-farm.component';
-import { PlanetfactoryComponent } from "./planetfactory/planetfactory.component";
-import { MoonfactoryComponent } from  "./moonfactory/moonfactory.component"
-import { DrawingInputComponent} from "./drawing-input/drawing-input.component"
 import {MatButtonModule} from '@angular/material/button';
 import { KhFarmRandomComponent } from './kh-farm-random/kh-farm-random.component';
 import { KhZoomComponent } from './kh-zoom/kh-zoom.component';
@@ -27,9 +24,6 @@ import { KhZoomComponent } from './kh-zoom/kh-zoom.component';
     KhDecomposeNumberComponent,
     KhSliderInputComponent,
     KhFarmComponent,
-    PlanetfactoryComponent,
-    MoonfactoryComponent,
-    DrawingInputComponent,
     KhFarmRandomComponent,
     KhZoomComponent
   ],

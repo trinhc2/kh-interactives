@@ -12,10 +12,7 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app w
 * /slider = Slider Input
 * /farm = Farm Decimals
 * /farmrand = Farm with randomly generated beds
-* /planetFactory = Planet Factory
-* /moonFactory = Moon Factory
 * /decompose = Number Decomposition
-* /draw = Drawing Input
 
 ## Code scaffolding
 
