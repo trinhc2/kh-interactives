@@ -29,6 +29,10 @@ svg {
     user-select: none;
 }
 
+.grid rect, .pointer circle, #playButton circle, #zoomControls{
+    filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.4));
+}
+
 .grid:hover rect, .pointer:hover circle, #playButton:hover circle{
     fill: #c3e7b3 !important;
 }
