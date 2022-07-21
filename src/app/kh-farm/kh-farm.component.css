@@ -25,7 +25,7 @@ svg {
     pointer-events: all;
 }
 
-#harvestTotalLarge, #harvestTotalSmall {
+#harvestTotalLarge{
     user-select: none;
 }
 

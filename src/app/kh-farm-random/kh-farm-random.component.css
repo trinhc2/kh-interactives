@@ -2,26 +2,41 @@
     cursor: pointer;
 }
 
-.color, .pointer, #grid, #zoomIn, #zoomOut, #playButton {
-    cursor:pointer;
-    pointer-events: bounding-box;
-}
-
 svg {
     height: auto;
     width: auto;
-    max-width: 700px;
     min-width: 300px;
 }
 
 .upperRenderEl, .lowerRenderEl {
     position: absolute;
+    left: 0px;
+    top: 0px;
+    height: 100%;
+    width: 100%;
 }
 
 .upperRenderEl {
     pointer-events: none;
 }
 
-#harvestTotalLarge, #harvestTotalSmall {
+.pointer, .grid, #zoomIn, #zoomOut, #playButton {
+    cursor:pointer;
+    pointer-events: all;
+}
+
+#harvestTotalLarge{
     user-select: none;
+}
+
+.grid rect, .pointer circle, #playButton circle, #zoomControls{
+    filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.4));
+}
+
+.grid:hover rect, .pointer:hover circle, #playButton:hover circle{
+    fill: #c3e7b3 !important;
+}
+
+#zoomOut:hover path, #zoomIn:hover path, #zoomOut:hover circle, #zoomIn:hover circle {
+    stroke: #c3e7b3 !important;
 }

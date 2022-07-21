@@ -13,6 +13,7 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app w
 * /farm = Farm Decimals
 * /farmrand = Farm with randomly generated beds
 * /decompose = Number Decomposition
+* /zoom = SVG Zoom Model
 
 ## Code scaffolding
 

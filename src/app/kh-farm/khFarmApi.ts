@@ -34,7 +34,6 @@ export function farmAPI(_els, _setup) {
         largeCombineText: SVGSVGElement
         gridState: any
         pointerState: any
-        previousState: any
         zoomControls: SVGSVGElement
         plant: HTMLElement
         move: HTMLElement
@@ -75,7 +74,6 @@ export function farmAPI(_els, _setup) {
             this.plant = this.gsvgu.getElementById("plant") as HTMLElement
             this.move = this.gsvgu.getElementById("move") as HTMLElement
             this.pointerState = this.plant
-            this.previousState = this.plant
             this.harvestTotalLarge = this.gsvg.getElementById("harvestTotalLarge") as SVGSVGElement
             this.harvestTotalSmall = this.gsvg.getElementById("harvestTotalSmall") as SVGSVGElement
             this.zoomControls = this.gsvgu.getElementById("zoomControls") as SVGSVGElement
@@ -291,6 +289,7 @@ export function farmAPI(_els, _setup) {
 
                 //gsap.set(this.gsvg, { attr: { viewBox: "0 0 500 500"} })
 
+                //check if combine is snapped
                 for (let index = 0; index < largeArr.length; index++) {
                     if (Math.round(largeDragEl.x) == Math.round(largeArr[index].x)) {
                         largei = index
@@ -313,10 +312,10 @@ export function farmAPI(_els, _setup) {
                     largept = largept.matrixTransform(self.farmGroup.getScreenCTM())
                     largept = largept.matrixTransform(self.gsvg.getScreenCTM().inverse())
 
+                    //prevent combine from being draggable after animation start
                     self.largeCombineDraggable[0].disable()
 
-                    let T = gsap.timeline()
-
+                    //pre calculating the two rows to be harvested
                     let preCount = 0;
             
                     const arr = []
@@ -337,6 +336,9 @@ export function farmAPI(_els, _setup) {
 
                     let postCount = self.harvested + preCount
 
+                    //syncing wheat harvest with combine timeline
+                    let T = gsap.timeline()
+
                     arr.forEach(e => {T.to(e, {visibility: "hidden", scaleX: 0, duration: (self.harvestDuration-1)/50, delay:0.01, 
                     onStart: function() {
                         if (e[0].style.visibility == "visible") {
@@ -347,9 +349,9 @@ export function farmAPI(_els, _setup) {
                         }
                         self.harvestTotalLarge.textContent = String(self.harvested.toFixed(3))
                         gsap.set(self.harvestTotalLarge, { x: - self.harvestTotalLarge.getBBox().width / 2 })
-                    }
-                })})
+                    }})})
 
+                    //animate combine
                     gsap.to(self.largeCombineText, { x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear",
                     onComplete: function() {
                         self.animationPlaying = false;
@@ -359,21 +361,13 @@ export function farmAPI(_els, _setup) {
                             self.harvestTotalLarge.textContent = String(self.harvested.toFixed(3))
                             gsap.set(self.harvestTotalLarge, { x: - self.harvestTotalLarge.getBBox().width / 2 })
                         }
-                    }
-                    })
+                    }})
                     self.animationPlaying = true;
                 }
                 else {
                     console.log("orange combine is not snapped")
                 }
             }
-
-        }
-
-        removeElement(element, i, j) {// can optimize more, place i,j,type as attributes and perform the respective for loops
-            //console.log("call", self.TL.isActive(), i, j)
-            self.plotArray[i][j] = null
-            self.gsvg.getElementById(element.id).remove()//makes sure to remove all elements with name, spam clicking would sometimes create unreachable element
         }
 
         handleZoomIn() {
@@ -416,10 +410,10 @@ export function farmAPI(_els, _setup) {
                 gsap.set(this.hundreds, { display: "none" })
                 gsap.utils.toArray("rect", this.rows)[0].style.fill = "#c3e7b3"
             }
-
         }
 
         handlePointerChange(element) {
+            gsap.utils.toArray("circle", this.pointerState)[0].style.fill = "#93c47d"
             this.pointerState = element
             this.dragEnabled = false
             this.gsvg.style.cursor = "default"
@@ -435,9 +429,7 @@ export function farmAPI(_els, _setup) {
                 this.farmGroup.style.cursor = "move"
 
             }
-            gsap.utils.toArray("circle", this.previousState)[0].style.fill = "#93c47d"
-            gsap.utils.toArray("circle", element)[0].style.fill = "#c3e7b3"
-            this.previousState = element
+            gsap.utils.toArray("circle", this.pointerState)[0].style.fill = "#c3e7b3"
         }
 
         init() {
@@ -472,6 +464,7 @@ export function farmAPI(_els, _setup) {
             this.harvestTotalLarge.textContent = "0"
             gsap.set(this.harvestTotalLarge, { x: - this.harvestTotalLarge.getBBox().width / 2 })
 
+            //large combine init
             var pt = this.gsvg.createSVGPoint()
 
             let largeCombineSnapPoints = []
@@ -506,8 +499,6 @@ export function farmAPI(_els, _setup) {
 
             //event listeners
             this.farmGroup.addEventListener("pointerdown", e => { this.hitTest(e) })
-
-            //this.gsvgu.getElementById("grid").addEventListener("pointerdown", e => this.handleGridToggle())
 
             this.gsvgu.getElementById("zoomIn").addEventListener("pointerdown", e => this.handleZoomIn())
             this.gsvgu.getElementById("zoomOut").addEventListener("pointerdown", e => this.handleZoomOut())
