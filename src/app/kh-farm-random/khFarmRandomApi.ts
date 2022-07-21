@@ -433,6 +433,107 @@ export function farmAPI(_els, _setup) {
             gsap.utils.toArray("circle", this.pointerState)[0].style.fill = "#c3e7b3"
         }
 
+        /*
+        generateRandomIndices() {
+            let arr = []
+            for (let i = 0; i < self.plotArray.length; i++) {
+                for (let j = 0; j < self.plotArray[0].length; j++) {
+                    //console.log(i,j)
+                    arr.push(i);
+                    arr.push(j);
+                }
+            }
+            console.log(arr)
+
+            //let n = Math.floor(Math.random() * (850 - 150 + 1)) + 150
+            let n = 600
+
+            console.log("generated: ", n)
+
+            let els = []
+            let arrCopy = [...arr]
+
+            let split = Math.floor(n / 3)
+            console.log(split)
+            
+            for (let i = 0; i < Math.floor(split / 100); i++){
+                let int = Math.round(Math.random() * arrCopy.length/100)
+                //console.log(int, Math.floor(int/2))
+                int = Math.floor(int/2)
+                var temp
+                //console.log("ints", int*2, int*2+1)
+                for (let j = 0; j < 100; j+=2){
+                    temp = [arrCopy[((int*2)*100)+j], arrCopy[(int*2*100)+j+1]]
+                    els.push(temp)
+                    temp = [arrCopy[((int*2+1)*100)+j], arrCopy[((int*2+1)*100)+j+1]]
+                    els.push(temp)
+                }
+                arrCopy.splice((int*2*100), 100)
+                arrCopy.splice((int*2*100), 100)
+            }
+
+            n -= Math.floor(split/100) * 100;
+            console.log(arrCopy, arrCopy.length)
+            
+            for (let i = 0; i < Math.floor(split / 10); i++){
+            //    for (let i = 0; i < 1; i++){
+                //console.log(i)
+                let index = Math.floor(Math.random() * arrCopy.length/100)
+                let jIndex = Math.round(Math.random() * 100)
+                console.log("index", index)
+                
+                index = Math.floor(index/2)
+                jIndex = Math.floor(jIndex/5)
+
+                console.log("test", index*2,index*2+1)
+                console.log("jindex",  jIndex*5,  jIndex*5+5)
+                let int = Math.round(Math.random() * arrCopy.length/10)
+                int = Math.floor(int/2)
+                var temp;
+                //console.log("ints", int*2, int*2+1)
+                for (let j = 0; j < 10; j+=2){
+                    
+                    temp = [arrCopy[(index*2*100)+jIndex*5+j], arrCopy[(index*2*100)+jIndex*5+j+1]]
+                    console.log((index*2*100)+jIndex*5+j, (index*2*100)+jIndex*5+j+1, temp)
+                    //console.log("iteration", (int*20)+j, (int*20)+j+1, temp)
+                    //els.push(temp)
+                    temp = [arrCopy[((index*2+1)*100)+jIndex*5+j], arrCopy[((index*2+1)*100)+jIndex*5+j+1]]
+                    console.log(((index*2+1)*100)+jIndex*5+j, ((index*2+1)*100)+jIndex*5+j+1, temp)
+                    //els.push(temp)
+                }
+                //arrCopy.splice(((index*2*100)+jIndex*5), 10)
+                //arrCopy.splice((((index*2+1)*100)+jIndex*5-10), 10)
+            }
+            return els
+            /*
+            for (let i = 0; i < n; i++) {
+                let l = arrCopy.length;
+                let int = Math.round(Math.random() * l)
+                var temp;
+                if (int % 2 == 0) {
+                    if (int == l){//if int is the last element 
+                        temp = [arrCopy[int-2], arrCopy[int-1]]
+                        arrCopy.splice(int-2, 2)
+                        els.push(temp)
+                        
+                    }
+                    else {
+                        temp = [arrCopy[int], arrCopy[int+1]]
+                        arrCopy.splice(int, 2)
+                        els.push(temp)
+                    }
+                }
+                else {
+                    temp = [arrCopy[int-1], arrCopy[int]]
+                    arrCopy.splice(int-1, 2)
+                    els.push(temp)
+                }
+                
+            }
+            return els
+            
+        }
+        */
         generateRandomIndices() {
             let arr = []
             for (let i = 0; i < self.plotArray.length; i++) {
@@ -443,7 +544,7 @@ export function farmAPI(_els, _setup) {
                 }
             }
 
-            let n = Math.floor(Math.random() * (700 - 300 + 1)) + 300
+            let n = Math.floor(Math.random() * (850 - 150 + 1)) + 150
 
             let els = []
             let arrCopy = [...arr]
@@ -482,44 +583,6 @@ export function farmAPI(_els, _setup) {
                 let j = indices[index][1]
                 gsap.set(this.plotArray[i][j], {visibility: "visible", scaleX: 0.22})
             }
-            /*
-            let indices = this.generateRandomIndices()
-            //console.log(indices)
-            //let indices = [[0,0],[1,1],[0,2],[1,3],[0,4],[0,5],[1,6],[0,7],[1,8],[0,9]]
-
-            let innerGridIncrementX = this.plotIncrementWidth / 5;
-            let innerGridIncrementY = this.plotIncrementHeight / 2
-
-            //current grid is rotated for plant/harvest animation, (0,0 is actually 19,49)
-            for (let index = 0; index < indices.length; index++) {
-                let rect = document.createElementNS(this.svgns, "rect")
-
-                let rectWidth = this.plotIncrementWidth / 5 + 0.2 //0.2 to cover edges better
-                let rectHeight = (this.plotIncrementHeight / 2)
-
-                let i = indices[index][0]
-                let j = indices[index][1]
-                let rectID = `thousands${i}-${j}`
-                //console.log(rectID, i, j, index)
-
-                let xVal = (49 - j) * innerGridIncrementX + (0.3 - (((49 - j) % 5) * 0.2))
-                let yVal = (19 - i) * innerGridIncrementY
-                if ((j % 5) == 0) {
-                    rectWidth += 0.5
-                    xVal += 0.25
-                }
-                if ((j % 5) == 4) {
-                    rectWidth += 0.5
-                    xVal -=0.25
-                }
-                this.plotArray[i][j] = [this.flowerColor, rect]
-                this.colorCounter[this.colorDictionary[this.plotArray[i][j][0]]]++
-                gsap.set(rect, { attr: { id: rectID }, x: xVal, y: yVal, width: rectWidth, height: rectHeight, fill: this.flowerColor })
-                this.gsvg.getElementById("fill").appendChild(rect)
-            }
-
-            console.log(this.plotArray)
-            */
         }
 
         init() {
@@ -549,7 +612,7 @@ export function farmAPI(_els, _setup) {
             gsap.set(this.farmGroup, { x: 125, y: 100 })
 
             //combine start pos
-            gsap.set(this.largeCombineText, { attr: { count: 0 }, x: 50, y: 80 })
+            gsap.set(this.largeCombineText, { x: 50, y: 80 })
 
             //harvest number init
             this.harvestTotalLarge.textContent = "0"
