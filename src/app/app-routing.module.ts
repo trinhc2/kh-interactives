@@ -6,6 +6,8 @@ import { KhFarmComponent } from './kh-farm/kh-farm.component';
 import { KhSliderInputComponent } from './kh-slider-input/kh-slider-input.component';
 import { KhFarmRandomComponent } from './kh-farm-random/kh-farm-random.component';
 import { KhZoomComponent } from './kh-zoom/kh-zoom.component';
+import { KhFractionToolComponent } from './kh-fraction-tool/kh-fraction-tool.component';
+
 
 
 const routes: Routes = [
@@ -15,7 +17,8 @@ const routes: Routes = [
   { path: 'decompose', component: KhDecomposeNumberComponent },
   { path: 'draw', component: ContainerComponent },
   { path: 'farmrand', component: KhFarmRandomComponent},
-  { path: 'zoom', component: KhZoomComponent}
+  { path: 'zoom', component: KhZoomComponent},
+  { path: 'fraction', component: KhFractionToolComponent}
 ]
 
 @NgModule({

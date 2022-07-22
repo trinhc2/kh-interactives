@@ -479,61 +479,37 @@ export function farmAPI(_els, _setup) {
             //    for (let i = 0; i < 1; i++){
                 //console.log(i)
                 let index = Math.floor(Math.random() * arrCopy.length/100)
-                let jIndex = Math.round(Math.random() * 100)
-                console.log("index", index)
+                let jIndex = Math.round(Math.random() * 50)
+                console.log("j index",index, jIndex)
                 
                 index = Math.floor(index/2)
                 jIndex = Math.floor(jIndex/5)
 
-                console.log("test", index*2,index*2+1)
-                console.log("jindex",  jIndex*5,  jIndex*5+5)
+                //console.log("test", index*2,index*2+1)
+                console.log("jindex 2", index*2, jIndex*5*2)
                 let int = Math.round(Math.random() * arrCopy.length/10)
                 int = Math.floor(int/2)
                 var temp;
                 //console.log("ints", int*2, int*2+1)
                 for (let j = 0; j < 10; j+=2){
                     
-                    temp = [arrCopy[(index*2*100)+jIndex*5+j], arrCopy[(index*2*100)+jIndex*5+j+1]]
-                    console.log((index*2*100)+jIndex*5+j, (index*2*100)+jIndex*5+j+1, temp)
+                    temp = [arrCopy[(index*2*100)+jIndex*10+j], arrCopy[(index*2*100)+jIndex*10+j+1]]
+                    console.log((index*2*100)+jIndex*10+j, (index*2*100)+jIndex*10+j+1, temp)
                     //console.log("iteration", (int*20)+j, (int*20)+j+1, temp)
-                    //els.push(temp)
-                    temp = [arrCopy[((index*2+1)*100)+jIndex*5+j], arrCopy[((index*2+1)*100)+jIndex*5+j+1]]
-                    console.log(((index*2+1)*100)+jIndex*5+j, ((index*2+1)*100)+jIndex*5+j+1, temp)
-                    //els.push(temp)
-                }
-                //arrCopy.splice(((index*2*100)+jIndex*5), 10)
-                //arrCopy.splice((((index*2+1)*100)+jIndex*5-10), 10)
-            }
-            return els
-            /*
-            for (let i = 0; i < n; i++) {
-                let l = arrCopy.length;
-                let int = Math.round(Math.random() * l)
-                var temp;
-                if (int % 2 == 0) {
-                    if (int == l){//if int is the last element 
-                        temp = [arrCopy[int-2], arrCopy[int-1]]
-                        arrCopy.splice(int-2, 2)
-                        els.push(temp)
-                        
-                    }
-                    else {
-                        temp = [arrCopy[int], arrCopy[int+1]]
-                        arrCopy.splice(int, 2)
-                        els.push(temp)
-                    }
-                }
-                else {
-                    temp = [arrCopy[int-1], arrCopy[int]]
-                    arrCopy.splice(int-1, 2)
+                    els.push(temp)
+                    temp = [arrCopy[((index*2+1)*100)+jIndex*10+j], arrCopy[((index*2+1)*100)+jIndex*10+j+1]]
+                    console.log(((index*2+1)*100)+jIndex*10+j, ((index*2+1)*100)+jIndex*10+j+1, temp)
                     els.push(temp)
                 }
-                
+                arrCopy.splice(((index*2*100)+jIndex*10), 10)
+                arrCopy.splice((((index*2+1)*100)+jIndex*10-10), 10)
             }
+            console.log(arrCopy)
+            console.log(els)
             return els
-            
         }
         */
+        
         generateRandomIndices() {
             let arr = []
             for (let i = 0; i < self.plotArray.length; i++) {

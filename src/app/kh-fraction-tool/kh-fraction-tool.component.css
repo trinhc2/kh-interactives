@@ -1,0 +1,9 @@
+svg {
+    height: auto;
+    width: auto;
+}
+
+#fraction, #playButton {
+    cursor: pointer;
+    pointer-events: all;
+}

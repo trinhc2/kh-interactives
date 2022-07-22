@@ -13,6 +13,7 @@ import { KhFarmComponent } from './kh-farm/kh-farm.component';
 import {MatButtonModule} from '@angular/material/button';
 import { KhFarmRandomComponent } from './kh-farm-random/kh-farm-random.component';
 import { KhZoomComponent } from './kh-zoom/kh-zoom.component';
+import { KhFractionToolComponent } from './kh-fraction-tool/kh-fraction-tool.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { KhZoomComponent } from './kh-zoom/kh-zoom.component';
     KhSliderInputComponent,
     KhFarmComponent,
     KhFarmRandomComponent,
-    KhZoomComponent
+    KhZoomComponent,
+    KhFractionToolComponent
   ],
   imports: [
     BrowserModule,
