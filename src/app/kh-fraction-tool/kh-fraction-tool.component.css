@@ -1,9 +1,19 @@
 svg {
-    height: auto;
-    width: auto;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    height: 100%;
+    width: 100%;
 }
 
-#fraction, #playButton {
+#fraction, #playButton, #increase, #decrease {
     cursor: pointer;
     pointer-events: all;
+}
+
+#playButton:hover circle {
+    fill: #e9bbbb !important;
+}
+#increase:hover path, #decrease:hover path {
+    stroke: #e9bbbb !important;
 }
