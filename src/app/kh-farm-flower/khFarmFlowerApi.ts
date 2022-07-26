@@ -1,5 +1,6 @@
 import { gsap, Draggable } from "gsap/all"
 
+
 export interface farmSetup {
     height: number
     width: number
@@ -34,8 +35,10 @@ export function farmAPI(_els, _setup) {
         gridState: any
         pointerState: any
         zoomControls: SVGSVGElement
-        plant: HTMLElement
-        move: HTMLElement
+        plantPink: SVGSVGElement
+        plantBlue: SVGSVGElement
+        flowerHREF = "#pinkFlowerBed"
+        move: SVGSVGElement
         zoomLevel = 0
         plotArray = Array.from(Array(20), () => new Array(50))
         colorDictionary = { "rgb(239, 90, 104)": "pink", "rgb(103, 78, 167)": "purple", "rgb(0, 169, 211)": "blue", "rgb(254, 201, 0)": "wheat" }
@@ -70,9 +73,10 @@ export function farmAPI(_els, _setup) {
             this.farmGroup = this.gsvg.getElementById("farmGroup") as SVGSVGElement
             this.largeCombine = this.gsvg.getElementById("largeCombine") as SVGSVGElement
             this.largeCombineText = this.gsvg.getElementById("largeCombineText") as SVGSVGElement
-            this.plant = this.gsvgu.getElementById("plant") as HTMLElement
-            this.move = this.gsvgu.getElementById("move") as HTMLElement
-            this.pointerState = this.plant
+            this.plantPink = this.gsvgu.getElementById("plantPink") as SVGSVGElement
+            this.plantBlue = this.gsvgu.getElementById("plantBlue") as SVGSVGElement
+            this.move = this.gsvgu.getElementById("move") as SVGSVGElement
+            this.pointerState = this.plantPink
             this.harvestTotalLarge = this.gsvg.getElementById("harvestTotalLarge") as SVGSVGElement
             this.harvestTotalSmall = this.gsvg.getElementById("harvestTotalSmall") as SVGSVGElement
             this.zoomControls = this.gsvgu.getElementById("zoomControls") as SVGSVGElement
@@ -124,8 +128,35 @@ export function farmAPI(_els, _setup) {
             }
         }
 
+        fillPlot() {
+            
+            let innerGridIncrementX = this.plotIncrementWidth / 5;
+            let innerGridIncrementY = this.plotIncrementHeight / 2
+
+            for (let index = 0; index < 20; index++){
+                for (let jIndex = 50; jIndex > 0; jIndex--) {
+                    //console.log(temp)
+                    let plotArrayI = 19 - index
+                    let plotArrayJ = jIndex - 1
+
+                    let xVal = (50 - jIndex) * (innerGridIncrementX) + (1 - ((50 - jIndex) % 5) * 0.2)
+                    let yVal = (index) * (innerGridIncrementY) + (0.8 - (index % 2) * 0.5)
+                    let rectID = `${plotArrayI}-${plotArrayJ}`
+
+                    //animate flower
+                    let png = document.createElementNS(this.svgns, "use")
+                    gsap.set(png, {attr: { id: rectID, href: this.flowerHREF}, x: xVal, y: yVal, scaleX: 0, scaleY: 0.24, visibility: "hidden"})
+                    this.gsvg.getElementById("fill").appendChild(png)
+                    //temp.to(png, { scaleX: 0.22, duration: 1 }, "<")
+
+                    this.plotArray[plotArrayI][plotArrayJ] = png
+                }
+            }
+            console.log(this.plotArray)
+        }
+
         hitTest(e) {
-            if (this.pointerState == this.plant) {
+            if (this.pointerState != this.move) {
                 this.plantOrRemoveFlower(e)
             }
         }
@@ -156,33 +187,6 @@ export function farmAPI(_els, _setup) {
 
         endDrag(e) {
             this.isDragging = false;
-        }
-
-        fillPlot() {
-            
-            let innerGridIncrementX = this.plotIncrementWidth / 5;
-            let innerGridIncrementY = this.plotIncrementHeight / 2
-
-            for (let index = 0; index < 20; index++){
-                for (let jIndex = 50; jIndex > 0; jIndex--) {
-                    //console.log(temp)
-                    let plotArrayI = 19 - index
-                    let plotArrayJ = jIndex - 1
-
-                    let xVal = (50 - jIndex) * (innerGridIncrementX) + (1 - ((50 - jIndex) % 5) * 0.2)
-                    let yVal = (index) * (innerGridIncrementY) + (0.8 - (index % 2) * 0.5)
-                    let rectID = `${plotArrayI}-${plotArrayJ}`
-
-                    //animate flower
-                    let png = document.createElementNS(this.svgns, "use")
-                    gsap.set(png, {attr: { id: rectID, href: "#wheatPNG"}, x: xVal, y: yVal, scaleX: 0, scaleY: 0.24, visibility: "hidden"})
-                    this.gsvg.getElementById("fill").appendChild(png)
-                    //temp.to(png, { scaleX: 0.22, duration: 1 }, "<")
-
-                    this.plotArray[plotArrayI][plotArrayJ] = png
-                }
-            }
-            console.log(this.plotArray)
         }
 
         plantOrRemoveFlower(e) {
@@ -223,7 +227,7 @@ export function farmAPI(_els, _setup) {
                 let timeline = gsap.timeline()
                 if (this.gridState == this.beds) {
                     if (self.plotArray[i][j].style.visibility == "hidden"){
-                        gsap.set(this.plotArray[i][j], {visibility: "visible",})
+                        gsap.set(this.plotArray[i][j], {attr:{ href: this.flowerHREF},visibility: "visible"})
                         gsap.to(this.plotArray[i][j], { scaleX: 0.22, duration: 1,})
                     }
                     else {
@@ -236,10 +240,10 @@ export function farmAPI(_els, _setup) {
                     if (self.plotArray[i][j].style.visibility == "hidden"){
                         let index = Math.floor(i / 2) * 2
                             for (let jIndex = Math.floor(j / 5) * 5 + 4; jIndex >= Math.floor(j / 5) * 5; jIndex--) {
-                                timeline.set(this.plotArray[index][jIndex], {visibility: "visible"}, "<+=0.05")
+                                timeline.set(this.plotArray[index][jIndex], {attr:{ href: this.flowerHREF}, visibility: "visible"}, "<+=0.05")
                                 timeline.to(this.plotArray[index][jIndex], { scaleX: 0.22, duration: 1,}, "<")
 
-                                timeline.set(this.plotArray[index+1][jIndex], {visibility: "visible"}, "<")
+                                timeline.set(this.plotArray[index+1][jIndex], {attr:{ href: this.flowerHREF}, visibility: "visible"}, "<")
                                 timeline.to(this.plotArray[index+1][jIndex], { scaleX: 0.22, duration: 1,},"<")
                             }
                         
@@ -257,10 +261,10 @@ export function farmAPI(_els, _setup) {
                     if (self.plotArray[i][j].style.visibility == "hidden"){
                         let index = Math.floor(i / 2) * 2
                             for (let jIndex = 49; jIndex >= 0; jIndex--) {
-                                timeline.set(this.plotArray[index][jIndex], {visibility: "visible"}, "<+=0.02")
+                                timeline.set(this.plotArray[index][jIndex], {attr:{ href: this.flowerHREF}, visibility: "visible"}, "<+=0.02")
                                 timeline.to(this.plotArray[index][jIndex], { scaleX: 0.22, duration: 1,}, "<")
 
-                                timeline.set(this.plotArray[index+1][jIndex], {visibility: "visible"}, "<")
+                                timeline.set(this.plotArray[index+1][jIndex], {attr:{ href: this.flowerHREF}, visibility: "visible"}, "<")
                                 timeline.to(this.plotArray[index+1][jIndex], { scaleX: 0.22, duration: 1,},"<")
                             }
                         
@@ -279,7 +283,6 @@ export function farmAPI(_els, _setup) {
             //console.log("i = " + i, "j = " + j)
             console.log(this.plotArray)
         }
-
 
         handlePlay(largeArr, largeDragEl) {
             if (!self.animationPlaying) {
@@ -338,8 +341,9 @@ export function farmAPI(_els, _setup) {
 
                     //syncing wheat harvest with combine timeline
                     let T = gsap.timeline()
+                    T.pause()
 
-                    arr.forEach(e => {T.to(e, {visibility: "hidden", scaleX: 0, duration: (self.harvestDuration-1)/50, delay:0.0, 
+                    arr.forEach(e => {T.to(e, {visibility: "hidden", scaleX: 0, duration: (self.harvestDuration-1)/50, delay:0.013, 
                     onStart: function() {
                         if (e[0].style.visibility == "visible") {
                             self.harvested += 0.001
@@ -352,7 +356,7 @@ export function farmAPI(_els, _setup) {
                     }})})
 
                     //animate combine
-                    gsap.to(self.largeCombineText, { x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear",
+                    gsap.to(self.largeCombineText, { x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear", onStart: function() {T.play()},
                     onComplete: function() {
                         self.animationPlaying = false;
                         self.largeCombineDraggable[0].enable()
@@ -369,7 +373,6 @@ export function farmAPI(_els, _setup) {
                 }
             }
         }
-
 
         handleZoomIn() {
             if (!this.animationPlaying) {
@@ -420,8 +423,13 @@ export function farmAPI(_els, _setup) {
             this.gsvg.style.cursor = "default"
             this.gsvg.style.touchAction = "auto"
 
-            if (this.pointerState == this.plant) {
+            if (this.pointerState == this.plantPink) {
                 this.farmGroup.style.cursor = "pointer"
+                this.flowerHREF = "#pinkFlowerBed"
+            }
+            else if (this.pointerState == this.plantBlue) {
+                this.farmGroup.style.cursor = "pointer"
+                this.flowerHREF = "#blueFlowerBed"
             }
             else if (this.pointerState == this.move) {
                 this.gsvg.style.touchAction = "pinch-zoom";/*lets pointer events work with mobile. only allowing pinch zoom incase user gets locked out*/
@@ -431,57 +439,6 @@ export function farmAPI(_els, _setup) {
 
             }
             gsap.utils.toArray("circle", this.pointerState)[0].style.fill = "#c3e7b3"
-        }
-        
-        generateRandomIndices() {
-            let arr = []
-            for (let i = 0; i < self.plotArray.length; i++) {
-                for (let j = 0; j < self.plotArray[0].length; j++) {
-                    //console.log(i,j)
-                    arr.push(i);
-                    arr.push(j);
-                }
-            }
-
-            let n = Math.floor(Math.random() * (850 - 150 + 1)) + 150
-
-            let els = []
-            let arrCopy = [...arr]
-            for (let i = 0; i < n; i++) {
-                let l = arrCopy.length;
-                let int = Math.round(Math.random() * l)
-                var temp;
-                if (int % 2 == 0) {
-                    if (int == l){//if int is the last element 
-                        temp = [arrCopy[int-2], arrCopy[int-1]]
-                        arrCopy.splice(int-2, 2)
-                        els.push(temp)
-                        
-                    }
-                    else {
-                        temp = [arrCopy[int], arrCopy[int+1]]
-                        arrCopy.splice(int, 2)
-                        els.push(temp)
-                    }
-                }
-                else {
-                    temp = [arrCopy[int-1], arrCopy[int]]
-                    arrCopy.splice(int-1, 2)
-                    els.push(temp)
-                }
-                
-            }
-            return els
-        }
-
-        generateFlowerBeds() {
-            let indices = this.generateRandomIndices()
-
-            for (let index = 0; index < indices.length; index++) {
-                let i = indices[index][0]
-                let j = indices[index][1]
-                gsap.set(this.plotArray[i][j], {visibility: "visible", scaleX: 0.22})
-            }
         }
 
         init() {
@@ -499,11 +456,10 @@ export function farmAPI(_els, _setup) {
             //generating grid lines
             this.generateLines()
             this.fillPlot()
-            this.generateFlowerBeds()
 
             //setting colors
             gsap.set(this.gsvg, { backgroundColor: "rgb(33, 192, 96)" })
-            gsap.utils.toArray("circle", this.plant)[0].style.fill = "#c3e7b3"
+            gsap.utils.toArray("circle", this.plantPink)[0].style.fill = "#c3e7b3"
             gsap.utils.toArray("rect", this.beds)[0].style.fill = "#c3e7b3"
 
             //fill-box allows rotation about center
@@ -511,7 +467,7 @@ export function farmAPI(_els, _setup) {
             gsap.set(this.farmGroup, { x: 125, y: 100 })
 
             //combine start pos
-            gsap.set(this.largeCombineText, { x: 60, y: 90 })
+            gsap.set(this.largeCombineText, { x: 50, y: 80 })
 
             //harvest number init
             this.harvestTotalLarge.textContent = "0"
