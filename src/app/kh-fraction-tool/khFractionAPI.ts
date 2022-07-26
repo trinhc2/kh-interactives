@@ -123,14 +123,13 @@ export function fractionAPI(_els) {
         }
 
         handleIncrease() {
-            if (this.denom < 13) {
+            if (this.denom < 12) {
                 console.log("increase")
                 this.denom++;
                 let arr = Array.from(this.fractionComparison.childNodes)
             
                 let rectWidth = 250 / this.denom
                 for (let i = arr.length-1; i > arr.length - this.denom; i--){
-                    console.log(i, rectWidth)
                     gsap.to(arr[i], {width: rectWidth})
                     rectWidth += (250 / this.denom)
                 }
@@ -146,7 +145,6 @@ export function fractionAPI(_els) {
                 let rectWidth = 250/this.denom
 
                 for (let i = arr.length-1; i >= arr.length - this.denom; i--){
-                    console.log(i, rectWidth)
                     gsap.to(arr[i], {width: rectWidth})
                     rectWidth += 250/(this.denom)
                     rectWidth = Math.min(250, rectWidth)
