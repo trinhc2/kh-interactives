@@ -339,7 +339,7 @@ export function farmAPI(_els, _setup) {
                     //syncing wheat harvest with combine timeline
                     let T = gsap.timeline()
 
-                    arr.forEach(e => {T.to(e, {visibility: "hidden", scaleX: 0, duration: (self.harvestDuration-1)/50, delay:0.0, 
+                    arr.forEach(e => {T.to(e, {visibility: "hidden", scaleX: 0, duration: (self.harvestDuration-1)/50, delay:0.01, 
                     onStart: function() {
                         if (e[0].style.visibility == "visible") {
                             self.harvested += 0.001
