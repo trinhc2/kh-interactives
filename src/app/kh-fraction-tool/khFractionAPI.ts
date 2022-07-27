@@ -21,6 +21,7 @@ export function fractionAPI(_els) {
         TL = gsap.timeline()
         fractionRectWidth = 50
         fractionRectHeight = 30
+        oldX = 0
 
 
 
@@ -57,10 +58,12 @@ export function fractionAPI(_els) {
                 var pt = this.els.createSVGPoint()
                 pt.x = e.clientX
                 pt.y = e.clientY
-                //pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
+                pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
+                console.log(pt)
 
                 this.dragStart.x = pt.x
                 this.dragStart.y = pt.y
+                this.oldX = pt.x
                 this.clicked = true;
                 if (e.target == this.lastFraction) {
                     this.lastSelected = true;
@@ -81,55 +84,66 @@ export function fractionAPI(_els) {
                 var pt = this.els.createSVGPoint()
                 pt.x = e.clientX
                 pt.y = e.clientY
+                pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
+                //let rectWidth = (pt.x - this.dragStart.x)
+                let rectWidth = this.lastFraction.getBBox().width + (pt.x - this.oldX)
+                //console.log(this.lastFraction.getBBox().width + (pt.x - this.oldX))
                 if (this.lastSelected) {
-                    let rectWidth = (this.dragStart.x - pt.x) / -1.5
+                    //rectWidth += (pt.x - this.oldX)
                     //console.log(rectWidth)
-                    if (rectWidth > 0) {
-                        console.log("pos clause")
-                        if (this.lastFraction.getBBox().width < this.fractionRectWidth) {
-                            gsap.set(this.lastFraction, { width: Math.min(rectWidth,this.fractionRectWidth) })
-                        }
-                        else {
+                    if ((pt.x - this.oldX) > 0) {
+                        console.log("right", this.lastFraction.getBBox().width, rectWidth)
+                        if (this.lastFraction.getBBox().width >= this.fractionRectWidth - 3) {
+                            gsap.set(this.lastFraction, { width: this.fractionRectWidth })
+
                             let rect = document.createElementNS(this.svgns, "rect")
                             this.lastFraction = rect as SVGSVGElement
                             gsap.set(this.lastFraction, { width: 0, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
                             this.fractionDrag.appendChild(this.lastFraction)
+                            this.sectionOffset += this.fractionRectWidth
                             this.dragStart.x = pt.x
                             this.dragStart.y = pt.y
-                            this.sectionOffset += this.fractionRectWidth
+                        }
+                        else {
+                            gsap.set(this.lastFraction, { width: rectWidth })
                         }
 
                     }
-                    else {
-                        console.log("else clause")
-                        if (this.lastFraction.getBBox().width > 1) {
-                            gsap.set(this.lastFraction, { width: Math.max(this.fractionRectWidth + rectWidth, 0) })
-                        }
-                        else {
-                            this.dragStart.x = pt.x
-                            this.dragStart.y = pt.y
+                    else if ((pt.x - this.oldX) < 0) {
+                        console.log("left", this.lastFraction.getBBox().width, rectWidth)
+                        if (this.lastFraction.getBBox().width <= 3) {
                             if (this.lastFraction != this.fractionDrag.firstChild) {
                                 this.sectionOffset -= this.fractionRectWidth
                                 this.lastFraction.remove();
                                 this.lastFraction = this.fractionDrag.lastChild as SVGSVGElement
+                                this.dragStart.x = pt.x
+                                this.dragStart.y = pt.y
                             }
+                        }
+                        else {
+                            console.log("else")
+                            gsap.set(this.lastFraction, { width: rectWidth })
                         }
                     }
                 }
                 else {
-                    let bbox = this.lastFraction.getBoundingClientRect()
-                    let temp = (this.dragStart.x - pt.x) / -300
-                    if (Math.round(bbox.width) >= Math.round(bbox.height)) {
-                        gsap.set(this.fractionDrag, { scaleX: `+=${temp}` })
-                        this.dragStart.x = e.clientX
-                        this.dragStart.y = e.clientY
+                    //console.log("else")
+                    let bbox = this.lastFraction.getBBox()
+                    let temp = (pt.x - this.dragStart.x) / 2
+                    if (bbox.width + temp >= Math.round(bbox.height)) {
+                        this.sectionOffset = 20
+                        let arr = Array.from(this.fractionDrag.childNodes)
+                        //console.log("loop")
+                        for (let i = 0; i < arr.length; i++){
+                            //console.log("loop", temp)
+                            gsap.set(arr[i], {width: `+=${temp}`, x:this.sectionOffset})
+                            this.sectionOffset += (arr[i] as SVGSVGElement).getBBox().width
+                        }
                     }
-                    else if (temp > 0) {
-                        gsap.set(this.fractionDrag, { scaleX: `+=${temp}` })
-                        this.dragStart.x = e.clientX
-                        this.dragStart.y = e.clientY
-                    }
+                    this.dragStart.x = pt.x
+                    this.dragStart.y = pt.y
                 }
+                this.oldX = pt.x
             }
         }
 
@@ -146,13 +160,14 @@ export function fractionAPI(_els) {
             }
             else if (this.dragged) {
                 this.dragged = false
-                if (this.lastFraction.getBBox().width < this.fractionRectWidth) {
+                if (this.lastFraction.getBBox().width < this.fractionRectWidth && this.lastSelected) {
                     console.log(this.lastFraction.getBBox().width)
                     gsap.set(this.lastFraction, { width: this.fractionRectWidth })
+                    this.lastSelected = false;
                 }
+                this.fractionRectWidth = this.lastFraction.getBBox().width
             }
             this.clicked = false;
-            this.lastSelected = false;
         }
 
         handleIncrease() {
