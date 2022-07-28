@@ -1,4 +1,3 @@
-import { ComponentFactoryResolver } from "@angular/core";
 import { gsap, Draggable } from "gsap/all"
 
 export function fractionAPI(_els) {
@@ -22,6 +21,7 @@ export function fractionAPI(_els) {
         fractionRectWidth = 50
         fractionRectHeight = 30
         oldX = 0
+        dragRef: any
 
 
 
@@ -31,6 +31,7 @@ export function fractionAPI(_els) {
             this.els = els
             this.fractionDrag = this.els.getElementById("fractionDrag") as SVGSVGElement
             this.fractionComparison = this.els.getElementById("fractionComparison") as SVGSVGElement
+            
 
             this.init();
         }
@@ -80,10 +81,12 @@ export function fractionAPI(_els) {
             if (e.target == this.lastFraction) {
                 this.lastSelected = true;
                 this.clicked = true;
+                this.dragRef[0].disable()
             }
 
             if (e.target.parentNode.id == "scale") {
                 this.clicked = true;
+                this.dragRef[0].disable()
             }
 
             if (e.target.parentNode.id == "playButton") {
@@ -184,6 +187,7 @@ export function fractionAPI(_els) {
                     this.lastSelected = false;
                 }
                 this.fractionRectWidth = this.lastFraction.getBBox().width
+                this.dragRef[0].enable()
             }
             this.clicked = false;
         }
@@ -320,9 +324,20 @@ export function fractionAPI(_els) {
         }
 
         init() {
-            //gsap.registerPlugin(MorphSVGPlugin)
+            gsap.registerPlugin(Draggable)
 
             this.generateFractionBar()
+
+            this.dragRef = Draggable.create(this.fractionDrag, {
+                type: 'x, y',
+                onDragStart: function() {
+                    self.dragged = true
+                },
+                onRelease: function() {
+                    self.dragged = false
+                }
+            })
+
             this.generateFractionComparison()
 
             this.els.addEventListener("pointerdown", e => this.handlePointerDown(e))
