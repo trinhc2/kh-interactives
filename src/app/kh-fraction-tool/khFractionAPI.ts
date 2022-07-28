@@ -37,6 +37,19 @@ export function fractionAPI(_els) {
 
         generateFractionBar() {
 
+            const label = document.createElementNS(this.svgns, "g");
+
+            let line = document.createElementNS(this.svgns, "line")
+            gsap.set(line, {attr: {y1: 80, y2:105, stroke: "rgb(224, 102, 102)"}, strokeWidth: 2})
+            label.appendChild(line)
+
+            let circle = document.createElementNS(this.svgns, "circle")
+            gsap.set(circle, {cy:80, r:10, fill: "rgb(224, 102, 102)"})
+            label.appendChild(circle)
+            
+            gsap.set(label, {attr: {id: "scale"}, x:this.sectionOffset+this.fractionRectWidth})
+            this.fractionDrag.appendChild(label)
+
             for (let i = 0; i < 3; i++) {
                 let rect = document.createElementNS(this.svgns, "rect")
                 gsap.set(rect, { width: this.fractionRectWidth, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
@@ -54,21 +67,25 @@ export function fractionAPI(_els) {
         }
 
         handlePointerDown(e) {
-            if (e.target.tagName == "rect") {
-                var pt = this.els.createSVGPoint()
-                pt.x = e.clientX
-                pt.y = e.clientY
-                pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
-                console.log(pt)
+            console.log(e.target, e.target.parentNode)
+            var pt = this.els.createSVGPoint()
+            pt.x = e.clientX
+            pt.y = e.clientY
+            pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
+            console.log(pt)
 
-                this.dragStart.x = pt.x
-                this.dragStart.y = pt.y
-                this.oldX = pt.x
+            this.dragStart.x = pt.x
+            this.dragStart.y = pt.y
+            this.oldX = pt.x
+            if (e.target == this.lastFraction) {
+                this.lastSelected = true;
                 this.clicked = true;
-                if (e.target == this.lastFraction) {
-                    this.lastSelected = true;
-                }
             }
+
+            if (e.target.parentNode.id == "scale") {
+                this.clicked = true;
+            }
+
             if (e.target.parentNode.id == "playButton") {
                 this.handlePlay()
             }
@@ -86,9 +103,9 @@ export function fractionAPI(_els) {
                 pt.y = e.clientY
                 pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
                 //let rectWidth = (pt.x - this.dragStart.x)
-                let rectWidth = this.lastFraction.getBBox().width + (pt.x - this.oldX)
                 //console.log(this.lastFraction.getBBox().width + (pt.x - this.oldX))
                 if (this.lastSelected) {
+                    let rectWidth = this.lastFraction.getBBox().width + (pt.x - this.oldX)
                     //rectWidth += (pt.x - this.oldX)
                     //console.log(rectWidth)
                     if ((pt.x - this.oldX) > 0) {
@@ -132,12 +149,13 @@ export function fractionAPI(_els) {
                     let temp = (pt.x - this.dragStart.x) / 2
                     if (bbox.width + temp >= Math.round(bbox.height)) {
                         this.sectionOffset = 20
-                        let arr = Array.from(this.fractionDrag.childNodes)
+                        let arr = gsap.utils.toArray("rect", this.fractionDrag)
                         //console.log("loop")
+                        gsap.set(this.fractionDrag.getElementById("scale"), {x: this.sectionOffset + temp + bbox.width})
                         for (let i = 0; i < arr.length; i++){
                             //console.log("loop", temp)
                             gsap.set(arr[i], {width: `+=${temp}`, x:this.sectionOffset})
-                            this.sectionOffset += (arr[i] as SVGSVGElement).getBBox().width
+                            this.sectionOffset += bbox.width + temp
                         }
                     }
                     this.dragStart.x = pt.x
