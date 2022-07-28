@@ -46,7 +46,7 @@ export function fractionAPI(_els) {
             let circle = document.createElementNS(this.svgns, "circle")
             gsap.set(circle, {cy:80, r:10, fill: "rgb(224, 102, 102)"})
             label.appendChild(circle)
-            
+
             gsap.set(label, {attr: {id: "scale"}, x:this.sectionOffset+this.fractionRectWidth})
             this.fractionDrag.appendChild(label)
 
@@ -71,7 +71,7 @@ export function fractionAPI(_els) {
             var pt = this.els.createSVGPoint()
             pt.x = e.clientX
             pt.y = e.clientY
-            pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
+            //pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
             console.log(pt)
 
             this.dragStart.x = pt.x
@@ -101,7 +101,7 @@ export function fractionAPI(_els) {
                 var pt = this.els.createSVGPoint()
                 pt.x = e.clientX
                 pt.y = e.clientY
-                pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
+                //pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
                 //let rectWidth = (pt.x - this.dragStart.x)
                 //console.log(this.lastFraction.getBBox().width + (pt.x - this.oldX))
                 if (this.lastSelected) {
@@ -146,12 +146,12 @@ export function fractionAPI(_els) {
                 else {
                     //console.log("else")
                     let bbox = this.lastFraction.getBBox()
-                    let temp = (pt.x - this.dragStart.x) / 2
+                    let temp = (pt.x - this.dragStart.x) / 1.1
                     if (bbox.width + temp >= Math.round(bbox.height)) {
                         this.sectionOffset = 20
                         let arr = gsap.utils.toArray("rect", this.fractionDrag)
                         //console.log("loop")
-                        gsap.set(this.fractionDrag.getElementById("scale"), {x: this.sectionOffset + temp + bbox.width})
+                        gsap.set(this.els.getElementById("scale"), {x: this.sectionOffset + temp + bbox.width})
                         for (let i = 0; i < arr.length; i++){
                             //console.log("loop", temp)
                             gsap.set(arr[i], {width: `+=${temp}`, x:this.sectionOffset})
