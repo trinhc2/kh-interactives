@@ -12,7 +12,7 @@ export function fractionAPI(_els) {
         lastSelected = false;
         svgns = "http://www.w3.org/2000/svg";
         dragged = false;
-        clicked = false;
+        fractionClicked = false;
         dragStart = { x: 0, y: 0 }
         sectionOffset = 20;
         fractionY = 100
@@ -31,27 +31,32 @@ export function fractionAPI(_els) {
             this.els = els
             this.fractionDrag = this.els.getElementById("fractionDrag") as SVGSVGElement
             this.fractionComparison = this.els.getElementById("fractionComparison") as SVGSVGElement
-            
+
 
             this.init();
         }
 
         generateFractionBar() {
 
+            //creating scaling visual
             const label = document.createElementNS(this.svgns, "g");
 
             let line = document.createElementNS(this.svgns, "line")
-            gsap.set(line, {attr: {y1: 80, y2:105, stroke: "rgb(224, 102, 102)"}, strokeWidth: 2})
+            gsap.set(line, { attr: { y1: 80, y2: 105, stroke: "rgb(224, 102, 102)" }, strokeWidth: 2 })
             label.appendChild(line)
 
             let circle = document.createElementNS(this.svgns, "circle")
-            gsap.set(circle, {cy:80, r:10, fill: "rgb(224, 102, 102)"})
+            gsap.set(circle, { cy: 80, r: 10, fill: "rgb(224, 102, 102)" })
             label.appendChild(circle)
 
-            gsap.set(label, {attr: {id: "scale"}, x:this.sectionOffset+this.fractionRectWidth})
+            gsap.set(label, { attr: { id: "scale" }, x: this.sectionOffset + this.fractionRectWidth })
             this.fractionDrag.appendChild(label)
 
-            
+            //creating fraction modifier visual to be set after
+            line = document.createElementNS(this.svgns, "line")
+            this.fractionDrag.appendChild(line)
+
+            //creating fractions
             for (let i = 0; i < 3; i++) {
                 let rect = document.createElementNS(this.svgns, "rect")
                 gsap.set(rect, { width: this.fractionRectWidth, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
@@ -59,17 +64,14 @@ export function fractionAPI(_els) {
                 this.sectionOffset += this.fractionRectWidth
             }
 
+            //creating fraction after loop to be set as the last fraction
             let rect = document.createElementNS(this.svgns, "rect")
             gsap.set(rect, { width: this.fractionRectWidth, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
             this.fractionDrag.appendChild(rect)
             this.sectionOffset += this.fractionRectWidth
             this.lastFraction = rect as SVGSVGElement
 
-            line = document.createElementNS(this.svgns, "line")
-            gsap.set(line, {attr: {id: "modifier", x1: this.sectionOffset, x2: this.sectionOffset, y1: 100, y2:130, stroke: "#595959"}, strokeWidth: 6, strokeOpacity:0.75, strokeLinecap: "round", cursor: "pointer"})
-            this.fractionDrag.appendChild(line)
-
-
+            gsap.set(line, { attr: { id: "modifier", x1: this.sectionOffset, x2: this.sectionOffset, y1: 100, y2: 130, stroke: "#595959" }, strokeWidth: 6, strokeOpacity: 0.75, strokeLinecap: "round", cursor: "pointer" })
         }
 
         handlePointerDown(e) {
@@ -85,13 +87,13 @@ export function fractionAPI(_els) {
             this.oldX = pt.x
             if (e.target == this.lastFraction || e.target.id == "modifier") {
                 this.lastSelected = true;
-                this.clicked = true;
-                this.dragRef[0].disable()
+                this.fractionClicked = true;
+                this.dragRef[0].disable()//disable drag
             }
 
             if (e.target.parentNode.id == "scale") {
-                this.clicked = true;
-                this.dragRef[0].disable()
+                this.fractionClicked = true;
+                this.dragRef[0].disable()//disable drag
             }
 
             if (e.target.parentNode.id == "playButton") {
@@ -104,20 +106,22 @@ export function fractionAPI(_els) {
         }
 
         handleMove(e) {
-            if (self.clicked) {
+            if (self.fractionClicked) {
                 self.dragged = true;
                 var pt = this.els.createSVGPoint()
                 pt.x = e.clientX
                 pt.y = e.clientY
                 //pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
                 //let rectWidth = (pt.x - this.dragStart.x)
-                //console.log(this.lastFraction.getBBox().width + (pt.x - this.oldX))
+
+                //if the last fraction is selected
                 if (this.lastSelected) {
                     let rectWidth = this.lastFraction.getBBox().width + (pt.x - this.oldX)
                     //rectWidth += (pt.x - this.oldX)
-                    //console.log(rectWidth)
+
                     if ((pt.x - this.oldX) > 0) {
-                        //console.log("right", this.lastFraction.getBBox().width, rectWidth)
+
+                        //if we have completed a full fraction create a new section and update last fraction
                         if (this.lastFraction.getBBox().width >= this.fractionRectWidth - 3) {
                             gsap.set(this.lastFraction, { width: this.fractionRectWidth })
 
@@ -129,53 +133,58 @@ export function fractionAPI(_els) {
                             this.dragStart.x = pt.x
                             this.dragStart.y = pt.y
                         }
+                        //else update last fractions width, modifier and scale visuals
                         else {
                             gsap.set(this.lastFraction, { width: rectWidth })
-                            gsap.set(this.els.getElementById("modifier"), {attr: {x1: this.sectionOffset + rectWidth - 50, x2:this.sectionOffset+ rectWidth - 50}})
+                            gsap.set(this.els.getElementById("modifier"), { attr: { x1: this.sectionOffset + rectWidth - this.fractionRectWidth, x2: this.sectionOffset + rectWidth - this.fractionRectWidth } })
+
+                            //if the last fraction is the first fraction, move the scale visual
                             if (this.lastFraction == gsap.utils.toArray("rect", this.fractionDrag)[0]) {
-                                gsap.set(this.els.getElementById("scale"), {x: this.lastFraction.getBBox().width + 20})
+                                gsap.set(this.els.getElementById("scale"), { x: this.lastFraction.getBBox().width + 20 })
                             }
                         }
 
                     }
                     else if ((pt.x - this.oldX) < 0) {
-                        //console.log("left", this.lastFraction.getBBox().width, rectWidth)
+                        //if we have removed a full fraction, remove that fraction and update last fraction
                         if (this.lastFraction.getBBox().width <= 3) {
                             if (this.lastFraction != gsap.utils.toArray("rect", this.fractionDrag)[0]) {
                                 this.sectionOffset -= this.fractionRectWidth
                                 this.lastFraction.remove();
-                                this.lastFraction = gsap.utils.toArray("rect", this.fractionDrag).at(-1) as SVGSVGElement
+                                this.lastFraction = gsap.utils.toArray("rect", this.fractionDrag).at(-1)
                                 this.dragStart.x = pt.x
                                 this.dragStart.y = pt.y
                             }
                         }
+                        //else update last fraction's width, modifier and scale visuals
                         else {
-                            //console.log("else")
                             gsap.set(this.lastFraction, { width: rectWidth })
-                            gsap.set(this.els.getElementById("modifier"), {attr: {x1: this.sectionOffset + rectWidth - 50, x2:this.sectionOffset + rectWidth - 50}})
+                            gsap.set(this.els.getElementById("modifier"), { attr: { x1: this.sectionOffset + rectWidth - this.fractionRectWidth, x2: this.sectionOffset + rectWidth - this.fractionRectWidth } })
+
+                            //if the last fraction is the first fraction, move the scale visual
                             if (this.lastFraction == gsap.utils.toArray("rect", this.fractionDrag)[0]) {
-                                gsap.set(this.els.getElementById("scale"), {x: this.lastFraction.getBBox().width + 20})
+                                gsap.set(this.els.getElementById("scale"), { x: this.lastFraction.getBBox().width + 20 })
                             }
                         }
                     }
                 }
+                //else we are modifying the scale of the entire fraction
                 else {
-                    //console.log("else")
                     let bbox = this.lastFraction.getBBox()
                     let temp = (pt.x - this.dragStart.x) / 1.1
+
+                    //if the section width is greater than the section height we can update the scale
                     if (bbox.width + temp >= Math.round(bbox.height)) {
                         this.sectionOffset = 20
                         let arr = gsap.utils.toArray("rect", this.fractionDrag)
-                        console.log(arr)
-                        //console.log("loop")
-                        gsap.set(this.els.getElementById("scale"), {x: this.sectionOffset + temp + bbox.width})
-                        for (let i = 0; i < arr.length; i++){
-                            //console.log("loop", temp)
-                            gsap.set(arr[i], {width: `+=${temp}`, x:this.sectionOffset})
+                        gsap.set(this.els.getElementById("scale"), { x: this.sectionOffset + temp + bbox.width })
+
+                        for (let i = 0; i < arr.length; i++) {
+                            gsap.set(arr[i], { width: `+=${temp}`, x: this.sectionOffset })
                             this.sectionOffset += bbox.width + temp
                         }
-                        console.log("mod", this.els.getElementById("modifier"))
-                        gsap.set(this.els.getElementById("modifier"), {attr: {x1: this.sectionOffset, x2:this.sectionOffset}})
+
+                        gsap.set(this.els.getElementById("modifier"), { attr: { x1: this.sectionOffset, x2: this.sectionOffset } })
                     }
                     this.dragStart.x = pt.x
                     this.dragStart.y = pt.y
@@ -185,6 +194,7 @@ export function fractionAPI(_els) {
         }
 
         handlePointerUp(e) {
+            //if dragged is not set then that means the user just clicked on a section -> update color
             if (!self.dragged && e.target.tagName == "rect") {
                 let element = e.target
                 if (element.style.fill == "rgb(255, 255, 255)") {
@@ -195,23 +205,26 @@ export function fractionAPI(_els) {
                 }
 
             }
+            //if dragged is set then the fraction has been changed
             else if (this.dragged) {
                 this.dragged = false
+                //if the last fraction isn't complete then complete it and update the modifier to align
                 if (this.lastFraction.getBBox().width < this.fractionRectWidth && this.lastSelected) {
                     console.log(this.lastFraction.getBBox().width)
                     gsap.set(this.lastFraction, { width: this.fractionRectWidth })
                     this.lastSelected = false;
-                    gsap.set(this.els.getElementById("modifier"), {attr: {x1: this.sectionOffset, x2:this.sectionOffset}})
+                    gsap.set(this.els.getElementById("modifier"), { attr: { x1: this.sectionOffset, x2: this.sectionOffset } })
                 }
-                
+
                 this.fractionRectWidth = this.lastFraction.getBBox().width
+                //if the last fraction is the first fraction we also have to move the scale visual
                 if (this.lastFraction == gsap.utils.toArray("rect", this.fractionDrag)[0]) {
                     console.log("true")
-                    gsap.set(this.els.getElementById("scale"), {x: this.lastFraction.getBBox().width + 20})
+                    gsap.set(this.els.getElementById("scale"), { x: this.lastFraction.getBBox().width + 20 })
                 }
                 this.dragRef[0].enable()
             }
-            this.clicked = false;
+            this.fractionClicked = false;
         }
 
         handleIncrease() {
@@ -352,10 +365,10 @@ export function fractionAPI(_els) {
 
             this.dragRef = Draggable.create(this.fractionDrag, {
                 type: 'x, y',
-                onDragStart: function() {
+                onDragStart: function () {
                     self.dragged = true
                 },
-                onRelease: function() {
+                onRelease: function () {
                     self.dragged = false
                 }
             })
