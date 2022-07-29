@@ -6,7 +6,7 @@ svg {
     width: 100%;
 }
 
-#fractionDrag, #playButton, #increase, #decrease {
+#fractionDrag, #playButton, #increase, #decrease, #createFraction {
     cursor: pointer;
     pointer-events: all;
 }
