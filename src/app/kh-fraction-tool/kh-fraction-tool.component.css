@@ -11,6 +11,10 @@ svg {
     pointer-events: all;
 }
 
+#fractionDrag {
+    touch-action: none
+}
+
 #playButton:hover circle {
     fill: #e9bbbb !important;
 }

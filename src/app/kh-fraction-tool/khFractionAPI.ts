@@ -22,7 +22,8 @@ export function fractionAPI(_els) {
         fractionRectHeight = 30
         oldX = 0
         dragRef: any
-        filled = 0;
+        numerator = 0;
+        denominator = 0;
 
         constructor(id) {
             this.id = id
@@ -80,6 +81,7 @@ export function fractionAPI(_els) {
                 gsap.set(rect, { width: this.fractionRectWidth, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
                 this.fractionGroup.appendChild(rect)
                 this.sectionOffset += this.fractionRectWidth
+                this.denominator += 1
             }
 
             //creating fraction after loop to be set as the last fraction
@@ -88,6 +90,7 @@ export function fractionAPI(_els) {
             this.fractionGroup.appendChild(rect)
             this.sectionOffset += this.fractionRectWidth
             this.lastFraction = rect as SVGSVGElement
+            this.denominator += 1
 
             gsap.set(line, { attr: { id: this.fractionid + "modifier", x1: this.sectionOffset, x2: this.sectionOffset, y1: 100, y2: 130, stroke: "#595959" }, strokeWidth: 6, strokeOpacity: 0.75, strokeLinecap: "round", cursor: "pointer" })
 
@@ -101,9 +104,11 @@ export function fractionAPI(_els) {
             gsap.set(line, { attr: { x1: 10, x2: 0, y1: 0, y2: 10, stroke: "rgb(0,0,0)" }, strokeWidth: 3 })
             remove.appendChild(line)
 
-            gsap.set(remove, {attr: {id: this.fractionid+"remove"}, y:96, x: -4})
+            gsap.set(remove, {attr: {id: this.fractionid+"remove"}, y:95.5, x: -4.5})
             this.remove = remove as SVGSVGElement
             this.fractionGroup.appendChild(remove)
+
+            gsap.set(this.fractionGroup, {touchAction: "none"})
         }
 
         handlePointerDown(e) {
@@ -158,6 +163,7 @@ export function fractionAPI(_els) {
                             gsap.set(this.lastFraction, { width: 0, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
                             this.fractionGroup.appendChild(this.lastFraction)
                             this.sectionOffset += this.fractionRectWidth
+                            this.denominator += 1
                         }
                         //else update last fractions width, modifier and scale visuals
                         else {
@@ -179,6 +185,7 @@ export function fractionAPI(_els) {
                                 this.sectionOffset -= this.fractionRectWidth
                                 this.lastFraction.remove();
                                 this.lastFraction = gsap.utils.toArray("rect", this.fractionGroup).at(-1)
+                                this.denominator -= 1
                             }
                         }
                         //else update last fraction's width, modifier and scale visuals
@@ -223,11 +230,11 @@ export function fractionAPI(_els) {
                 let element = e.target
                 if (element.style.fill == "rgb(255, 255, 255)") {
                     gsap.set(element, { fill: "rgb(224, 102, 102)" })
-                    this.filled += 1
+                    this.numerator += 1
                 }
                 else {
                     gsap.set(element, { fill: "rgb(255, 255, 255)" })
-                    this.filled -= 1
+                    this.numerator -= 1
                 }
 
             }
@@ -248,6 +255,8 @@ export function fractionAPI(_els) {
             this.lastSelected = false;
             this.dragged = false
             this.dragRef[0].enable()
+
+                            console.log (this.fractionid, this.numerator, this.denominator)
 
         }
     }
