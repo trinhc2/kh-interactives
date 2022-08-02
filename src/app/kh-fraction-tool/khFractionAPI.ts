@@ -4,13 +4,14 @@ export function fractionAPI(_els) {
     let self = {} as fractionClass
 
     class fractionDrag {
-        id: String
+        id: number
+        fractionid: String
         fractionGroup: SVGSVGElement
         lastFraction: SVGSVGElement
         modifier: SVGSVGElement
         scale: SVGSVGElement
+        remove: SVGSVGElement
         lastSelected = false;
-        svgns = "http://www.w3.org/2000/svg";
         dragged = false;
         fractionClicked = false;
         dragStart = { x: 0, y: 0 }
@@ -21,11 +22,13 @@ export function fractionAPI(_els) {
         fractionRectHeight = 30
         oldX = 0
         dragRef: any
+        filled = 0;
 
         constructor(id) {
-            this.id = "fraction" + id
-            this.fractionGroup = document.createElementNS(this.svgns, "g") as SVGSVGElement
-            gsap.set(this.fractionGroup, { attr: { id: this.id } })
+            this.id = id
+            this.fractionid = "fraction" + id
+            this.fractionGroup = document.createElementNS(self.svgns, "g") as SVGSVGElement
+            gsap.set(this.fractionGroup, { attr: { id: this.fractionid } })
             this.init();
         }
 
@@ -52,42 +55,55 @@ export function fractionAPI(_els) {
         generateFractionBar() {
 
             //creating scaling visual
-            const label = document.createElementNS(this.svgns, "g");
+            const scale = document.createElementNS(self.svgns, "g");
 
-            let line = document.createElementNS(this.svgns, "line")
+            let line = document.createElementNS(self.svgns, "line")
             gsap.set(line, { attr: { y1: 80, y2: 105, stroke: "rgb(224, 102, 102)" }, strokeWidth: 2 })
-            label.appendChild(line)
+            scale.appendChild(line)
 
-            let circle = document.createElementNS(this.svgns, "circle")
+            let circle = document.createElementNS(self.svgns, "circle")
             gsap.set(circle, { cy: 80, r: 10, fill: "rgb(224, 102, 102)" })
-            label.appendChild(circle)
+            scale.appendChild(circle)
 
-            gsap.set(label, { attr: { id: this.id + "scale" }, x: this.sectionOffset + this.fractionRectWidth })
-            this.fractionGroup.appendChild(label)
-            this.scale = label as SVGSVGElement
+            gsap.set(scale, { attr: { id: this.fractionid + "scale" }, x: this.sectionOffset + this.fractionRectWidth })
+            this.fractionGroup.appendChild(scale)
+            this.scale = scale as SVGSVGElement
 
             //creating fraction modifier visual to be set after
-            line = document.createElementNS(this.svgns, "line")
+            line = document.createElementNS(self.svgns, "line")
             this.modifier = line as SVGSVGElement
             this.fractionGroup.appendChild(line)
 
             //creating fractions
             for (let i = 0; i < 3; i++) {
-                let rect = document.createElementNS(this.svgns, "rect")
+                let rect = document.createElementNS(self.svgns, "rect")
                 gsap.set(rect, { width: this.fractionRectWidth, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
                 this.fractionGroup.appendChild(rect)
                 this.sectionOffset += this.fractionRectWidth
             }
 
             //creating fraction after loop to be set as the last fraction
-            let rect = document.createElementNS(this.svgns, "rect")
+            let rect = document.createElementNS(self.svgns, "rect")
             gsap.set(rect, { width: this.fractionRectWidth, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
             this.fractionGroup.appendChild(rect)
             this.sectionOffset += this.fractionRectWidth
             this.lastFraction = rect as SVGSVGElement
 
-            gsap.set(line, { attr: { id: this.id + "modifier", x1: this.sectionOffset, x2: this.sectionOffset, y1: 100, y2: 130, stroke: "#595959" }, strokeWidth: 6, strokeOpacity: 0.75, strokeLinecap: "round", cursor: "pointer" })
+            gsap.set(line, { attr: { id: this.fractionid + "modifier", x1: this.sectionOffset, x2: this.sectionOffset, y1: 100, y2: 130, stroke: "#595959" }, strokeWidth: 6, strokeOpacity: 0.75, strokeLinecap: "round", cursor: "pointer" })
 
+            //creating remove button
+            const remove = document.createElementNS(self.svgns, "g");
+            line = document.createElementNS(self.svgns, "line")
+            gsap.set(line, { attr: { x1: 0, x2: 10, y1: 0, y2: 10, stroke: "rgb(0,0,0)" }, strokeWidth: 3 })
+            remove.appendChild(line)
+
+            line = document.createElementNS(self.svgns, "line")
+            gsap.set(line, { attr: { x1: 10, x2: 0, y1: 0, y2: 10, stroke: "rgb(0,0,0)" }, strokeWidth: 3 })
+            remove.appendChild(line)
+
+            gsap.set(remove, {attr: {id: this.fractionid+"remove"}, y:96, x: -4})
+            this.remove = remove as SVGSVGElement
+            this.fractionGroup.appendChild(remove)
         }
 
         handlePointerDown(e) {
@@ -103,10 +119,15 @@ export function fractionAPI(_els) {
                 this.fractionClicked = true;
                 this.dragRef[0].disable()//disable drag
             }
-
-            if (e.target.parentNode == this.scale) {
+            else if (e.target.parentNode == this.scale) {
                 this.fractionClicked = true;
                 this.dragRef[0].disable()//disable drag
+            }
+            else if (e.target.parentNode == this.remove) {
+                console.log("remove clicked")
+                console.log(self.fractionDragArray)
+                self.fractionDragArray.splice(this.id, 1)
+                this.fractionGroup.remove()
             }
         }
 
@@ -132,7 +153,7 @@ export function fractionAPI(_els) {
                             gsap.set(this.lastFraction, { width: this.fractionRectWidth })
                             gsap.set(this.scale, { x: this.fractionRectWidth })
 
-                            let rect = document.createElementNS(this.svgns, "rect")
+                            let rect = document.createElementNS(self.svgns, "rect")
                             this.lastFraction = rect as SVGSVGElement
                             gsap.set(this.lastFraction, { width: 0, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
                             this.fractionGroup.appendChild(this.lastFraction)
@@ -202,9 +223,11 @@ export function fractionAPI(_els) {
                 let element = e.target
                 if (element.style.fill == "rgb(255, 255, 255)") {
                     gsap.set(element, { fill: "rgb(224, 102, 102)" })
+                    this.filled += 1
                 }
                 else {
                     gsap.set(element, { fill: "rgb(255, 255, 255)" })
+                    this.filled -= 1
                 }
 
             }
@@ -235,8 +258,8 @@ export function fractionAPI(_els) {
 
         els: SVGSVGElement;
         fractionDrag: SVGSVGElement
+        fractionDragArray = []
         fractionComparison: SVGSVGElement
-
         svgns = "http://www.w3.org/2000/svg";
 
         denom = 1;
@@ -261,6 +284,7 @@ export function fractionAPI(_els) {
             let temp = new fractionDrag(this.fractionCount++);
             gsap.set(temp.fractionGroup, { y: 100 })
             this.fractionDrag.appendChild(temp.fractionGroup)
+            this.fractionDragArray.push(temp)
 
         }
 
@@ -271,6 +295,7 @@ export function fractionAPI(_els) {
         handleFractionCreate() {
             let temp = new fractionDrag(this.fractionCount++);
             this.fractionDrag.appendChild(temp.fractionGroup)
+            this.fractionDragArray.push(temp)
         }
 
         handleIncrease() {
