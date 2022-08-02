@@ -458,7 +458,7 @@ export function farmAPI(_els, _setup) {
             gsap.set(this.farmGroup, { x: 125, y: 100 })
 
             //combine start pos
-            gsap.set(this.largeCombineText, { x: 50, y: 80 })
+            gsap.set(this.largeCombineText, { x: 60, y: 90 })
 
             //harvest number init
             this.harvestTotalLarge.textContent = "0"
