@@ -26,5 +26,5 @@
 }
 
 #zoomOut:hover path, #zoomIn:hover path, #zoomOut:hover circle, #zoomIn:hover circle {
-    stroke: #c3e7b3 !important;
+    stroke: rgb(185, 199, 204) !important;
 }

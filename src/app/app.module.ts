@@ -15,6 +15,7 @@ import { KhFarmRandomComponent } from './kh-farm-random/kh-farm-random.component
 import { KhZoomComponent } from './kh-zoom/kh-zoom.component';
 import { KhFractionToolComponent } from './kh-fraction-tool/kh-fraction-tool.component';
 import { KhFarmFlowerComponent } from './kh-farm-flower/kh-farm-flower.component';
+import { KhZoomBoatComponent } from './kh-zoom-boat/kh-zoom-boat.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { KhFarmFlowerComponent } from './kh-farm-flower/kh-farm-flower.component
     KhFarmRandomComponent,
     KhZoomComponent,
     KhFractionToolComponent,
-    KhFarmFlowerComponent
+    KhFarmFlowerComponent,
+    KhZoomBoatComponent
   ],
   imports: [
     BrowserModule,
