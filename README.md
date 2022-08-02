@@ -10,7 +10,8 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app w
 (found in src/app/app-routing.module.ts)
 
 * /slider = Slider Input
-* /farm = Farm Decimals
+* /farm = Farm Decimals Wheat Version
+* /farmFlowers = Farm Decimals Flower Version
 * /farmrand = Farm with randomly generated beds
 * /decompose = Number Decomposition
 * /zoom = SVG Zoom Model
