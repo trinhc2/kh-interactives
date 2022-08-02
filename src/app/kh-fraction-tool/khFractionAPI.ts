@@ -50,6 +50,7 @@ export function fractionAPI(_els) {
             self.els.addEventListener("pointerdown", e => this.handlePointerDown(e))
             self.els.addEventListener("pointermove", e => this.handleMove(e))
             self.els.addEventListener("pointerup", e => this.handlePointerUp(e))
+            
 
 
         }
@@ -107,8 +108,6 @@ export function fractionAPI(_els) {
             gsap.set(remove, {attr: {id: this.fractionid+"remove"}, y:95.5, x: -4.5})
             this.remove = remove as SVGSVGElement
             this.fractionGroup.appendChild(remove)
-
-            gsap.set(this.fractionGroup, {touchAction: "none"})
         }
 
         handlePointerDown(e) {
@@ -123,10 +122,12 @@ export function fractionAPI(_els) {
                 this.lastSelected = true;
                 this.fractionClicked = true;
                 this.dragRef[0].disable()//disable drag
+                console.log(self.els.style.touchAction)
             }
             else if (e.target.parentNode == this.scale) {
                 this.fractionClicked = true;
                 this.dragRef[0].disable()//disable drag
+                console.log(self.els.style.touchAction)
             }
             else if (e.target.parentNode == this.remove) {
                 console.log("remove clicked")
@@ -255,8 +256,7 @@ export function fractionAPI(_els) {
             this.lastSelected = false;
             this.dragged = false
             this.dragRef[0].enable()
-
-                            console.log (this.fractionid, this.numerator, this.denominator)
+            console.log (this.fractionid, this.numerator, this.denominator)
 
         }
     }
@@ -291,7 +291,7 @@ export function fractionAPI(_els) {
 
         generateFractionBar() {
             let temp = new fractionDrag(this.fractionCount);
-            gsap.set(temp.fractionGroup, { y: 100 })
+            gsap.set(temp.fractionGroup, { y: 100})
             this.fractionDrag.appendChild(temp.fractionGroup)
             this.fractionDragArray[this.fractionCount++] = temp
 

@@ -4,15 +4,12 @@ svg {
     top: 0px;
     height: 100%;
     width: 100%;
+    touch-action: none;
 }
 
 #fractionDrag, #playButton, #increase, #decrease, #createFraction {
-    cursor: pointer;
+    cursor: pointer !important;
     pointer-events: all;
-}
-
-#fractionDrag {
-    touch-action: none
 }
 
 #playButton:hover circle {
