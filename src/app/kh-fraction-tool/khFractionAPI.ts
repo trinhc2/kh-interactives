@@ -281,10 +281,10 @@ export function fractionAPI(_els) {
         }
 
         generateFractionBar() {
-            let temp = new fractionDrag(this.fractionCount++);
+            let temp = new fractionDrag(this.fractionCount);
             gsap.set(temp.fractionGroup, { y: 100 })
             this.fractionDrag.appendChild(temp.fractionGroup)
-            this.fractionDragArray.push(temp)
+            this.fractionDragArray[this.fractionCount++] = temp
 
         }
 
@@ -293,9 +293,10 @@ export function fractionAPI(_els) {
         }
 
         handleFractionCreate() {
-            let temp = new fractionDrag(this.fractionCount++);
+            let temp = new fractionDrag(this.fractionCount);
             this.fractionDrag.appendChild(temp.fractionGroup)
-            this.fractionDragArray.push(temp)
+            this.fractionDragArray[this.fractionCount++] = temp
+            console.log(this.fractionDragArray)
         }
 
         handleIncrease() {
