@@ -14,6 +14,7 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app w
 * /farmrand = Farm with randomly generated beds
 * /decompose = Number Decomposition
 * /zoom = SVG Zoom Model
+* /zoomboat = SVG Zoom Model with Boat
 
 ## Code scaffolding
 
