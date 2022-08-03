@@ -51,7 +51,7 @@ export function fractionAPI(_els) {
             self.els.addEventListener("pointerdown", e => this.handlePointerDown(e))
             self.els.addEventListener("pointermove", e => this.handleMove(e))
             self.els.addEventListener("pointerup", e => this.handlePointerUp(e))
-            
+
 
 
         }
@@ -106,7 +106,7 @@ export function fractionAPI(_els) {
             gsap.set(line, { attr: { x1: 10, x2: 0, y1: 0, y2: 10, stroke: "rgb(0,0,0)" }, strokeWidth: 3 })
             remove.appendChild(line)
 
-            gsap.set(remove, {attr: {id: this.fractionid+"remove"}, y:95.5, x: -4.5})
+            gsap.set(remove, { attr: { id: this.fractionid + "remove" }, y: 95.5, x: -4.5 })
             this.remove = remove as SVGSVGElement
             this.fractionGroup.appendChild(remove)
         }
@@ -120,8 +120,10 @@ export function fractionAPI(_els) {
             this.oldX = pt.x
             console.log(e.target.parentNode, e.target.getRootNode())
 
-             if (e.target.parentNode == this.fractionGroup || e.target.parentNode.parentNode == this.fractionGroup) {
-                if (this.uiActive == false ) {
+            if (e.target.parentNode == this.fractionGroup || e.target.parentNode.parentNode == this.fractionGroup) {
+                self.fractionDrag.removeChild(this.fractionGroup)
+                self.fractionDrag.appendChild(this.fractionGroup)
+                if (this.uiActive == false) {
                     this.scale.style.display = "block"
                     this.remove.style.display = "block"
                     this.modifier.style.display = "block"
@@ -275,7 +277,7 @@ export function fractionAPI(_els) {
             this.lastSelected = false;
             this.dragged = false
             this.dragRef[0].enable()
-            console.log (this.fractionid, this.numerator, this.denominator)
+            console.log(this.fractionid, this.numerator, this.denominator)
 
         }
     }
@@ -310,7 +312,7 @@ export function fractionAPI(_els) {
 
         generateFractionBar() {
             let temp = new fractionDrag(this.fractionCount);
-            gsap.set(temp.fractionGroup, { y: 100})
+            gsap.set(temp.fractionGroup, { y: 100 })
             this.fractionDrag.appendChild(temp.fractionGroup)
             this.fractionDragArray[this.fractionCount++] = temp
 
@@ -453,7 +455,7 @@ export function fractionAPI(_els) {
         generateFractionComparison() {
             for (let i = 0; i < 12; i++) {
                 let rect = document.createElementNS(this.svgns, "rect")
-                gsap.set(rect, { width: 250, height: 90, x: 20, y:380, fill: "rgb(255, 255, 255)", stroke: "#595959" })
+                gsap.set(rect, { width: 250, height: 90, x: 20, y: 380, fill: "rgb(255, 255, 255)", stroke: "#595959" })
                 this.fractionComparison.appendChild(rect)
             }
         }
