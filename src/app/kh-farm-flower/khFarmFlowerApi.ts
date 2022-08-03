@@ -139,8 +139,9 @@ export function farmAPI(_els, _setup) {
                     let plotArrayI = 19 - index
                     let plotArrayJ = jIndex - 1
 
-                    let xVal = (50 - jIndex) * (innerGridIncrementX) + (1 - ((50 - jIndex) % 5) * 0.2)
-                    let yVal = (index) * (innerGridIncrementY) + (0.8 - (index % 2) * 0.5)
+                    let xVal = (50 - jIndex) * (innerGridIncrementX) + (0.8 - ((50 - jIndex) % 5) * 0.26) //.4 .3 .2 .1 0 .1 .2 .3 .4 .5 .6 .7 .8
+                    //let xVal = (50 - jIndex) * (innerGridIncrementX) + (1 - ((50 - jIndex) % 5) * 0.2)
+                    let yVal = (index) * (innerGridIncrementY) + (0.5 - (index%2 * 0.5))
                     let rectID = `${plotArrayI}-${plotArrayJ}`
 
                     //animate flower
@@ -369,7 +370,7 @@ export function farmAPI(_els, _setup) {
                     self.animationPlaying = true;
                 }
                 else {
-                    console.log("orange combine is not snapped")
+                    alert("Move the orange combine into place.")
                 }
             }
         }

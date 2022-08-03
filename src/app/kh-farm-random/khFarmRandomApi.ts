@@ -365,7 +365,7 @@ export function farmAPI(_els, _setup) {
                     self.animationPlaying = true;
                 }
                 else {
-                    console.log("orange combine is not snapped")
+                    alert("Move the orange combine into place.")
                 }
             }
         }
