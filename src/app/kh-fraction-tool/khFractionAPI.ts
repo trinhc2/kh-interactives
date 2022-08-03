@@ -24,6 +24,7 @@ export function fractionAPI(_els) {
         dragRef: any
         numerator = 0;
         denominator = 0;
+        uiActive = true
 
         constructor(id) {
             this.id = id
@@ -117,23 +118,39 @@ export function fractionAPI(_els) {
             //pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
 
             this.oldX = pt.x
-            if (e.target == this.lastFraction || e.target == this.modifier) {
-                console.log("down2")
-                this.lastSelected = true;
-                this.fractionClicked = true;
-                this.dragRef[0].disable()//disable drag
-                console.log(self.els.style.touchAction)
+            if (e.target.parentNode == this.fractionGroup) {
+                if (this.uiActive == false ) {
+                    this.scale.style.visibility = "visible"
+                    this.remove.style.visibility = "visible"
+                    this.modifier.style.visibility = "visible"
+                    this.uiActive = true
+                }
+                else {
+                    if (e.target == this.lastFraction || e.target == this.modifier) {
+                        console.log("down2")
+                        this.lastSelected = true;
+                        this.fractionClicked = true;
+                        this.dragRef[0].disable()//disable drag
+                        console.log(self.els.style.touchAction)
+                    }
+                    else if (e.target.parentNode == this.scale) {
+                        this.fractionClicked = true;
+                        this.dragRef[0].disable()//disable drag
+                        console.log(self.els.style.touchAction)
+                    }
+                    else if (e.target.parentNode == this.remove) {
+                        console.log("remove clicked")
+                        console.log(self.fractionDragArray)
+                        self.fractionDragArray.splice(this.id, 1)
+                        this.fractionGroup.remove()
+                    }
+                }
             }
-            else if (e.target.parentNode == this.scale) {
-                this.fractionClicked = true;
-                this.dragRef[0].disable()//disable drag
-                console.log(self.els.style.touchAction)
-            }
-            else if (e.target.parentNode == this.remove) {
-                console.log("remove clicked")
-                console.log(self.fractionDragArray)
-                self.fractionDragArray.splice(this.id, 1)
-                this.fractionGroup.remove()
+            else {
+                this.scale.style.visibility = "hidden"
+                this.remove.style.visibility = "hidden"
+                this.modifier.style.visibility = "hidden"
+                this.uiActive = false
             }
         }
 
@@ -227,7 +244,7 @@ export function fractionAPI(_els) {
 
         handlePointerUp(e) {
             //if dragged is not set then that means the user just clicked on a section -> update color
-            if (!this.dragged && e.target.tagName == "rect" && e.target.parentNode == this.fractionGroup) {
+            if (!this.dragged && e.target.tagName == "rect" && e.target.parentNode == this.fractionGroup && this.uiActive == true) {
                 let element = e.target
                 if (element.style.fill == "rgb(255, 255, 255)") {
                     gsap.set(element, { fill: "rgb(224, 102, 102)" })
