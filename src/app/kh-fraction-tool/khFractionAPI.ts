@@ -118,11 +118,13 @@ export function fractionAPI(_els) {
             //pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
 
             this.oldX = pt.x
-            if (e.target.parentNode == this.fractionGroup) {
+            console.log(e.target.parentNode, e.target.getRootNode())
+
+             if (e.target.parentNode == this.fractionGroup || e.target.parentNode.parentNode == this.fractionGroup) {
                 if (this.uiActive == false ) {
-                    this.scale.style.visibility = "visible"
-                    this.remove.style.visibility = "visible"
-                    this.modifier.style.visibility = "visible"
+                    this.scale.style.display = "block"
+                    this.remove.style.display = "block"
+                    this.modifier.style.display = "block"
                     this.uiActive = true
                 }
                 else {
@@ -147,9 +149,9 @@ export function fractionAPI(_els) {
                 }
             }
             else {
-                this.scale.style.visibility = "hidden"
-                this.remove.style.visibility = "hidden"
-                this.modifier.style.visibility = "hidden"
+                this.scale.style.display = "none"
+                this.remove.style.display = "none"
+                this.modifier.style.display = "none"
                 this.uiActive = false
             }
         }
