@@ -22,12 +22,14 @@ export function fractionAPI(_els) {
         fractionRectHeight = 30
         oldX = 0
         dragRef: any
-        numerator = 0;
-        denominator = 0;
+        numerator: number
+        denominator: number
         uiActive = true
 
-        constructor(id) {
+        constructor(id, numerator, denominator) {
             this.id = id
+            this.numerator = numerator
+            this.denominator = denominator
             this.fractionid = "fraction" + id
             this.fractionGroup = document.createElementNS(self.svgns, "g") as SVGSVGElement
             gsap.set(this.fractionGroup, { attr: { id: this.fractionid } })
@@ -78,21 +80,34 @@ export function fractionAPI(_els) {
             this.fractionGroup.appendChild(line)
 
             //creating fractions
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < this.denominator - 1; i++) {
                 let rect = document.createElementNS(self.svgns, "rect")
-                gsap.set(rect, { width: this.fractionRectWidth, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
+                gsap.set(rect, { width: this.fractionRectWidth, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, rx: 5, ry: 5, stroke: "#595959" })
+
+                if (i < this.numerator){
+                    gsap.set(rect, {fill: "rgb(224, 102, 102)"})
+                }
+                else {
+                    gsap.set(rect, {fill: "rgb(255, 255, 255)"})
+                }
                 this.fractionGroup.appendChild(rect)
                 this.sectionOffset += this.fractionRectWidth
-                this.denominator += 1
             }
 
             //creating fraction after loop to be set as the last fraction
             let rect = document.createElementNS(self.svgns, "rect")
             gsap.set(rect, { width: this.fractionRectWidth, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
+
+            if (this.numerator == this.denominator){
+                gsap.set(rect, {fill: "rgb(224, 102, 102)"})
+            }
+            else {
+                gsap.set(rect, {fill: "rgb(255, 255, 255)"})
+            }
+
             this.fractionGroup.appendChild(rect)
             this.sectionOffset += this.fractionRectWidth
             this.lastFraction = rect as SVGSVGElement
-            this.denominator += 1
 
             gsap.set(line, { attr: { id: this.fractionid + "modifier", x1: this.sectionOffset, x2: this.sectionOffset, y1: 100, y2: 130, stroke: "#595959" }, strokeWidth: 6, strokeOpacity: 0.75, strokeLinecap: "round", cursor: "pointer" })
 
@@ -310,20 +325,12 @@ export function fractionAPI(_els) {
             this.init();
         }
 
-        generateFractionBar() {
-            let temp = new fractionDrag(this.fractionCount);
-            gsap.set(temp.fractionGroup, { y: 100 })
-            this.fractionDrag.appendChild(temp.fractionGroup)
-            this.fractionDragArray[this.fractionCount++] = temp
-
-        }
-
         handlePlay() {
             //gsap.to(gsap.utils.toArray("rect", this.fractionDrag), { width: 30, rx: 15, ry: 15, duration: 1, ease: "power3.inOut" })
         }
 
-        handleFractionCreate() {
-            let temp = new fractionDrag(this.fractionCount);
+        handleFractionCreate(numerator = 0, denominator = 4) {
+            let temp = new fractionDrag(this.fractionCount, numerator, denominator);
             this.fractionDrag.appendChild(temp.fractionGroup)
             this.fractionDragArray[this.fractionCount++] = temp
             console.log(this.fractionDragArray)
@@ -465,7 +472,7 @@ export function fractionAPI(_els) {
 
             //this.generateFractionComparison()
 
-            this.generateFractionBar()
+            this.handleFractionCreate()
 
             this.els.getElementById("playButton").addEventListener("pointerdown", e => this.handlePlay())
             this.els.getElementById("createFraction").addEventListener("pointerdown", e => this.handleFractionCreate())
