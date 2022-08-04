@@ -15,7 +15,8 @@ export function zoomAPI(_els) {
         zoomIncrementY = []
         zoomIn: SVGSVGElement
         zoomOut: SVGSVGElement
-        zoomControls: SVGSVGElement
+        center: SVGSVGElement
+        ui: SVGSVGElement
         centerWidth = 0
         centerHeight = 0
 
@@ -27,13 +28,16 @@ export function zoomAPI(_els) {
 
             this.zoomIn = this.gsvgu.getElementById("zoomIn") as SVGSVGElement
             this.zoomOut = this.gsvgu.getElementById("zoomOut") as SVGSVGElement
-            this.zoomControls = this.gsvgu.getElementById("zoomControls") as SVGSVGElement
+            this.ui = this.gsvgu.getElementById("ui") as SVGSVGElement
+            this.center = this.gsvgu.getElementById("center") as SVGSVGElement
 
             this.init()
         }
+
         handleZoomIn() {
+
             let baseViewbox = this.fetchedSVG.viewBox["baseVal"]
-            let index = 0
+            let index = 11
 
             if (this.zoomLevel < 0) {
                 index = Math.abs(this.zoomLevel) - 1 //use the index-1 if we are already zoomed out
@@ -57,7 +61,6 @@ export function zoomAPI(_els) {
                 let temp = `${x} ${y} ${width} ${height}`
                 gsap.set(this.fetchedSVG, { attr: { viewBox: temp } });
                 this.zoomLevel++
-                //console.log(this.fetchedSVG.viewBox, this.zoomIncrementX, this.zoomIncrementY, this.zoomLevel)
             }
         }
 
@@ -71,7 +74,7 @@ export function zoomAPI(_els) {
                 index = this.zoomLevel + 11 - 1 //use the index-1 if we are already zoomed in
             }
             if (this.zoomLevel > -10) {
-                //get current basebox - what center should be to get offset
+                //get (current basebox - what center should be) to get offset
                 let offsetX = baseViewbox["x"] - (this.centerWidth - baseViewbox["width"] / 2)
                 let offsetY = baseViewbox["y"] - (this.centerHeight - baseViewbox["height"] / 2)
 
@@ -87,6 +90,11 @@ export function zoomAPI(_els) {
                 gsap.set(this.fetchedSVG, { attr: { viewBox: temp } });
                 this.zoomLevel--
             }
+        }
+        
+        handleCenter() {
+            gsap.set(this.fetchedSVG, { attr: {viewBox: `0 0 ${this.centerWidth * 2} ${this.centerHeight*2}`}})
+            this.zoomLevel = 0
         }
 
         startDrag(e) {
@@ -118,10 +126,7 @@ export function zoomAPI(_els) {
         getSVG() {
             //https://stackoverflow.com/questions/45240363/can-i-use-javascript-fetch-to-insert-an-inline-svg-in-the-dom
             let el = document.querySelector("#lowerRender")
-            //return fetch('https://res.cloudinary.com/duim8wwno/image/upload/v1635449409/Zoom_kh7c7e.svg')
-            //return fetch("http://127.0.0.1:8887/farmtwoAcreNoRaster.svg")
             return fetch("https://res.cloudinary.com/dg9cqf9zn/image/upload/v1659473813/barrels2_1_mbrlo2.svg")
-                //return fetch("https://app.knowledgehook.com/Content/Images/6e2e3cac-30ed-ea11-974a-0050568c42b6/farmtwoacrenoraster.svg")
                 .then(r => r.text())
                 .then(text => {
                     el.innerHTML = text;
@@ -131,10 +136,10 @@ export function zoomAPI(_els) {
 
         }
 
+        //pre calculating the zoom increments because doing it dynamically is not consistent with alternating zoom in and zoom out
+        //storing the increments for zooming in and out in the same array, first 11 are for zooming out, last 11 are for zooming in
         calculateZoomIncrements() {
             let baseViewbox = this.fetchedSVG.viewBox["baseVal"]
-            const arr = [];
-            const arr2 = []
             let lastWidth = baseViewbox["width"]
             let lastHeight = baseViewbox["height"]
             for (let i = 0; i < 11; i++) {
@@ -158,34 +163,21 @@ export function zoomAPI(_els) {
                 this.zoomIncrementY.push(temp);
                 lastHeight -= temp
             }
-            console.log("increment", this.zoomIncrementX, this.zoomIncrementY)
         }
 
         async init() {
-            //gsap.set(this.zoomIn, {visibility: "hidden"})
-            //gsap.set(this.zoomOut, {visibility: "hidden"})
-            console.log(this.zoomControls.getBBox(), this.zoomControls.getBoundingClientRect())
-            gsap.set(this.zoomControls, { x: 250 - this.zoomControls.getBBox().x - this.zoomControls.getBBox().width / 2, y: 450 - this.zoomControls.getBBox().y })
-            //gsap.set(this.zoomControls, {x: 10})
-            //gsap.to(this.zoomControls, {yPercent:-50, xPercent:-50})
+            gsap.set(this.ui, { x: 250 - this.ui.getBBox().x - this.ui.getBBox().width / 2, y: 450 - this.ui.getBBox().y })
 
-            //gsap.set(this.zoomControls, {x: "100%"})
-            await this.getSVG()// need this to finish because it sets the fetched svg
+            await this.getSVG()// need this to finish because it sets the fetched svg to the class
 
             let baseViewbox = this.fetchedSVG.viewBox["baseVal"]
-            let svgBBox = this.fetchedSVG.getBoundingClientRect()
-            console.log("fetched view box", this.fetchedSVG.viewBox["baseVal"])
+
             this.centerHeight = baseViewbox["height"] / 2
             this.centerWidth = baseViewbox["width"] / 2
-            console.log(this.centerHeight, this.centerWidth)
 
             this.calculateZoomIncrements()
 
             gsap.set(this.fetchedSVG, { width: "inherit", height: "inherit" })
-
-
-            //gsap.set(this.zoomIn, {x: 0 - this.zoomIn.getBBox().x, visibility: "visible"})
-            //gsap.set(this.zoomOut, {x: 0 - this.zoomOut.getBBox().x + this.zoomOut.getBBox().width + 3, visibility: "visible"})
 
             this.fetchedSVG.addEventListener("pointerdown", e => this.startDrag(e))
             this.fetchedSVG.addEventListener("pointermove", e => this.whileDrag(e))
@@ -193,6 +185,7 @@ export function zoomAPI(_els) {
 
             this.gsvgu.getElementById("zoomIn").addEventListener("pointerdown", e => this.handleZoomIn())
             this.gsvgu.getElementById("zoomOut").addEventListener("pointerdown", e => this.handleZoomOut())
+            this.gsvgu.getElementById("center").addEventListener("pointerdown", e => this.handleCenter())
         }
 
 

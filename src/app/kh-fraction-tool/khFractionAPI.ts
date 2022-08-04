@@ -61,11 +61,11 @@ export function fractionAPI(_els) {
             const scale = document.createElementNS(self.svgns, "g");
 
             let line = document.createElementNS(self.svgns, "line")
-            gsap.set(line, { attr: { y1: 80, y2: 105, stroke: "rgb(224, 102, 102)" }, strokeWidth: 2 })
+            gsap.set(line, { attr: { y1: 80, y2: 105, stroke: "#595959" }, strokeWidth: 2 })
             scale.appendChild(line)
 
             let circle = document.createElementNS(self.svgns, "circle")
-            gsap.set(circle, { cy: 80, r: 10, fill: "rgb(224, 102, 102)" })
+            gsap.set(circle, { cy: 80, r: 10, fill: "rgb(224, 102, 102)", stroke: "#595959", strokeWidth: 1 })
             scale.appendChild(circle)
 
             gsap.set(scale, { attr: { id: this.fractionid + "scale" }, x: this.sectionOffset + this.fractionRectWidth })
@@ -236,7 +236,7 @@ export function fractionAPI(_els) {
                         for (let i = 0; i < arr.length; i++) {
                             gsap.set(arr[i], { width: `+=${temp}`, x: this.sectionOffset })
                             this.sectionOffset += Math.round(bbox.width + temp)
-                            console.log("offset", this.sectionOffset)
+                            //console.log("offset", this.sectionOffset)
                         }
 
                         gsap.set(this.modifier, { attr: { x1: this.sectionOffset, x2: this.sectionOffset } })

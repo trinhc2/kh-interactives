@@ -16,15 +16,20 @@
     touch-action: pinch-zoom;
 }
 
-#zoomIn, #zoomOut{
+#zoomIn, #zoomOut, #center{
     cursor:pointer;
     pointer-events: all;
 }
 
-#zoomControls rect{
+#ui rect{
     filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.4));
 }
 
-#zoomOut:hover path, #zoomIn:hover path, #zoomOut:hover circle, #zoomIn:hover circle {
+#zoomOut:hover path, #zoomIn:hover path, #zoomOut:hover circle, #zoomIn:hover circle, #center:hover path, #center:hover circle {
     stroke: rgb(185, 199, 204) !important;
+}
+
+#center:hover circle {
+    fill: rgb(185, 199, 204) !important;
+
 }
