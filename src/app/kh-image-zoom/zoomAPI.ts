@@ -1,10 +1,16 @@
 import { gsap } from "gsap/all"
 
-export function zoomAPI(_els) {
+export interface zoomSetup {
+    image: string
+    backgroundColor: string
+}
+
+export function zoomAPI(_els, _setup) {
     let self = {} as zoomClass
 
     class zoomClass {
         els: (SVGSVGElement)[]
+        setup: zoomSetup
         gsvg: SVGSVGElement
         gsvgu: SVGSVGElement
         fetchedSVG: any
@@ -20,10 +26,11 @@ export function zoomAPI(_els) {
         centerWidth = 0
         centerHeight = 0
 
-        constructor(els) {
+        constructor(els, setup) {
             self = this
             this.els = els
             this.gsvgu = els[0]
+            this.setup = setup
             //this.gsvgu = els[1]
 
             this.zoomIn = this.gsvgu.getElementById("zoomIn") as SVGSVGElement
@@ -126,7 +133,7 @@ export function zoomAPI(_els) {
         getSVG() {
             //https://stackoverflow.com/questions/45240363/can-i-use-javascript-fetch-to-insert-an-inline-svg-in-the-dom
             let el = document.querySelector("#lowerRender")
-            return fetch("https://res.cloudinary.com/dg9cqf9zn/image/upload/v1659473813/barrels2_1_mbrlo2.svg")
+            return fetch(this.setup.image)
                 .then(r => r.text())
                 .then(text => {
                     el.innerHTML = text;
@@ -179,6 +186,8 @@ export function zoomAPI(_els) {
 
             gsap.set(this.fetchedSVG, { width: "inherit", height: "inherit" })
 
+            gsap.set(document.getElementById("lowerRender"), {backgroundColor: this.setup.backgroundColor})
+
             this.fetchedSVG.addEventListener("pointerdown", e => this.startDrag(e))
             this.fetchedSVG.addEventListener("pointermove", e => this.whileDrag(e))
             this.fetchedSVG.addEventListener("pointerup", e => this.endDrag(e))
@@ -190,5 +199,5 @@ export function zoomAPI(_els) {
 
 
     }
-    return new zoomClass(_els);
+    return new zoomClass(_els, _setup);
 }

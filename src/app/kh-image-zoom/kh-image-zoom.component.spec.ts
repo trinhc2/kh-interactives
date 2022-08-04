@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { KhZoomBoatComponent } from './kh-zoom-boat.component';
+import { KhImageZoomComponent } from './kh-image-zoom.component';
 
-describe('KhZoomBoatComponent', () => {
-  let component: KhZoomBoatComponent;
-  let fixture: ComponentFixture<KhZoomBoatComponent>;
+describe('KhImageZoomComponent', () => {
+  let component: KhImageZoomComponent;
+  let fixture: ComponentFixture<KhImageZoomComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ KhZoomBoatComponent ]
+      declarations: [ KhImageZoomComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(KhZoomBoatComponent);
+    fixture = TestBed.createComponent(KhImageZoomComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -8,7 +8,7 @@ import { KhFarmRandomComponent } from './kh-farm-random/kh-farm-random.component
 import { KhZoomComponent } from './kh-zoom/kh-zoom.component';
 import { KhFractionToolComponent } from './kh-fraction-tool/kh-fraction-tool.component';
 import { KhFarmFlowerComponent } from './kh-farm-flower/kh-farm-flower.component';
-import { KhZoomBoatComponent } from './kh-zoom-boat/kh-zoom-boat.component';
+import { KhImageZoomComponent } from './kh-image-zoom/kh-image-zoom.component';
 
 
 
@@ -20,7 +20,7 @@ const routes: Routes = [
   { path: 'draw', component: ContainerComponent },
   { path: 'farmrand', component: KhFarmRandomComponent},
   { path: 'zoom', component: KhZoomComponent},
-  { path: 'zoomboat', component: KhZoomBoatComponent},
+  { path: 'zoomboat', component: KhImageZoomComponent},
   { path: 'fraction', component: KhFractionToolComponent},
   { path: 'farmflower', component: KhFarmFlowerComponent}
 ]
