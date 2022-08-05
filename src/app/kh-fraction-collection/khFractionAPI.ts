@@ -1,140 +1,143 @@
-import { ComponentFactoryResolver } from "@angular/core";
 import { gsap, Draggable } from "gsap/all"
 
 export function fractionAPI(_els) {
     let self = {} as fractionClass
 
-    class fractionClass {
-
-        els: SVGSVGElement;
-        fractionDrag: SVGSVGElement
-        fractionComparison: SVGSVGElement
-        lastFraction: SVGSVGElement
-        lastSelected = false;
-        svgns = "http://www.w3.org/2000/svg";
+    class fractionCollection {
+        id: number
+        fractionid: string
+        fractionGroup: SVGSVGElement
+        controls: SVGSVGElement
+        remove: SVGSVGElement
+        dragRef: any
+        fractionArray = []
         dragged = false;
-        clicked = false;
-        dragStart = { x: 0, y: 0 }
-        sectionOffset = 20;
+        fractionX = 0;
         fractionY = 100
+        fractionWidth = 250
+        fractionHeight = 80
         denom = 1;
         TL = gsap.timeline()
-        fractionRectWidth = 50
-        fractionRectHeight = 30
+        uiActive = true
 
-
-
-
-        constructor(els) {
-            self = this
-            this.els = els
-            this.fractionDrag = this.els.getElementById("fractionDrag") as SVGSVGElement
-            this.fractionComparison = this.els.getElementById("fractionComparison") as SVGSVGElement
-
+        constructor(id) {
+            this.id = id
+            this.fractionid = "fraction" + id
+            this.fractionGroup = document.createElementNS(self.svgns, "g") as SVGSVGElement
+            gsap.set(this.fractionGroup, { attr: { id: this.fractionid } })
             this.init();
+
+            self.els.addEventListener("pointerdown", e => this.handlePointerDown(e))
+            self.els.addEventListener("pointerup", e => this.handlePointerUp(e))
         }
 
-        generateFractionBar() {
+        init() {
+            gsap.registerPlugin(Draggable)
 
-            for (let i = 0; i < 3; i++) {
-                let rect = document.createElementNS(this.svgns, "rect")
-                gsap.set(rect, { width: this.fractionRectWidth, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
-                this.fractionDrag.appendChild(rect)
-                this.sectionOffset += this.fractionRectWidth
+            this.generateFractionCollection()
+
+            this.dragRef = Draggable.create(this.fractionGroup, {
+                type: 'x, y',
+                onDragStart: () => {
+                    this.dragged = true
+                },
+            })
+
+        }
+
+        generateFractionCollection() {
+            for (let i = 0; i < 12; i++) {
+                let rect = document.createElementNS(self.svgns, "rect")
+                gsap.set(rect, { width: this.fractionWidth, height: this.fractionHeight, x: this.fractionX, y: this.fractionY, fill: "rgb(255, 255, 255)", stroke: "#595959" })
+                this.fractionGroup.appendChild(rect)
+                this.fractionArray.push(rect)
             }
 
-            let rect = document.createElementNS(this.svgns, "rect")
-            gsap.set(rect, { width: this.fractionRectWidth, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
-            this.fractionDrag.appendChild(rect)
-            this.sectionOffset += this.fractionRectWidth
-            this.lastFraction = rect as SVGSVGElement
+            let controls = document.getElementById("controls").cloneNode(true)
+            let bbox = (document.getElementById("controls") as unknown as SVGSVGElement).getBBox()
+            console.log(bbox)
+            gsap.set(controls, { attr: {id:this.fractionid + "controls"},x: this.fractionWidth / 2 + this.fractionX - bbox.width / 2, y: this.fractionHeight + this.fractionY + 10, display: "block" })
+            this.fractionGroup.appendChild(controls)
+            this.controls = controls as SVGSVGElement
 
+            //creating remove button
+            const remove = document.createElementNS(self.svgns, "g");
+            let line = document.createElementNS(self.svgns, "line")
+            gsap.set(line, { attr: { x1: 0, x2: 10, y1: 0, y2: 10, stroke: "rgb(0,0,0)" }, strokeWidth: 3 })
+            remove.appendChild(line)
 
+            line = document.createElementNS(self.svgns, "line")
+            gsap.set(line, { attr: { x1: 10, x2: 0, y1: 0, y2: 10, stroke: "rgb(0,0,0)" }, strokeWidth: 3 })
+            remove.appendChild(line)
+
+            gsap.set(remove, { attr: { id: this.fractionid + "remove" }, y: 95.5, x: -4.5 })
+            this.remove = remove as SVGSVGElement
+            this.fractionGroup.appendChild(remove)
+        }
+
+        handleIncrease() {
+            if (this.denom < 12) {
+                console.log("increase")
+                this.denom++;
+
+                let rectWidth = this.fractionWidth / this.denom
+                for (let i = this.fractionArray.length - 1; i > this.fractionArray.length - this.denom; i--) {
+                    gsap.to(this.fractionArray[i], { width: rectWidth })
+                    rectWidth += (this.fractionWidth / this.denom)
+                }
+            }
+        }
+
+        handleDecrease() {
+            if (this.denom > 1) {
+                console.log("decrease")
+                gsap.to(this.fractionArray[this.fractionArray.length - this.denom], { fill: "rgb(255, 255, 255)" })
+                this.denom--;
+                let rectWidth = this.fractionWidth / this.denom
+
+                for (let i = this.fractionArray.length - 1; i >= this.fractionArray.length - this.denom; i--) {
+                    gsap.to(this.fractionArray[i], { width: rectWidth })
+                    rectWidth += this.fractionWidth / (this.denom)
+                    rectWidth = Math.min(this.fractionWidth, rectWidth)
+                }
+            }
         }
 
         handlePointerDown(e) {
-            if (e.target.tagName == "rect") {
-                var pt = this.els.createSVGPoint()
-                pt.x = e.clientX
-                pt.y = e.clientY
-                //pt = pt.matrixTransform(this.els.getScreenCTM().inverse())
-
-                this.dragStart.x = pt.x
-                this.dragStart.y = pt.y
-                this.clicked = true;
-                if (e.target == this.lastFraction) {
-                    this.lastSelected = true;
-                }
-            }
-            if (e.target.parentNode.id == "playButton") {
-                this.handlePlay()
-            }
-        }
-
-        handlePlay() {
-            gsap.to(this.fractionDrag.childNodes, { width: this.fractionRectHeight, rx: 15, ry: 15, y: 150, duration: 1, ease: "power3.inOut" })
-        }
-
-        handleMove(e) {
-            if (self.clicked) {
-                self.dragged = true;
-                var pt = this.els.createSVGPoint()
-                pt.x = e.clientX
-                pt.y = e.clientY
-                if (this.lastSelected) {
-                    let rectWidth = (this.dragStart.x - pt.x) / -1.5
-                    //console.log(rectWidth)
-                    if (rectWidth > 0) {
-                        console.log("pos clause")
-                        if (this.lastFraction.getBBox().width < this.fractionRectWidth) {
-                            gsap.set(this.lastFraction, { width: Math.min(rectWidth,this.fractionRectWidth) })
-                        }
-                        else {
-                            let rect = document.createElementNS(this.svgns, "rect")
-                            this.lastFraction = rect as SVGSVGElement
-                            gsap.set(this.lastFraction, { width: 0, height: this.fractionRectHeight, x: this.sectionOffset, y: this.fractionY, fill: "rgb(255, 255, 255)", rx: 5, ry: 5, stroke: "#595959" })
-                            this.fractionDrag.appendChild(this.lastFraction)
-                            this.dragStart.x = pt.x
-                            this.dragStart.y = pt.y
-                            this.sectionOffset += this.fractionRectWidth
-                        }
-
-                    }
-                    else {
-                        console.log("else clause")
-                        if (this.lastFraction.getBBox().width > 1) {
-                            gsap.set(this.lastFraction, { width: Math.max(this.fractionRectWidth + rectWidth, 0) })
-                        }
-                        else {
-                            this.dragStart.x = pt.x
-                            this.dragStart.y = pt.y
-                            if (this.lastFraction != this.fractionDrag.firstChild) {
-                                this.sectionOffset -= this.fractionRectWidth
-                                this.lastFraction.remove();
-                                this.lastFraction = this.fractionDrag.lastChild as SVGSVGElement
-                            }
-                        }
-                    }
+            console.log(e.target.parentNode.parentNode)
+            if (e.target.parentNode == this.fractionGroup || e.target.parentNode.parentNode == this.fractionGroup || e.target.parentNode.parentNode == this.controls) {
+                self.fractionCollectionGroup.removeChild(this.fractionGroup)
+                self.fractionCollectionGroup.appendChild(this.fractionGroup)
+                if (this.uiActive == false) {
+                    this.controls.style.display = "block"
+                    this.remove.style.display = "block"
+                    this.uiActive = true
                 }
                 else {
-                    let bbox = this.lastFraction.getBoundingClientRect()
-                    let temp = (this.dragStart.x - pt.x) / -300
-                    if (Math.round(bbox.width) >= Math.round(bbox.height)) {
-                        gsap.set(this.fractionDrag, { scaleX: `+=${temp}` })
-                        this.dragStart.x = e.clientX
-                        this.dragStart.y = e.clientY
+                    if (e.target.parentNode.id == "increase") {
+                        this.handleIncrease()
+                        this.dragRef[0].disable()
                     }
-                    else if (temp > 0) {
-                        gsap.set(this.fractionDrag, { scaleX: `+=${temp}` })
-                        this.dragStart.x = e.clientX
-                        this.dragStart.y = e.clientY
+                    else if (e.target.parentNode.id == "decrease") {
+                        this.handleDecrease()
+                        this.dragRef[0].disable()
+                    }
+                    else if (e.target.parentNode == this.remove) {
+                        console.log("remove clicked")
+                        self.fractionCollectionArr.splice(this.id, 1)
+                        this.fractionGroup.remove()
                     }
                 }
+            }
+            else {
+                this.controls.style.display = "none"
+                this.remove.style.display = "none"
+                this.uiActive = false
             }
         }
 
         handlePointerUp(e) {
-            if (!self.dragged && e.target.tagName == "rect") {
+            if (!this.dragged && e.target.tagName == "rect" && e.target.parentNode == this.fractionGroup && this.uiActive == true) {
                 let element = e.target
                 if (element.style.fill == "rgb(255, 255, 255)") {
                     gsap.set(element, { fill: "rgb(224, 102, 102)" })
@@ -144,46 +147,33 @@ export function fractionAPI(_els) {
                 }
 
             }
-            else if (this.dragged) {
-                this.dragged = false
-                if (this.lastFraction.getBBox().width < this.fractionRectWidth) {
-                    console.log(this.lastFraction.getBBox().width)
-                    gsap.set(this.lastFraction, { width: this.fractionRectWidth })
-                }
-            }
-            this.clicked = false;
-            this.lastSelected = false;
+            this.dragged = false;
+            this.dragRef[0].enable()
+        }
+    }
+
+    class fractionClass {
+
+        els: SVGSVGElement;
+        fractionCollectionGroup: SVGSVGElement
+
+        svgns = "http://www.w3.org/2000/svg";
+        fractionCount = 0;
+        fractionCollectionArr = []
+
+        constructor(els) {
+            self = this
+            this.els = els
+            this.fractionCollectionGroup = this.els.getElementById("fractionCollectionGroup") as SVGSVGElement
+            this
+
+            this.init();
         }
 
-        handleIncrease() {
-            if (this.denom < 12) {
-                console.log("increase")
-                this.denom++;
-                let arr = Array.from(this.fractionComparison.childNodes)
-
-                let rectWidth = 250 / this.denom
-                for (let i = arr.length - 1; i > arr.length - this.denom; i--) {
-                    gsap.to(arr[i], { width: rectWidth })
-                    rectWidth += (250 / this.denom)
-                }
-            }
-        }
-
-        handleDecrease() {
-
-            if (this.denom > 1) {
-                console.log("decrease")
-                let arr = Array.from(this.fractionComparison.childNodes)
-                gsap.to(arr[arr.length - this.denom], { fill: "rgb(255, 255, 255)" })
-                this.denom--;
-                let rectWidth = 250 / this.denom
-
-                for (let i = arr.length - 1; i >= arr.length - this.denom; i--) {
-                    gsap.to(arr[i], { width: rectWidth })
-                    rectWidth += 250 / (this.denom)
-                    rectWidth = Math.min(250, rectWidth)
-                }
-            }
+        handleFractionCreate(){
+            let temp = new fractionCollection(this.fractionCount);
+            this.fractionCollectionGroup.appendChild(temp.fractionGroup)
+            this.fractionCollectionArr[this.fractionCount++] = temp
         }
 
         reduceFraction(n, d) {
@@ -278,20 +268,12 @@ export function fractionAPI(_els) {
             return label;
         }
 
-        generateFractionComparison() {
-            for (let i = 0; i < 12; i++) {
-                let rect = document.createElementNS(this.svgns, "rect")
-                gsap.set(rect, { width: 250, height: 90, x: 20, y: 200, fill: "rgb(255, 255, 255)", stroke: "#595959" })
-                this.fractionComparison.appendChild(rect)
-            }
-        }
-
         init() {
-            //gsap.registerPlugin(MorphSVGPlugin)
+            this.handleFractionCreate()
 
-            this.generateFractionBar()
-            this.generateFractionComparison()
+            this.els.getElementById("createFraction").addEventListener("pointerdown", e => this.handleFractionCreate())
 
+            /*
             this.els.addEventListener("pointerdown", e => this.handlePointerDown(e))
             this.els.addEventListener("pointermove", e => this.handleMove(e))
             this.els.addEventListener("pointerup", e => this.handlePointerUp(e))
@@ -301,6 +283,7 @@ export function fractionAPI(_els) {
             let label = this.getLabel(16, 2, 4, false)
             gsap.set(label, { y: 100 })
             this.els.appendChild(label)
+            */
 
         }
     }

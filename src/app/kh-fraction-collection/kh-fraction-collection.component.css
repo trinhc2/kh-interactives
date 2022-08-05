@@ -7,7 +7,7 @@ svg {
     touch-action: none;
 }
 
-#fractionDrag, #playButton, #increase, #decrease, #createFraction {
+#fractionCollectionGroup, #playButton, #increase, #decrease, #createFraction {
     cursor: pointer !important;
     pointer-events: all;
 }
