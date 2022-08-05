@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, AfterViewInit, ViewChild, Output, EventEmitter } from '@angular/core';
-import { farmAPI, farmSetup} from "./khFarmApi"
+import { farmAPI, farmSetup} from "./khFarmTrailerAPI"
 
 @Component({
   selector: 'app-kh-farm-trailer',
