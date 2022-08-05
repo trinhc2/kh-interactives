@@ -17,6 +17,7 @@ import { KhFractionToolComponent } from './kh-fraction-tool/kh-fraction-tool.com
 import { KhFarmFlowerComponent } from './kh-farm-flower/kh-farm-flower.component';
 import { KhImageZoomComponent } from './kh-image-zoom/kh-image-zoom.component';
 import { KhFractionCollectionComponent } from './kh-fraction-collection/kh-fraction-collection.component';
+import { KhFarmTrailerComponent } from './kh-farm-trailer/kh-farm-trailer.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { KhFractionCollectionComponent } from './kh-fraction-collection/kh-fract
     KhFractionToolComponent,
     KhFarmFlowerComponent,
     KhImageZoomComponent,
-    KhFractionCollectionComponent
+    KhFractionCollectionComponent,
+    KhFarmTrailerComponent
   ],
   imports: [
     BrowserModule,

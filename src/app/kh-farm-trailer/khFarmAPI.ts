@@ -56,6 +56,10 @@ export function farmAPI(_els, _setup) {
         beds: SVGSVGElement
         plots: SVGSVGElement
         rows: SVGSVGElement
+        temp = -40
+        wheat: SVGSVGElement
+        wheatScale = 0;
+        wheatNumber = 1
 
         constructor(els, setup) {
             self = this
@@ -81,6 +85,7 @@ export function farmAPI(_els, _setup) {
             this.plots = this.gsvgu.getElementById("plots") as SVGSVGElement
             this.rows = this.gsvgu.getElementById("rows") as SVGSVGElement
             this.gridState = this.beds
+            
 
             this.init()
         }
@@ -149,7 +154,6 @@ export function farmAPI(_els, _setup) {
                     this.plotArray[plotArrayI][plotArrayJ] = png
                 }
             }
-            console.log(this.plotArray)
         }
 
         hitTest(e) {
@@ -278,7 +282,6 @@ export function farmAPI(_els, _setup) {
             }
 
             //console.log("i = " + i, "j = " + j)
-            console.log(this.plotArray)
         }
 
         handlePlay(largeArr, largeDragEl) {
@@ -307,7 +310,7 @@ export function farmAPI(_els, _setup) {
                     largept = largept.matrixTransform(self.gsvg.getScreenCTM()) //undo screenmatrix to get position relative to farm
                     largept = largept.matrixTransform(self.farmGroup.getScreenCTM().inverse()) //undo farmgroup to calculate end position
 
-                    largept.x -= self.setup.plotWidth + this.largeCombine.getBBox().width / 2
+                    largept.x -= self.setup.plotWidth + this.largeCombine.getBBox().width / 2 + 5
 
                     largept = largept.matrixTransform(self.farmGroup.getScreenCTM())
                     largept = largept.matrixTransform(self.gsvg.getScreenCTM().inverse())
@@ -341,11 +344,24 @@ export function farmAPI(_els, _setup) {
 
                     arr.forEach(e => {T.to(e, {visibility: "hidden", scaleX: 0, duration: (self.harvestDuration-1)/50, delay:0.01, 
                     onStart: function() {
+                        if (self.wheatScale >= 0.8 && self.wheatNumber < 10) {
+                            self.wheatScale = 0;
+                            self.wheatNumber++
+                            self.wheat = self.gsvg.getElementById("wheat"+self.wheatNumber) as SVGSVGElement
+                        }
                         if (e[0].style.visibility == "visible") {
                             self.harvested += 0.001
+                            self.wheatScale += 0.008
+                            if (self.wheatNumber <= 10) {
+                                gsap.set(self.wheat, {scaleX: self.wheatScale, scaleY: self.wheatScale})
+                            }
                         }
                         if (e[1].style.visibility == "visible") {
                             self.harvested += 0.001
+                            self.wheatScale += 0.008
+                            if (self.wheatNumber <= 10) {
+                                gsap.set(self.wheat, {scaleX: self.wheatScale, scaleY: self.wheatScale})
+                            }
                         }
                         self.harvestTotalLarge.textContent = String(self.harvested.toFixed(3))
                         gsap.set(self.harvestTotalLarge, { x: - self.harvestTotalLarge.getBBox().width / 2 })
@@ -444,6 +460,7 @@ export function farmAPI(_els, _setup) {
             this.plotIncrementWidth = this.plotBBox.width / 10;
             this.plotIncrementHeight = this.plotBBox.height / 10;
 
+
             //generating grid lines
             this.generateLines()
             this.fillPlot()
@@ -464,19 +481,33 @@ export function farmAPI(_els, _setup) {
             this.harvestTotalLarge.textContent = "0"
             gsap.set(this.harvestTotalLarge, { x: - this.harvestTotalLarge.getBBox().width / 2 })
 
-            //large combine init
+            let wheatX = -46
+            let wheatY = 10
+            let wheatid = 1
+            for (let i = 0; i < 5; i++){
+                let png = document.createElementNS(this.svgns, "use")
+                gsap.set(png, {attr: {id: "wheat"+wheatid, href: "#wheatPNG"}, x: wheatX, y: wheatY, scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
+                document.getElementById("trailer").appendChild(png)
+
+                png = document.createElementNS(this.svgns, "use")
+                gsap.set(png, {attr: {id: "wheat"+(wheatid+5), href: "#wheatPNG"}, x: (wheatX+10), y: (wheatY-7), scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
+                document.getElementById("trailer").appendChild(png)
+                wheatX -= 12
+                wheatY -=7
+                wheatid++
+            } 
+            this.wheat = this.gsvg.getElementById("wheat1") as SVGSVGElement
             var pt = this.gsvg.createSVGPoint()
 
             let largeCombineSnapPoints = []
             for (let i = 1; i < 11; i++) {
                 //for (let i = 1; i < 20; i++) {
-                pt.x = this.setup.plotWidth + this.largeCombine.getBBox().width - 3
+                pt.x = this.setup.plotWidth + this.largeCombineText.getBBox().width + 63
                 //pt.y = ((19 - i) * (this.plotIncrementHeight / 2)) + 20
-                pt.y = (Math.floor((20 - i * 2) / 2) * (this.plotIncrementHeight / 2) * 2) + 20 //+20 for offset
+                pt.y = (Math.floor((20 - i * 2) / 2) * (this.plotIncrementHeight / 2) * 2) - 74 //+20 for offset 
                 pt = pt.matrixTransform(this.farmGroup.getScreenCTM())
                 pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
                 let temp = { x: pt.x, y: pt.y }
-                console.log(pt)
                 largeCombineSnapPoints.push(temp)
             }
 
