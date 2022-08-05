@@ -1,0 +1,20 @@
+svg {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    height: 100%;
+    width: 100%;
+    touch-action: none;
+}
+
+#fractionDrag, #playButton, #increase, #decrease, #createFraction {
+    cursor: pointer !important;
+    pointer-events: all;
+}
+
+#playButton:hover circle {
+    fill: #e9bbbb !important;
+}
+#increase:hover path, #decrease:hover path {
+    stroke: #e9bbbb !important;
+}

@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, AfterViewInit, ViewChild, Output, EventEm
 import { zoomAPI, zoomSetup} from "./zoomAPI"
 
 @Component({
-  selector: 'app-kh-image-zoom',
+  selector: 'kh-image-zoom',
   templateUrl: './kh-image-zoom.component.html',
   styleUrls: ['./kh-image-zoom.component.css']
 })
