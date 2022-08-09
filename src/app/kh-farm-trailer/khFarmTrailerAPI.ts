@@ -49,8 +49,8 @@ export function farmAPI(_els, _setup) {
         harvested = 0
         harvestDuration = 5
         lastHarvestedIndex: number
-        harvestTotalLarge: SVGSVGElement
-        harvestTotalSmall: SVGSVGElement
+        harvestTotalText: SVGSVGElement
+        harvestTotalBox: SVGSVGElement
         largeCombineDraggable: any
         animationPlaying = false
         beds: SVGSVGElement
@@ -60,6 +60,12 @@ export function farmAPI(_els, _setup) {
         wheat: SVGSVGElement
         wheatScale = 0;
         wheatNumber = 1
+        barnCounterText: SVGSVGElement
+        deposited = 0
+        depositAnimating = false
+        plantAnimating = false
+        pause = false
+        dragged = false
 
         constructor(els, setup) {
             self = this
@@ -78,14 +84,14 @@ export function farmAPI(_els, _setup) {
             this.plant = this.gsvgu.getElementById("plant") as HTMLElement
             this.move = this.gsvgu.getElementById("move") as HTMLElement
             this.pointerState = this.plant
-            this.harvestTotalLarge = this.gsvg.getElementById("harvestTotalLarge") as SVGSVGElement
-            this.harvestTotalSmall = this.gsvg.getElementById("harvestTotalSmall") as SVGSVGElement
+            this.harvestTotalText = this.gsvg.getElementById("harvestTotalText") as SVGSVGElement
+            this.harvestTotalBox = this.gsvg.getElementById("harvestTotalBox") as SVGSVGElement
             this.zoomControls = this.gsvgu.getElementById("zoomControls") as SVGSVGElement
             this.beds = this.gsvgu.getElementById("beds") as SVGSVGElement
             this.plots = this.gsvgu.getElementById("plots") as SVGSVGElement
             this.rows = this.gsvgu.getElementById("rows") as SVGSVGElement
             this.gridState = this.beds
-            
+
 
             this.init()
         }
@@ -131,11 +137,11 @@ export function farmAPI(_els, _setup) {
         }
 
         fillPlot() {
-            
+
             let innerGridIncrementX = this.plotIncrementWidth / 5;
             let innerGridIncrementY = this.plotIncrementHeight / 2
 
-            for (let index = 0; index < 20; index++){
+            for (let index = 0; index < 20; index++) {
                 for (let jIndex = 50; jIndex > 0; jIndex--) {
                     //console.log(temp)
                     let plotArrayI = 19 - index
@@ -147,7 +153,7 @@ export function farmAPI(_els, _setup) {
 
                     //animate flower
                     let png = document.createElementNS(this.svgns, "use")
-                    gsap.set(png, {attr: { id: rectID, href: "#wheatPNG"}, x: xVal, y: yVal, scaleX: 0, scaleY: 0.24, visibility: "hidden"})
+                    gsap.set(png, { attr: { id: rectID, href: "#wheatPNG" }, x: xVal, y: yVal, scaleX: 0, scaleY: 0.24, visibility: "hidden" })
                     this.gsvg.getElementById("fill").appendChild(png)
                     //temp.to(png, { scaleX: 0.22, duration: 1 }, "<")
 
@@ -156,13 +162,8 @@ export function farmAPI(_els, _setup) {
             }
         }
 
-        hitTest(e) {
-            if (this.pointerState == this.plant) {
-                this.plantOrRemoveFlower(e)
-            }
-        }
-
         startDrag(e) {
+
             if (this.dragEnabled && !this.animationPlaying) {
                 var pt = this.gsvg.createSVGPoint()
                 pt.x = e.clientX
@@ -172,6 +173,16 @@ export function farmAPI(_els, _setup) {
                 this.dragStart.x = pt.x
                 this.dragStart.y = pt.y
                 this.isDragging = true;
+            }
+            else if (this.animationPlaying && (e.target == this.gsvg || e.target.tagName == "path")){
+                if (this.pause){
+                    this.TL.resume()
+                    this.pause = false
+                }
+                else {
+                    this.TL.pause()
+                    this.pause = true
+                }
             }
         }
 
@@ -191,102 +202,106 @@ export function farmAPI(_els, _setup) {
         }
 
         plantOrRemoveFlower(e) {
-            var i;
-            var j;
+            if (this.pointerState == this.plant && !this.plantAnimating && !this.animationPlaying) {
+                var i;
+                var j;
+                
+                //this.plantAnimating = true
 
-            //Calculate original point
-            var pt = this.gsvg.createSVGPoint()
-            pt.x = e.clientX
-            pt.y = e.clientY
-            pt = pt.matrixTransform(this.farmGroup.getScreenCTM().inverse())
+                //Calculate original point
+                var pt = this.gsvg.createSVGPoint()
+                pt.x = e.clientX
+                pt.y = e.clientY
+                pt = pt.matrixTransform(this.farmGroup.getScreenCTM().inverse())
 
-            //checks bounds so that rects cannot be placed outside of plot
-            if (pt.x < 0) {
-                pt.x = 0
-            }
-            else if (pt.x > this.setup.plotHeight) {
-                pt.x = this.setup.plotHeight - 1
-            }
-            if (pt.y < 0) {
-                pt.y = 0
-            }
-            else if (pt.y > this.setup.plotWidth) {
-                pt.y = this.setup.plotWidth - 1
-            }
-            //console.log("point after inverse", pt)
-
-            let innerGridIncrementX = this.plotIncrementWidth / 5;
-            let innerGridIncrementY = this.plotIncrementHeight / 2
-
-            //current grid is rotated for plant/harvest animation, (0,0 is actually 19,49)
-            i = 19 - Math.floor(pt.y / innerGridIncrementY);
-            j = 49 - Math.floor(pt.x / innerGridIncrementX)
-
-
-            //if element exists where clicking, remove it
-            if (this.plotArray[i][j]) {
-                let timeline = gsap.timeline()
-                if (this.gridState == this.beds) {
-                    if (self.plotArray[i][j].style.visibility == "hidden"){
-                        gsap.set(this.plotArray[i][j], {visibility: "visible",})
-                        gsap.to(this.plotArray[i][j], { scaleX: 0.22, duration: 1,})
-                    }
-                    else {
-                        gsap.to(this.plotArray[i][j], { scaleX: 0, duration: 1,})
-                        gsap.set(this.plotArray[i][j], {visibility: "hidden", delay:1 })
-                    }
-                    
+                //checks bounds so that rects cannot be placed outside of plot
+                if (pt.x < 0) {
+                    pt.x = 0
                 }
-                else if (this.gridState == this.plots) {
-                    if (self.plotArray[i][j].style.visibility == "hidden"){
-                        let index = Math.floor(i / 2) * 2
+                else if (pt.x > this.setup.plotHeight) {
+                    pt.x = this.setup.plotHeight - 1
+                }
+                if (pt.y < 0) {
+                    pt.y = 0
+                }
+                else if (pt.y > this.setup.plotWidth) {
+                    pt.y = this.setup.plotWidth - 1
+                }
+                //console.log("point after inverse", pt)
+
+                let innerGridIncrementX = this.plotIncrementWidth / 5;
+                let innerGridIncrementY = this.plotIncrementHeight / 2
+
+                //current grid is rotated for plant/harvest animation, (0,0 is actually 19,49)
+                i = 19 - Math.floor(pt.y / innerGridIncrementY);
+                j = 49 - Math.floor(pt.x / innerGridIncrementX)
+
+
+                //if element exists where clicking, remove it
+                if (this.plotArray[i][j]) {
+                    let timeline = gsap.timeline()
+                    if (this.gridState == this.beds) {
+                        if (self.plotArray[i][j].style.visibility == "hidden") {
+                            gsap.set(this.plotArray[i][j], { visibility: "visible", })
+                            gsap.to(this.plotArray[i][j], { scaleX: 0.22, duration: 1, })
+                        }
+                        else {
+                            gsap.to(this.plotArray[i][j], { scaleX: 0, duration: 1, })
+                            gsap.set(this.plotArray[i][j], { visibility: "hidden", delay: 1 })
+                        }
+
+                    }
+                    else if (this.gridState == this.plots) {
+                        if (self.plotArray[i][j].style.visibility == "hidden") {
+                            let index = Math.floor(i / 2) * 2
                             for (let jIndex = Math.floor(j / 5) * 5 + 4; jIndex >= Math.floor(j / 5) * 5; jIndex--) {
-                                timeline.set(this.plotArray[index][jIndex], {visibility: "visible"}, "<+=0.05")
-                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0.22, duration: 1,}, "<")
+                                timeline.set(this.plotArray[index][jIndex], { visibility: "visible" }, "<+=0.05")
+                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0.22, duration: 1, }, "<")
 
-                                timeline.set(this.plotArray[index+1][jIndex], {visibility: "visible"}, "<")
-                                timeline.to(this.plotArray[index+1][jIndex], { scaleX: 0.22, duration: 1,},"<")
+                                timeline.set(this.plotArray[index + 1][jIndex], { visibility: "visible" }, "<")
+                                timeline.to(this.plotArray[index + 1][jIndex], { scaleX: 0.22, duration: 1, }, "<")
                             }
-                        
-                    }
-                    else {
-                        let index = Math.floor(i / 2) * 2
+
+                        }
+                        else {
+                            let index = Math.floor(i / 2) * 2
                             for (let jIndex = Math.floor(j / 5) * 5; jIndex < Math.floor(j / 5) * 5 + 5; jIndex++) {
-                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0, duration: 1, onComplete: function () {timeline.set(self.plotArray[index][jIndex], {visibility: "hidden"})}}, "<+=0.05",)
-                                timeline.to(this.plotArray[index+1][jIndex], { scaleX: 0, duration: 1, onComplete: function () {timeline.set(self.plotArray[index+1][jIndex], {visibility: "hidden"})}}, "<")
+                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0, duration: 1, onComplete: function () { timeline.set(self.plotArray[index][jIndex], { visibility: "hidden" }) } }, "<+=0.05",)
+                                timeline.to(this.plotArray[index + 1][jIndex], { scaleX: 0, duration: 1, onComplete: function () { timeline.set(self.plotArray[index + 1][jIndex], { visibility: "hidden" }) } }, "<")
                             }
-                        
-                    }
-                }
-                else {
-                    if (self.plotArray[i][j].style.visibility == "hidden"){
-                        let index = Math.floor(i / 2) * 2
-                            for (let jIndex = 49; jIndex >= 0; jIndex--) {
-                                timeline.set(this.plotArray[index][jIndex], {visibility: "visible"}, "<+=0.02")
-                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0.22, duration: 1,}, "<")
 
-                                timeline.set(this.plotArray[index+1][jIndex], {visibility: "visible"}, "<")
-                                timeline.to(this.plotArray[index+1][jIndex], { scaleX: 0.22, duration: 1,},"<")
-                            }
-                        
+                        }
                     }
                     else {
-                        let index = Math.floor(i / 2) * 2
-                            for (let jIndex = 0; jIndex < 50; jIndex++) {
-                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0, duration: 1, onComplete: function () {timeline.set(self.plotArray[index][jIndex], {visibility: "hidden"})}}, "<+=0.02",)
-                                timeline.to(this.plotArray[index+1][jIndex], { scaleX: 0, duration: 1, onComplete: function () {timeline.set(self.plotArray[index+1][jIndex], {visibility: "hidden"})}}, "<")
+                        if (self.plotArray[i][j].style.visibility == "hidden") {
+                            let index = Math.floor(i / 2) * 2
+                            for (let jIndex = 49; jIndex >= 0; jIndex--) {
+                                timeline.set(this.plotArray[index][jIndex], { visibility: "visible" }, "<+=0.02")
+                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0.22, duration: 1, }, "<")
+
+                                timeline.set(this.plotArray[index + 1][jIndex], { visibility: "visible" }, "<")
+                                timeline.to(this.plotArray[index + 1][jIndex], { scaleX: 0.22, duration: 1, }, "<")
                             }
-                        
+
+                        }
+                        else {
+                            let index = Math.floor(i / 2) * 2
+                            for (let jIndex = 0; jIndex < 50; jIndex++) {
+                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0, duration: 1, onComplete: function () { timeline.set(self.plotArray[index][jIndex], { visibility: "hidden" }) } }, "<+=0.02",)
+                                timeline.to(this.plotArray[index + 1][jIndex], { scaleX: 0, duration: 1, onComplete: function () { timeline.set(self.plotArray[index + 1][jIndex], { visibility: "hidden" }) } }, "<")
+                            }
+
+                        }
                     }
                 }
-            }
 
-            //console.log("i = " + i, "j = " + j)
+                //console.log("i = " + i, "j = " + j)
+            }
         }
 
         handlePlay(largeArr, largeDragEl) {
             if (!self.animationPlaying) {
-                
+
                 var largei
                 var largept = this.gsvg.createSVGPoint()
 
@@ -320,16 +335,16 @@ export function farmAPI(_els, _setup) {
 
                     //pre calculating the two rows to be harvested
                     let preCount = 0;
-            
+
                     const arr = []
                     for (let j = 0; j < 50; j++) {
                         let el1 = this.plotArray[Math.floor(largei * 2 / 2) * 2][j]
                         let el2 = this.plotArray[Math.floor(largei * 2 / 2) * 2 + 1][j]
 
-                        if (el1.style.visibility == "visible"){
+                        if (el1.style.visibility == "visible") {
                             preCount += 0.001
                         }
-                        if (el2.style.visibility == "visible"){
+                        if (el2.style.visibility == "visible") {
                             preCount += 0.001
                         }
                         let temp = [el1, el2]
@@ -342,42 +357,62 @@ export function farmAPI(_els, _setup) {
                     //syncing wheat harvest with combine timeline
                     let T = gsap.timeline()
 
-                    arr.forEach(e => {T.to(e, {visibility: "hidden", scaleX: 0, duration: (self.harvestDuration-1)/50, delay:0.01, 
-                    onStart: function() {
-                        if (self.wheatScale >= 0.8 && self.wheatNumber < 10) {
-                            self.wheatScale = 0;
-                            self.wheatNumber++
-                            self.wheat = self.gsvg.getElementById("wheat"+self.wheatNumber) as SVGSVGElement
-                        }
-                        if (e[0].style.visibility == "visible") {
-                            self.harvested += 0.001
-                            self.wheatScale += 0.008
-                            if (self.wheatNumber <= 10) {
-                                gsap.set(self.wheat, {scaleX: self.wheatScale, scaleY: self.wheatScale})
+                                        self.TL.to(self.largeCombineText, {
+                        x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear",
+                        onComplete: function () {
+                            self.animationPlaying = false;
+                            self.largeCombineDraggable[0].enable()
+                            if (self.harvested != postCount) {
+                                self.harvested = postCount
+                                self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
+                                gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
                             }
                         }
-                        if (e[1].style.visibility == "visible") {
-                            self.harvested += 0.001
-                            self.wheatScale += 0.008
-                            if (self.wheatNumber <= 10) {
-                                gsap.set(self.wheat, {scaleX: self.wheatScale, scaleY: self.wheatScale})
-                            }
-                        }
-                        self.harvestTotalLarge.textContent = String(self.harvested.toFixed(3))
-                        gsap.set(self.harvestTotalLarge, { x: - self.harvestTotalLarge.getBBox().width / 2 })
-                    }})})
+                    })
+
+                    arr.forEach(e => {
+                        self.TL.to(e, {
+                            scaleX: 0, duration: (self.harvestDuration - 1) / 50, delay: 0.001,
+                            onStart: function () {
+                                if (self.wheatScale >= 0.8 && self.wheatNumber < 10) {
+                                    self.wheatScale = 0;
+                                    self.wheatNumber++
+                                    self.wheat = self.gsvg.getElementById("wheat" + self.wheatNumber) as SVGSVGElement
+                                }
+                                if (e[0].style.visibility == "visible") {
+                                    self.harvested += 0.001
+                                    self.wheatScale += 0.008
+                                    if (self.wheatNumber <= 10 && self.wheatScale <= 0.8) {
+                                        gsap.set(self.wheat, { scaleX: self.wheatScale, scaleY: self.wheatScale })
+                                    }
+                                }
+                                if (e[1].style.visibility == "visible") {
+                                    self.harvested += 0.001
+                                    self.wheatScale += 0.008
+                                    if (self.wheatNumber <= 10 && self.wheatScale <= 0.8) {
+                                        gsap.set(self.wheat, { scaleX: self.wheatScale, scaleY: self.wheatScale })
+                                    }
+                                }
+                                self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
+                                gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
+                            },
+                            onComplete: function () { gsap.set(e, { visibility: "hidden" }) }
+                        }, `<+=${(self.harvestDuration - 1) / 50}`)
+                    })
 
                     //animate combine
-                    gsap.to(self.largeCombineText, { x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear",
-                    onComplete: function() {
-                        self.animationPlaying = false;
-                        self.largeCombineDraggable[0].enable()
-                        if (self.harvested != postCount) {
-                            self.harvested = postCount
-                            self.harvestTotalLarge.textContent = String(self.harvested.toFixed(3))
-                            gsap.set(self.harvestTotalLarge, { x: - self.harvestTotalLarge.getBBox().width / 2 })
+                    self.TL.to(self.largeCombineText, {
+                        x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear",
+                        onComplete: function () {
+                            self.animationPlaying = false;
+                            self.largeCombineDraggable[0].enable()
+                            if (self.harvested != postCount) {
+                                self.harvested = postCount
+                                self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
+                                gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
+                            }
                         }
-                    }})
+                    })
                     self.animationPlaying = true;
                 }
                 else {
@@ -448,6 +483,65 @@ export function farmAPI(_els, _setup) {
             gsap.utils.toArray("circle", this.pointerState)[0].style.fill = "#c3e7b3"
         }
 
+        handleDeposit(e) {
+            if (!self.animationPlaying && !self.depositAnimating && self.harvested > 0 && !self.dragged) {
+                self.TL.clear()
+                self.largeCombineDraggable[0].disable()
+                self.depositAnimating = true
+                console.log("deposit")
+                this.barnCounterText.textContent = String(this.deposited.toFixed(3))
+                gsap.set(this.barnCounterText, { x: 432 - this.barnCounterText.getBBox().width / 2, y: 125 + this.barnCounterText.getBBox().width / 4 })
+                this.harvestTotalText.textContent = String(self.harvested.toFixed(3))
+                gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
+
+
+                var pt = this.gsvg.createSVGPoint()
+                pt.x = this.largeCombineText.getBoundingClientRect().x
+                pt.y = this.largeCombineText.getBoundingClientRect().y
+                pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
+
+                let bbox = self.harvestTotalText.getBoundingClientRect()
+                console.log(this.largeCombineText.getBoundingClientRect())
+
+                for (let i = 0; i < 9; i++) {
+                    let wheat = document.createElementNS(this.svgns, "use")
+                    self.TL.set(wheat, { attr: { href: "#singleWheat" }, x: pt.x + 22, y: pt.y + 28 }, "<+=0.1")
+                    this.gsvg.appendChild(wheat)
+                    self.TL.to(wheat, { x: 367, y: 86, duration: 2, onComplete: function () { wheat.remove() } }, "<")
+                    console.log(self.TL)
+                }
+
+                let wheat = document.createElementNS(this.svgns, "use")
+                self.TL.set(wheat, { attr: { href: "#singleWheat" }, x: pt.x + 22, y: pt.y + 28 }, "<")
+                this.gsvg.appendChild(wheat)
+                self.TL.to(wheat, {
+                    x: 367, y: 86, duration: 2, onComplete: function () {
+                        wheat.remove()
+
+                        //update combine and barn numbers
+                        self.deposited += self.harvested
+                        self.harvested = 0;
+                        self.barnCounterText.textContent = String(self.deposited.toFixed(3))
+                        gsap.set(self.barnCounterText, { x: 432 - self.barnCounterText.getBBox().width / 2, y: 125 + self.barnCounterText.getBBox().width / 4 })
+                        self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
+                        gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
+
+                        //reset wheat in trailer
+                        gsap.utils.toArray("use", document.getElementById("trailer")).forEach(element => {
+                            gsap.set(element, { scaleX: 0, scaleY: 0 })
+                        })
+                        self.depositAnimating = false
+
+                    }
+                }, "<")
+
+                //reset trailer wheat variables
+                self.wheatScale = 0;
+                self.wheatNumber = 1
+                self.largeCombineDraggable[0].enable()
+            }
+        }
+
         init() {
             gsap.registerPlugin(Draggable)
 
@@ -475,27 +569,27 @@ export function farmAPI(_els, _setup) {
             gsap.set(this.farmGroup, { x: 125, y: 100 })
 
             //combine start pos
-            gsap.set(this.largeCombineText, { x: 60 - this.largeCombineText.getBBox().x, y: 70 - this.largeCombineText.getBBox().y})
+            gsap.set(this.largeCombineText, { x: 60 - this.largeCombineText.getBBox().x, y: 70 - this.largeCombineText.getBBox().y })
 
             //harvest number init
-            this.harvestTotalLarge.textContent = "0"
-            gsap.set(this.harvestTotalLarge, { x: - this.harvestTotalLarge.getBBox().width / 2 })
+            this.harvestTotalText.textContent = "0"
+            gsap.set(this.harvestTotalText, { x: - this.harvestTotalText.getBBox().width / 2 })
 
             let wheatX = -46
             let wheatY = 10
             let wheatid = 1
-            for (let i = 0; i < 5; i++){
+            for (let i = 0; i < 5; i++) {
                 let png = document.createElementNS(this.svgns, "use")
-                gsap.set(png, {attr: {id: "wheat"+wheatid, href: "#wheatPNG"}, x: wheatX, y: wheatY, scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
+                gsap.set(png, { attr: { id: "wheat" + wheatid, href: "#wheatPNG" }, x: wheatX, y: wheatY, scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
                 document.getElementById("trailer").appendChild(png)
 
                 png = document.createElementNS(this.svgns, "use")
-                gsap.set(png, {attr: {id: "wheat"+(wheatid+5), href: "#wheatPNG"}, x: (wheatX+10), y: (wheatY-7), scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
+                gsap.set(png, { attr: { id: "wheat" + (wheatid + 5), href: "#wheatPNG" }, x: (wheatX + 10), y: (wheatY - 7), scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
                 document.getElementById("trailer").appendChild(png)
                 wheatX -= 12
-                wheatY -=7
+                wheatY -= 7
                 wheatid++
-            } 
+            }
             this.wheat = this.gsvg.getElementById("wheat1") as SVGSVGElement
             var pt = this.gsvg.createSVGPoint()
 
@@ -522,15 +616,26 @@ export function farmAPI(_els, _setup) {
                         self.dragEnabled = false
                     }
                 },
-                onRelease: function() {
+                onDragStart: function() {
+                    self.dragged = true
+                },
+                onRelease: function () {
                     if (self.pointerState == self.move) {
                         self.dragEnabled = true
                     }
+                    self.dragged = false
                 }
             })
 
+            let temp = document.createElementNS(this.svgns, "text") as SVGSVGElement
+            //gsap.set(temp, {textContent: "0.001", rotate: -30, skewX: -30, fontSize: 16, fill: "#ffffff", fontFamily: "arial", fontWeight: 600, x:415, y:132})
+            gsap.set(temp, { textContent: "0", rotate: -30, skewX: -30, fontSize: 16, fill: "#ffffff", fontFamily: "arial", fontWeight: 600, userSelect: "none"})
+            gsap.set(temp, { x: 432 - temp.getBBox().width / 2, y: 125 + temp.getBBox().width / 4 })
+            this.barnCounterText = temp
+            this.gsvg.appendChild(temp)
+
             //event listeners
-            this.farmGroup.addEventListener("pointerdown", e => { this.hitTest(e) })
+            this.farmGroup.addEventListener("pointerdown", e => { this.plantOrRemoveFlower(e) })
 
             this.gsvgu.getElementById("zoomIn").addEventListener("pointerdown", e => this.handleZoomIn())
             this.gsvgu.getElementById("zoomOut").addEventListener("pointerdown", e => this.handleZoomOut())
@@ -538,6 +643,8 @@ export function farmAPI(_els, _setup) {
             this.gsvg.addEventListener("pointerdown", e => this.startDrag(e))
             this.gsvg.addEventListener("pointermove", e => this.whileDrag(e))
             this.gsvg.addEventListener("pointerup", e => this.endDrag(e))
+
+            this.harvestTotalBox.addEventListener("pointerup", e => this.handleDeposit(e))
 
             this.gsvgu.getElementById("playButton").addEventListener("pointerdown", e => this.handlePlay(largeCombineSnapPoints, this.largeCombineDraggable[0]))
 

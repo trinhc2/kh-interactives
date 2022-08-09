@@ -12,6 +12,7 @@ export class KhImageZoomComponent implements AfterViewInit {
 
   constructor() { }
 
+  //currently assigning default values, but can be removed later.
   @Input()
   private image: string = "https://res.cloudinary.com/dg9cqf9zn/image/upload/v1659473813/barrels2_1_mbrlo2.svg"
 
