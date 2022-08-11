@@ -1,0 +1,16 @@
+svg {
+    min-width: 300px;
+    overflow: scroll;
+}
+
+.upperRenderEl, .lowerRenderEl {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    height: 100%;
+    width: 100%;
+}
+
+.lowerRenderEl text{
+    user-select: none;
+}
