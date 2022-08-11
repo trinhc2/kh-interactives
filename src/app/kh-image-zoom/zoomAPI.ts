@@ -78,7 +78,7 @@ export function zoomAPI(_els, _setup) {
                 index = Math.abs(this.zoomLevel)
             }
             else if (this.zoomLevel > 0) {
-                index = this.zoomLevel + 11 - 1 //use the index-1 if we are already zoomed in
+                index = this.zoomLevel + 11 - 1 //use the index-1 if we are already zoomed in 
             }
             if (this.zoomLevel > -10) {
                 //get (current basebox - what center should be) to get offset

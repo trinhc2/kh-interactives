@@ -484,7 +484,7 @@ export function farmAPI(_els, _setup) {
         }
 
         handleDeposit(e) {
-            if (!self.animationPlaying && !self.depositAnimating && self.harvested > 0 && !self.dragged) {
+            if (!self.animationPlaying && !self.depositAnimating && !self.dragged) {
                 self.TL.clear()
                 self.largeCombineDraggable[0].disable()
                 self.depositAnimating = true
@@ -508,7 +508,6 @@ export function farmAPI(_els, _setup) {
                     self.TL.set(wheat, { attr: { href: "#singleWheat" }, x: pt.x + 22, y: pt.y + 28 }, "<+=0.1")
                     this.gsvg.appendChild(wheat)
                     self.TL.to(wheat, { x: 367, y: 86, duration: 2, onComplete: function () { wheat.remove() } }, "<")
-                    console.log(self.TL)
                 }
 
                 let wheat = document.createElementNS(this.svgns, "use")
@@ -539,6 +538,7 @@ export function farmAPI(_els, _setup) {
                 self.wheatScale = 0;
                 self.wheatNumber = 1
                 self.largeCombineDraggable[0].enable()
+                self.wheat = self.gsvg.getElementById("wheat" + self.wheatNumber) as SVGSVGElement
             }
         }
 
