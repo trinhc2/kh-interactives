@@ -1,4 +1,4 @@
-import { gsap } from "gsap/all"
+import { gsap, Draggable } from "gsap/all"
 
 
 export function colorSwitchAPI(_els) {
@@ -13,6 +13,10 @@ export function colorSwitchAPI(_els) {
         mousedown = false
         viewboxOffset = 0
         baroffset = 0
+        sectionWidth = 125
+        sectionHeight = 30
+        svgns = "http://www.w3.org/2000/svg";
+
 
 
         constructor(els) {
@@ -56,6 +60,7 @@ export function colorSwitchAPI(_els) {
             }
 
             self.collisionTest()
+            
 
             self.animateBar()
 
@@ -64,22 +69,30 @@ export function colorSwitchAPI(_els) {
         }
 
         collisionTest(){
-            let dot = self.dot.getBoundingClientRect()
-            let bar = self.bar.getBoundingClientRect()
-            if (dot.y <= bar.y + bar.height){
-                self.baroffset = 0
-                self.viewboxOffset = 0
-            }
+            let arr = gsap.utils.toArray("g", self.bar)
+
+            arr.forEach(element => {
+                if (Draggable.hitTest(self.dot, element)){
+                    console.log("hit", element)
+                    self.baroffset = 0
+                    self.viewboxOffset = 0
+                }
+            })
         }
 
         animateBar(){
             let arr = gsap.utils.toArray("g", self.bar)
+            //let element = arr[0]
             arr.forEach(element => {
                 gsap.set(element, {x: `-=2`})
                 let bbox = element.getBoundingClientRect()
                 let xbbox = element.getBBox()
-                if (bbox.x + bbox.width <= 0){
-                    gsap.set(element, {x: 500+bbox.width - xbbox.x})
+                var pt = this.gsvg.createSVGPoint()
+                pt.x = bbox.x + bbox.width
+                pt.y = bbox.y
+                pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
+                if (pt.x <= 0){
+                    gsap.set(element, {x: 500 - xbbox.x})
                 }
             });
             //console.log(arr)
@@ -88,8 +101,10 @@ export function colorSwitchAPI(_els) {
 
         init() {
 
-            this.gsvg.addEventListener("pointerdown", e => this.handlePointerDown(e))
-            this.gsvg.addEventListener("pointerup", e => this.handlePointerUp(e))
+            gsap.registerPlugin(Draggable)
+
+            document.addEventListener("pointerdown", e => this.handlePointerDown(e))
+            document.addEventListener("pointerup", e => this.handlePointerUp(e))
 
             window.requestAnimationFrame(self.gameloop)
             
