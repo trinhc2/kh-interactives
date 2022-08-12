@@ -145,6 +145,7 @@ export function decomposeNumber(_els, _setup) {
                 }
                 let decrementText = document.createElementNS(this.svgns, "text") as SVGTextElement
                 gsap.set(decrementText, { attr: { id: 'decrementText' + (decrementNumID), class: "number" }, x: numBBox.x - (numBBox.width / 2), y: numBBox.y + this.yTextOffset, fontFamily: 'Poppins', textContent: decrementVal.toString(), fontSize: this.textSize, opacity: 0, fill: this.color })
+                console.log(decrementText.getBBox())
                 this.drawnElements.appendChild(decrementText)
 
                 let decrementAsset = currentAsset.cloneNode(true);

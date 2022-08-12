@@ -1,4 +1,5 @@
 import { gsap, Draggable } from "gsap/all"
+import { generate } from "rxjs"
 
 
 export function colorSwitchAPI(_els) {
@@ -9,13 +10,15 @@ export function colorSwitchAPI(_els) {
         gsvg: SVGSVGElement
         gsvgu: SVGSVGElement
         dot: SVGSVGElement
+        dotText: SVGTextElement
         bar: SVGSVGElement
         mousedown = false
         viewboxOffset = 0
         baroffset = 0
         sectionWidth = 125
-        sectionHeight = 30
+        sectionHeight = 36
         svgns = "http://www.w3.org/2000/svg";
+        colorDict = {0: "#92c47d", 1: '#f1c331', 2: '#38cdff', 3: "#e06666", 4: "#9955ff"}
 
 
 
@@ -24,6 +27,7 @@ export function colorSwitchAPI(_els) {
             this.els = els
             this.gsvg = els[0]
             this.dot = document.getElementById("dot") as unknown as SVGSVGElement
+            this.dotText = document.getElementById("dotText") as unknown as SVGTextElement
             this.bar = document.getElementById("bar") as unknown as SVGSVGElement
             //this.gsvgu = els[1]
 
@@ -37,6 +41,36 @@ export function colorSwitchAPI(_els) {
 
         handlePointerUp(e){
             this.mousedown = false
+        }
+
+        generateBar(offset = 0){
+
+            let nextNum = Math.floor(Math.random() * (4+ 1))
+            for (let i = 0; i < 5; i++){
+
+                let firstNum = Math.floor(Math.random() * (5 - 1 + 1) + 1)
+                let secondNum = Math.floor(Math.random() * (4 - 1 + 1) + 1)
+                let sum = firstNum + secondNum
+
+                if (i == nextNum){
+                    self.dotText.textContent = String(sum)
+                }
+                
+                let group =  document.createElementNS(this.svgns, "g");
+
+                let section = document.createElementNS(self.svgns, "rect")
+                gsap.set(section, {width: self.sectionWidth, height: self.sectionHeight, fill: self.colorDict[i], rx: 5, ry: 5})
+                group.appendChild(section)
+
+                let sectionText = document.createElementNS(this.svgns, "text") as SVGTextElement
+                gsap.set(sectionText, {x: 0, y: 0,fontFamily: 'Arial', fontWeight: 'bold', textContent: `${firstNum} + ${secondNum}`, fontSize: `20px` })
+                group.appendChild(sectionText)
+                gsap.set(sectionText, {x: self.sectionWidth/2 - sectionText.getBBox().width/2, y: self.sectionHeight/2 + sectionText.getBBox().height/4})
+                
+
+                gsap.set(group, {attr: {sum: sum}, x: i * this.sectionWidth, y: this.sectionHeight - offset})
+                self.bar.appendChild(group)
+            }
         }
 
         gameloop(){
@@ -74,8 +108,18 @@ export function colorSwitchAPI(_els) {
             arr.forEach(element => {
                 if (Draggable.hitTest(self.dot, element)){
                     console.log("hit", element)
-                    self.baroffset = 0
-                    self.viewboxOffset = 0
+                    if (element.getAttribute("sum") == self.dotText.textContent){
+                        console.log("correct!")
+                        self.bar.innerHTML = ''
+                        console.log(self.viewboxOffset, self.baroffset)
+                        self.generateBar(self.viewboxOffset + self.baroffset - 20)
+                    }
+                    else {
+                        console.log("try again!")
+                        self.baroffset -= this.viewboxOffset
+                        self.viewboxOffset = 0
+                    }
+
                 }
             })
         }
@@ -102,6 +146,8 @@ export function colorSwitchAPI(_els) {
         init() {
 
             gsap.registerPlugin(Draggable)
+
+            this.generateBar()
 
             document.addEventListener("pointerdown", e => this.handlePointerDown(e))
             document.addEventListener("pointerup", e => this.handlePointerUp(e))
