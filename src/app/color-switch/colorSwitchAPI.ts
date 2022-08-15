@@ -23,7 +23,8 @@ export function colorSwitchAPI(_els) {
         colorDict = { 0: "#92c47d", 1: '#f1c331', 2: '#38cdff', 3: "#e06666", 4: "#9955ff" }
         viewboxWidth = 500
         viewboxHeight = 750
-        dotSpeed = 5
+        dotSpeed = 4
+        dotBBox: any
 
 
 
@@ -36,6 +37,7 @@ export function colorSwitchAPI(_els) {
             this.bar = document.getElementById("bar") as unknown as SVGSVGElement
             this.currentBar = document.getElementById("currentBar") as unknown as SVGSVGElement
             this.nextBar = document.getElementById("nextBar") as unknown as SVGSVGElement
+            this.dotBBox = this.dot.getBBox()
             //this.gsvgu = els[1]
 
             this.init()
@@ -43,11 +45,18 @@ export function colorSwitchAPI(_els) {
 
         handlePointerDown(e) {
             this.mousedown = true
-            console.log(this.mousedown)
         }
 
         handlePointerUp(e) {
             this.mousedown = false
+        }
+
+        handleMove(e) {
+            var pt = this.gsvg.createSVGPoint()
+            pt.x = e.clientX
+            pt.y = e.clientY
+            pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
+            gsap.set(self.dot, {x: pt.x - self.dotBBox.x - self.dotBBox.width/2})
         }
 
         generateBar(barGroup, offset = 0) {
@@ -72,7 +81,8 @@ export function colorSwitchAPI(_els) {
                 let sectionText = document.createElementNS(this.svgns, "text") as SVGTextElement
                 gsap.set(sectionText, { x: 0, y: 0, fontFamily: 'Arial', fontWeight: 'bold', textContent: `${firstNum} + ${secondNum}`, fontSize: `20px`, userSelect: 'none' })
                 group.appendChild(sectionText)
-                gsap.set(sectionText, { x: self.sectionWidth / 2 - sectionText.getBBox().width / 2, y: self.sectionHeight / 2 + sectionText.getBBox().height / 4 })
+                let textBBox = sectionText.getBBox()
+                gsap.set(sectionText, { x: self.sectionWidth / 2 - textBBox.width / 2, y: self.sectionHeight / 2 + textBBox.height / 4 })
 
 
                 gsap.set(group, { attr: { sum: sum }, x: i * this.sectionWidth, y: this.sectionHeight - offset })
@@ -149,13 +159,12 @@ export function colorSwitchAPI(_els) {
                 gsap.utils.toArray("g", subarr).forEach(element => {
                     gsap.set(element, { x: `-=2` })
                     let bbox = element.getBoundingClientRect()
-                    let xbbox = element.getBBox()
                     var pt = self.gsvg.createSVGPoint()
                     pt.x = bbox.x + bbox.width
                     pt.y = bbox.y
                     pt = pt.matrixTransform(self.gsvg.getScreenCTM().inverse())
                     if (pt.x <= 0) {
-                        gsap.set(element, { x: self.viewboxWidth - xbbox.x })
+                        gsap.set(element, { x: self.viewboxWidth})
                     }
                 });
 
@@ -177,6 +186,7 @@ export function colorSwitchAPI(_els) {
 
             document.addEventListener("pointerdown", e => this.handlePointerDown(e))
             document.addEventListener("pointerup", e => this.handlePointerUp(e))
+            this.gsvg.addEventListener("pointermove", e => this.handleMove(e))
 
             window.requestAnimationFrame(self.gameloop)
 
