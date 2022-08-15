@@ -1,15 +1,14 @@
 svg {
-    min-width: 300px;
     display: block;
     margin: auto;
     overflow: hidden;
 }
 
 .upperRenderEl, .lowerRenderEl {
-    width: 50%;
-    height: 100%;
+    max-width: 500px;
+    height: auto;
 }
 
-.lowerRenderEl text{
+text{
     user-select: none;
 }
