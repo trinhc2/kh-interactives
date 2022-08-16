@@ -23,7 +23,7 @@ export function colorSwitchAPI(_els) {
         colorDict = { 0: "#92c47d", 1: '#f1c331', 2: '#38cdff', 3: "#e06666", 4: "#9955ff" }
         viewboxWidth = 500
         viewboxHeight = 750
-        dotSpeed = 4
+        dotSpeed = 1
         dotBBox: any
 
 
@@ -104,11 +104,13 @@ export function colorSwitchAPI(_els) {
                     gsap.set(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
                     gsap.set(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` } })
                     self.viewboxOffset += self.dotSpeed
+                    self.dotSpeed = Math.min(self.dotSpeed*1.03, 5)
                 }
                 else if (self.viewboxOffset >= self.viewboxHeight / 3) {
                     //if dot is moving then we can just translate the bars now
                     gsap.set(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
                     self.baroffset += self.dotSpeed
+                    self.dotSpeed = Math.min(self.dotSpeed*1.03, 5)
                 }
             }
             if (!self.mousedown) {
@@ -117,6 +119,7 @@ export function colorSwitchAPI(_els) {
                     gsap.set(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
                     gsap.set(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` } })
                     self.viewboxOffset -= self.dotSpeed
+                    self.dotSpeed = Math.max(self.dotSpeed/1.02, 1)
                 }
             }
 
@@ -153,6 +156,7 @@ export function colorSwitchAPI(_els) {
                 if (Draggable.hitTest(self.dot, element)) {
                     collisions++
                     collidedElement = element
+                    console.log(collisions)
                     //console.log("hit", element)
 
                 }
@@ -172,9 +176,11 @@ export function colorSwitchAPI(_els) {
                     self.currentBar.setAttribute("product", tempAttribute)
                     console.log()
                     
-                    //current bar -> next bar
-                    //next bar -> current bar
-                    //
+                }
+                else {
+                    console.log("try again!")
+                    //self.baroffset -= this.viewboxOffset
+                    self.viewboxOffset = 0 //moves dot back to pre acceleration position
                 }
             }
             else if( collisions > 1) {
