@@ -70,10 +70,10 @@ export function colorSwitchAPI(_els) {
 
                 let firstNum = Math.floor(Math.random() * (5 - 1 + 1) + 1)
                 let secondNum = Math.floor(Math.random() * (4 - 1 + 1) + 1)
-                let sum = firstNum + secondNum
+                let product = firstNum * secondNum
 
                 if (i == nextNum) {
-                    gsap.set(barGroup, {attr: {sum: sum}})//set attributes for retrieval later
+                    gsap.set(barGroup, {attr: {product: product}})//set attributes for retrieval later
                 }
 
                 //creating individual bars
@@ -84,13 +84,13 @@ export function colorSwitchAPI(_els) {
                 group.appendChild(section)
 
                 let sectionText = document.createElementNS(this.svgns, "text") as SVGTextElement
-                gsap.set(sectionText, { x: 0, y: 0, fontFamily: 'Arial', fontWeight: 'bold', textContent: `${firstNum} + ${secondNum}`, fontSize: `20px`, userSelect: 'none' })
+                gsap.set(sectionText, { x: 0, y: 0, fontFamily: 'Arial', fontWeight: 'bold', textContent: `${firstNum} x ${secondNum}`, fontSize: `20px`, userSelect: 'none' })
                 group.appendChild(sectionText)
                 let textBBox = sectionText.getBBox()
                 gsap.set(sectionText, { x: self.sectionWidth / 2 - textBBox.width / 2, y: self.sectionHeight / 2 + textBBox.height / 4 })
 
 
-                gsap.set(group, { attr: { sum: sum }, x: i * this.sectionWidth, y: 0 - offset })
+                gsap.set(group, { attr: { product: product }, x: i * this.sectionWidth, y: 0 - offset })
 
                 //appending to bar group
                 barGroup.appendChild(group)
@@ -130,11 +130,11 @@ export function colorSwitchAPI(_els) {
         }
 
         checkBarOOB(){
-            let bbox = self.currentBar.getBoundingClientRect()
+            let bbox = self.nextBar.getBoundingClientRect()
             if (bbox.y >= self.viewboxHeight) {
                 //if a bar goes off screen we remove it and generate a new one, we also update our what our currentBar "points" to
-                self.dotText.textContent = self.nextBar.getAttribute("sum")
-                self.currentBar.innerHTML = self.nextBar.innerHTML
+                self.dotText.textContent = self.currentBar.getAttribute("product")
+                gsap.set(self.dotText, {x: 0-self.dotText.getBBox().width/2 })
                 self.nextBar.innerHTML = ''
                 self.generateBar(self.nextBar, self.baroffset + self.viewboxHeight)
 
@@ -145,21 +145,43 @@ export function colorSwitchAPI(_els) {
 
         collisionTest() {
             let arr = gsap.utils.toArray("g", self.currentBar)
+            let collisions = 0
+            let collidedElement;
 
-            arr.forEach(element => {
+            for (let i = 0; i < arr.length; i++){
+                let element = arr[i]
                 if (Draggable.hitTest(self.dot, element)) {
+                    collisions++
+                    collidedElement = element
                     //console.log("hit", element)
-                    if (element.getAttribute("sum") == self.dotText.textContent) {
-                        console.log("correct!")
-                    }
-                    else {
-                        console.log("try again!")
-                        //self.baroffset -= this.viewboxOffset
-                        self.viewboxOffset = 0 //moves dot back to pre acceleration position
-                    }
 
                 }
-            })
+            }
+            if (collisions == 1) {
+                if (collidedElement.getAttribute("product") == self.dotText.textContent) {
+                    console.log("correct!")
+                    arr.forEach(element => {
+                        let rect = element.childNodes[0]
+                        gsap.set(rect, {fill: "rgb(0,246,0"})
+                    });
+                    let temp = self.nextBar.innerHTML
+                    let tempAttribute = self.nextBar.getAttribute("product")
+                    
+                    self.nextBar.innerHTML = self.currentBar.innerHTML
+                    self.currentBar.innerHTML = temp
+                    self.currentBar.setAttribute("product", tempAttribute)
+                    console.log()
+                    
+                    //current bar -> next bar
+                    //next bar -> current bar
+                    //
+                }
+            }
+            else if( collisions > 1) {
+                console.log("try again!")
+                //self.baroffset -= this.viewboxOffset
+                self.viewboxOffset = 0 //moves dot back to pre acceleration position
+            }
         }
 
         animateBar() {
@@ -190,13 +212,16 @@ export function colorSwitchAPI(_els) {
             this.generateBar(this.nextBar, self.viewboxHeight)
 
             this.generateBar(this.currentBar)
-            this.dotText.textContent = this.currentBar.getAttribute("sum")
+            this.dotText.textContent = this.currentBar.getAttribute("product")
+            gsap.set(this.dotText, {x: 0-this.dotText.getBBox().width/2 })
 
             let line = document.createElementNS(this.svgns, "line")
             gsap.set(line, { attr: { x1: 0, y1: 0 - this.viewboxHeight/2 + this.dotBBox.height/2, x2: this.viewboxWidth, y2: 0 - this.viewboxHeight/2 + this.dotBBox.height/2, stroke: "#000000" }, strokeWidth: 2 })
             this.gsvg.getElementById("line").appendChild(line)
 
-            console.log(this.currentBar.getAttribute("sum"), this.nextBar.getAttribute("sum"))
+            gsap.set(this.gsvg, {backgroundColor: "rgb(26,43,86)"})
+
+            console.log(this.currentBar.getAttribute("product"), this.nextBar.getAttribute("product"))
 
             document.addEventListener("pointerdown", e => this.handlePointerDown(e))
             document.addEventListener("pointerup", e => this.handlePointerUp(e))
