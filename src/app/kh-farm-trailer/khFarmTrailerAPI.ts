@@ -56,7 +56,6 @@ export function farmAPI(_els, _setup) {
         beds: SVGSVGElement
         plots: SVGSVGElement
         rows: SVGSVGElement
-        temp = -40
         wheat: SVGSVGElement
         wheatScale = 0;
         wheatNumber = 1
@@ -65,7 +64,9 @@ export function farmAPI(_els, _setup) {
         depositAnimating = false
         plantAnimating = false
         pause = false
-        dragged = false
+        dragged = false //for deposit, event is on pointer up so checks if the user dragged before firing event, to differentiate between drag and click.
+        isCombineSnapped = false
+        snappedIndex = 0
 
         constructor(els, setup) {
             self = this
@@ -96,6 +97,7 @@ export function farmAPI(_els, _setup) {
             this.init()
         }
 
+        //generates lines of the plot
         generateLines() {
             //draw outer lines
             for (let i = 0; i < 11; i++) {
@@ -136,6 +138,7 @@ export function farmAPI(_els, _setup) {
             }
         }
 
+        //pre-fills plots with wheat pngs
         fillPlot() {
 
             let innerGridIncrementX = this.plotIncrementWidth / 5;
@@ -162,9 +165,10 @@ export function farmAPI(_els, _setup) {
             }
         }
 
-        startDrag(e) {
-
+        handlePointerDown(e) {
+            //if user has screen drag enabled
             if (this.dragEnabled && !this.animationPlaying) {
+                //start screen drag
                 var pt = this.gsvg.createSVGPoint()
                 pt.x = e.clientX
                 pt.y = e.clientY
@@ -174,8 +178,9 @@ export function farmAPI(_els, _setup) {
                 this.dragStart.y = pt.y
                 this.isDragging = true;
             }
-            else if (this.animationPlaying && (e.target == this.gsvg || e.target.tagName == "path")){
-                if (this.pause){
+            //else we pause the animation if playing
+            else if (this.animationPlaying) {
+                if (this.pause) {
                     this.TL.resume()
                     this.pause = false
                 }
@@ -188,6 +193,7 @@ export function farmAPI(_els, _setup) {
 
         whileDrag(e) {
             if (this.isDragging && !this.animationPlaying) {
+                //update screen drag
                 let baseViewbox = this.gsvg.viewBox["baseVal"]
                 var pt = this.gsvg.createSVGPoint()
                 pt.x = e.clientX
@@ -205,7 +211,7 @@ export function farmAPI(_els, _setup) {
             if (this.pointerState == this.plant && !this.plantAnimating && !this.animationPlaying) {
                 var i;
                 var j;
-                
+
                 //this.plantAnimating = true
 
                 //Calculate original point
@@ -240,19 +246,19 @@ export function farmAPI(_els, _setup) {
                 //if element exists where clicking, remove it
                 if (this.plotArray[i][j]) {
                     let timeline = gsap.timeline()
-                    if (this.gridState == this.beds) {
-                        if (self.plotArray[i][j].style.visibility == "hidden") {
+                    if (this.gridState == this.beds) { //if working with beds
+                        if (self.plotArray[i][j].style.visibility == "hidden") {//if current bed is hidden, unhide it
                             gsap.set(this.plotArray[i][j], { visibility: "visible", })
                             gsap.to(this.plotArray[i][j], { scaleX: 0.22, duration: 1, })
                         }
-                        else {
+                        else {//else hide it
                             gsap.to(this.plotArray[i][j], { scaleX: 0, duration: 1, })
                             gsap.set(this.plotArray[i][j], { visibility: "hidden", delay: 1 })
                         }
 
                     }
-                    else if (this.gridState == this.plots) {
-                        if (self.plotArray[i][j].style.visibility == "hidden") {
+                    else if (this.gridState == this.plots) {//if working with plots
+                        if (self.plotArray[i][j].style.visibility == "hidden") {//if current bed is hidden, unhide it
                             let index = Math.floor(i / 2) * 2
                             for (let jIndex = Math.floor(j / 5) * 5 + 4; jIndex >= Math.floor(j / 5) * 5; jIndex--) {
                                 timeline.set(this.plotArray[index][jIndex], { visibility: "visible" }, "<+=0.05")
@@ -263,7 +269,7 @@ export function farmAPI(_els, _setup) {
                             }
 
                         }
-                        else {
+                        else {//else hide it
                             let index = Math.floor(i / 2) * 2
                             for (let jIndex = Math.floor(j / 5) * 5; jIndex < Math.floor(j / 5) * 5 + 5; jIndex++) {
                                 timeline.to(this.plotArray[index][jIndex], { scaleX: 0, duration: 1, onComplete: function () { timeline.set(self.plotArray[index][jIndex], { visibility: "hidden" }) } }, "<+=0.05",)
@@ -272,8 +278,8 @@ export function farmAPI(_els, _setup) {
 
                         }
                     }
-                    else {
-                        if (self.plotArray[i][j].style.visibility == "hidden") {
+                    else {//else (working with rows)
+                        if (self.plotArray[i][j].style.visibility == "hidden") {//if current row is hidden, unhide it
                             let index = Math.floor(i / 2) * 2
                             for (let jIndex = 49; jIndex >= 0; jIndex--) {
                                 timeline.set(this.plotArray[index][jIndex], { visibility: "visible" }, "<+=0.02")
@@ -284,7 +290,7 @@ export function farmAPI(_els, _setup) {
                             }
 
                         }
-                        else {
+                        else {//else hide it
                             let index = Math.floor(i / 2) * 2
                             for (let jIndex = 0; jIndex < 50; jIndex++) {
                                 timeline.to(this.plotArray[index][jIndex], { scaleX: 0, duration: 1, onComplete: function () { timeline.set(self.plotArray[index][jIndex], { visibility: "hidden" }) } }, "<+=0.02",)
@@ -299,125 +305,102 @@ export function farmAPI(_els, _setup) {
             }
         }
 
-        handlePlay(largeArr, largeDragEl) {
-            if (!self.animationPlaying) {
-
-                var largei
+        handlePlay() {
+            if (!self.animationPlaying && self.isCombineSnapped) {
                 var largept = this.gsvg.createSVGPoint()
 
                 //gsap.set(this.gsvg, { attr: { viewBox: "0 0 500 500"} })
 
-                //check if combine is snapped
-                for (let index = 0; index < largeArr.length; index++) {
-                    if (Math.round(largeDragEl.x) == Math.round(largeArr[index].x)) {
-                        largei = index
-                        break;
+
+                //calculating end position
+                largept.x = self.largeCombineDraggable[0].x
+                largept.y = self.largeCombineDraggable[0].y
+
+                //current point is transformed 1.farmgroup 2. screenMatrix inverse
+                largept = largept.matrixTransform(self.gsvg.getScreenCTM()) //undo screenmatrix to get position relative to farm
+                largept = largept.matrixTransform(self.farmGroup.getScreenCTM().inverse()) //undo farmgroup to calculate end position
+
+                largept.x -= self.setup.plotWidth + this.largeCombine.getBBox().width / 2 + 5
+
+                largept = largept.matrixTransform(self.farmGroup.getScreenCTM())
+                largept = largept.matrixTransform(self.gsvg.getScreenCTM().inverse())
+
+                //prevent combine from being draggable after animation start
+                self.largeCombineDraggable[0].disable()
+
+                //pre calculating the two rows to be harvested
+                let preCount = 0;
+
+                const arr = []//creating array of wheat elements to be harvested
+                for (let j = 0; j < 50; j++) {
+                    let el1 = this.plotArray[Math.floor(self.snappedIndex * 2 / 2) * 2][j]
+                    let el2 = this.plotArray[Math.floor(self.snappedIndex * 2 / 2) * 2 + 1][j]
+
+                    if (el1.style.visibility == "visible") {
+                        preCount += 0.001
                     }
-                }
-
-                if (largei != null) {//if i is null then it means that the combine is not snapped
-
-                    //calculating end position
-                    largept.x = largeDragEl.x
-                    largept.y = largeDragEl.y
-
-                    //current point is transformed 1.farmgroup 2. screenMatrix inverse
-                    largept = largept.matrixTransform(self.gsvg.getScreenCTM()) //undo screenmatrix to get position relative to farm
-                    largept = largept.matrixTransform(self.farmGroup.getScreenCTM().inverse()) //undo farmgroup to calculate end position
-
-                    largept.x -= self.setup.plotWidth + this.largeCombine.getBBox().width / 2 + 5
-
-                    largept = largept.matrixTransform(self.farmGroup.getScreenCTM())
-                    largept = largept.matrixTransform(self.gsvg.getScreenCTM().inverse())
-
-                    //prevent combine from being draggable after animation start
-                    self.largeCombineDraggable[0].disable()
-
-                    //pre calculating the two rows to be harvested
-                    let preCount = 0;
-
-                    const arr = []
-                    for (let j = 0; j < 50; j++) {
-                        let el1 = this.plotArray[Math.floor(largei * 2 / 2) * 2][j]
-                        let el2 = this.plotArray[Math.floor(largei * 2 / 2) * 2 + 1][j]
-
-                        if (el1.style.visibility == "visible") {
-                            preCount += 0.001
-                        }
-                        if (el2.style.visibility == "visible") {
-                            preCount += 0.001
-                        }
-                        let temp = [el1, el2]
-                        //console.log(temp)
-                        arr.push(temp)
+                    if (el2.style.visibility == "visible") {
+                        preCount += 0.001
                     }
-
-                    let postCount = self.harvested + preCount
-
-                    //syncing wheat harvest with combine timeline
-                    let T = gsap.timeline()
-
-                                        self.TL.to(self.largeCombineText, {
-                        x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear",
-                        onComplete: function () {
-                            self.animationPlaying = false;
-                            self.largeCombineDraggable[0].enable()
-                            if (self.harvested != postCount) {
-                                self.harvested = postCount
-                                self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
-                                gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
-                            }
-                        }
-                    })
-
-                    arr.forEach(e => {
-                        self.TL.to(e, {
-                            scaleX: 0, duration: (self.harvestDuration - 1) / 50, delay: 0.001,
-                            onStart: function () {
-                                if (self.wheatScale >= 0.8 && self.wheatNumber < 10) {
-                                    self.wheatScale = 0;
-                                    self.wheatNumber++
-                                    self.wheat = self.gsvg.getElementById("wheat" + self.wheatNumber) as SVGSVGElement
-                                }
-                                if (e[0].style.visibility == "visible") {
-                                    self.harvested += 0.001
-                                    self.wheatScale += 0.008
-                                    if (self.wheatNumber <= 10 && self.wheatScale <= 0.8) {
-                                        gsap.set(self.wheat, { scaleX: self.wheatScale, scaleY: self.wheatScale })
-                                    }
-                                }
-                                if (e[1].style.visibility == "visible") {
-                                    self.harvested += 0.001
-                                    self.wheatScale += 0.008
-                                    if (self.wheatNumber <= 10 && self.wheatScale <= 0.8) {
-                                        gsap.set(self.wheat, { scaleX: self.wheatScale, scaleY: self.wheatScale })
-                                    }
-                                }
-                                self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
-                                gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
-                            },
-                            onComplete: function () { gsap.set(e, { visibility: "hidden" }) }
-                        }, `<+=${(self.harvestDuration - 1) / 50}`)
-                    })
-
-                    //animate combine
-                    self.TL.to(self.largeCombineText, {
-                        x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear",
-                        onComplete: function () {
-                            self.animationPlaying = false;
-                            self.largeCombineDraggable[0].enable()
-                            if (self.harvested != postCount) {
-                                self.harvested = postCount
-                                self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
-                                gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
-                            }
-                        }
-                    })
-                    self.animationPlaying = true;
+                    let temp = [el1, el2]
+                    //console.log(temp)
+                    arr.push(temp)
                 }
-                else {
-                    alert("Move the orange combine into place.")
-                }
+
+                let postCount = self.harvested + preCount
+
+                //animate combine
+                self.TL.to(self.largeCombineText, {
+                    x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear",
+                    onComplete: function () {
+                        self.animationPlaying = false;
+                        self.largeCombineDraggable[0].enable()
+                        self.isCombineSnapped = false
+
+                        if (self.harvested != postCount) {//update harvest number if off
+                            self.harvested = postCount
+                            self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
+                            gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
+                        }
+                        console.log(self.animationPlaying)
+                    }
+                })
+
+                //animate entire row of wheat that the combine is placed on
+                arr.forEach(e => {
+                    self.TL.to(e, {
+                        scaleX: 0, duration: (self.harvestDuration - 1) / 50, delay: 0.001,
+                        onStart: function () {
+                            if (self.wheatScale >= 0.8 && self.wheatNumber < 10) {//if the trailer wheat has reached full size, move onto the next trailer wheat png
+                                self.wheatScale = 0;
+                                self.wheatNumber++
+                                self.wheat = self.gsvg.getElementById("wheat" + self.wheatNumber) as SVGSVGElement
+                            }
+                            if (e[0].style.visibility == "visible") {//if subrow 1 wheat element is visible
+                                self.harvested += 0.001 //increment harvest count
+                                self.wheatScale += 0.008 //increment trailer wheatscale
+                                if (self.wheatNumber <= 10 && self.wheatScale <= 0.8) {
+                                    gsap.set(self.wheat, { scaleX: self.wheatScale, scaleY: self.wheatScale })//actually update scale of trailer wheat
+                                }
+                            }
+                            if (e[1].style.visibility == "visible") {//if subrow 2 wheat element is visible
+                                self.harvested += 0.001
+                                self.wheatScale += 0.008
+                                if (self.wheatNumber <= 10 && self.wheatScale <= 0.8) {
+                                    gsap.set(self.wheat, { scaleX: self.wheatScale, scaleY: self.wheatScale })
+                                }
+                            }
+                            //update harvested text
+                            self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
+                            gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
+                        },
+                        onComplete: function () { gsap.set(e, { visibility: "hidden" }) }
+                    }, `<+=${(self.harvestDuration - 1) / 50}`)
+                })
+                self.animationPlaying = true;
+            }
+            else {
+                alert("Move the orange combine into place.")
             }
         }
 
@@ -484,32 +467,35 @@ export function farmAPI(_els, _setup) {
         }
 
         handleDeposit(e) {
-            if (!self.animationPlaying && !self.depositAnimating && !self.dragged) {
-                self.TL.clear()
+            if (!self.animationPlaying && !self.depositAnimating && !self.dragged && self.harvested > 0) {
+                self.TL.clear() //clear timeline else the animation would be buggy
+
                 self.largeCombineDraggable[0].disable()
                 self.depositAnimating = true
-                console.log("deposit")
+
                 this.barnCounterText.textContent = String(this.deposited.toFixed(3))
                 gsap.set(this.barnCounterText, { x: 432 - this.barnCounterText.getBBox().width / 2, y: 125 + this.barnCounterText.getBBox().width / 4 })
+
                 this.harvestTotalText.textContent = String(self.harvested.toFixed(3))
                 gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
 
-
+                //getting position of combine relative to svg
                 var pt = this.gsvg.createSVGPoint()
                 pt.x = this.largeCombineText.getBoundingClientRect().x
                 pt.y = this.largeCombineText.getBoundingClientRect().y
                 pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
 
                 let bbox = self.harvestTotalText.getBoundingClientRect()
-                console.log(this.largeCombineText.getBoundingClientRect())
 
-                for (let i = 0; i < 9; i++) {
+                //creating wheat elements for deposit animation
+                for (let i = 0; i < Math.round(self.harvested * 10); i++) {
                     let wheat = document.createElementNS(this.svgns, "use")
                     self.TL.set(wheat, { attr: { href: "#singleWheat" }, x: pt.x + 22, y: pt.y + 28 }, "<+=0.1")
                     this.gsvg.appendChild(wheat)
                     self.TL.to(wheat, { x: 367, y: 86, duration: 2, onComplete: function () { wheat.remove() } }, "<")
                 }
 
+                //creating the "last" wheat element so that we can expand on OnComplete
                 let wheat = document.createElementNS(this.svgns, "use")
                 self.TL.set(wheat, { attr: { href: "#singleWheat" }, x: pt.x + 22, y: pt.y + 28 }, "<")
                 this.gsvg.appendChild(wheat)
@@ -616,10 +602,17 @@ export function farmAPI(_els, _setup) {
                         self.dragEnabled = false
                     }
                 },
-                onDragStart: function() {
+                onDragStart: function () {
                     self.dragged = true
                 },
                 onRelease: function () {
+                    for (let index = 0; index < largeCombineSnapPoints.length; index++) {
+                        if (Math.round(this.x) == Math.round(largeCombineSnapPoints[index].x)) {
+                            self.isCombineSnapped = true
+                            self.snappedIndex = index
+                            break;
+                        }
+                    }
                     if (self.pointerState == self.move) {
                         self.dragEnabled = true
                     }
@@ -629,7 +622,7 @@ export function farmAPI(_els, _setup) {
 
             let temp = document.createElementNS(this.svgns, "text") as SVGSVGElement
             //gsap.set(temp, {textContent: "0.001", rotate: -30, skewX: -30, fontSize: 16, fill: "#ffffff", fontFamily: "arial", fontWeight: 600, x:415, y:132})
-            gsap.set(temp, { textContent: "0", rotate: -30, skewX: -30, fontSize: 16, fill: "#ffffff", fontFamily: "arial", fontWeight: 600, userSelect: "none"})
+            gsap.set(temp, { textContent: "0", rotate: -30, skewX: -30, fontSize: 16, fill: "#ffffff", fontFamily: "arial", fontWeight: 600, userSelect: "none" })
             gsap.set(temp, { x: 432 - temp.getBBox().width / 2, y: 125 + temp.getBBox().width / 4 })
             this.barnCounterText = temp
             this.gsvg.appendChild(temp)
@@ -640,13 +633,13 @@ export function farmAPI(_els, _setup) {
             this.gsvgu.getElementById("zoomIn").addEventListener("pointerdown", e => this.handleZoomIn())
             this.gsvgu.getElementById("zoomOut").addEventListener("pointerdown", e => this.handleZoomOut())
 
-            this.gsvg.addEventListener("pointerdown", e => this.startDrag(e))
+            this.gsvg.addEventListener("pointerdown", e => this.handlePointerDown(e))
             this.gsvg.addEventListener("pointermove", e => this.whileDrag(e))
             this.gsvg.addEventListener("pointerup", e => this.endDrag(e))
 
             this.harvestTotalBox.addEventListener("pointerup", e => this.handleDeposit(e))
 
-            this.gsvgu.getElementById("playButton").addEventListener("pointerdown", e => this.handlePlay(largeCombineSnapPoints, this.largeCombineDraggable[0]))
+            this.gsvgu.getElementById("playButton").addEventListener("pointerdown", e => this.handlePlay())
 
             gsap.utils.toArray(".pointer").forEach(element => element.addEventListener("pointerdown", e => this.handlePointerChange(element)))
             gsap.utils.toArray(".grid").forEach(element => element.addEventListener("pointerdown", e => this.handleGridToggle(element)))
