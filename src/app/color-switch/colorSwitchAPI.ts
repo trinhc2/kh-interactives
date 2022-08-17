@@ -67,6 +67,7 @@ export function colorSwitchAPI(_els) {
             pt.y = e.clientY
             pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
 
+            //making sure dot does not move out of vertical bounds
             if (pt.x <= self.dotBBox.width / 2) {
                 pt.x = self.dotBBox.width / 2
             }
@@ -119,7 +120,7 @@ export function colorSwitchAPI(_els) {
             if (self.gameStarted) {
                 if (self.badCollision) {
                     self.viewboxOffset = 0
-                    let previousFills = []
+                    let previousFills = [] //storing previous fills
 
                     for (let i = 0; i < self.collidedElement.length; i++) {
                         let rect = self.collidedElement[i].childNodes[0]
@@ -153,6 +154,7 @@ export function colorSwitchAPI(_els) {
                             //if dot is moving then we can just translate the bars now
                             gsap.set(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
                             self.baroffset += self.dotSpeed
+                            self.dotSpeed = Math.min(self.dotSpeed * 1.1, 5)
                         }
                     }
                     if (!self.mousedown) {
