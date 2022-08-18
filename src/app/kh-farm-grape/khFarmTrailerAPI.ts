@@ -69,6 +69,8 @@ export function farmAPI(_els, _setup) {
 
         zoomIncrementX = []
         zoomIncrementY = []
+        zoomOutLevels = 2
+        zoomInLevels = 13
 
         constructor(els, setup) {
             self = this
@@ -407,22 +409,22 @@ export function farmAPI(_els, _setup) {
 
         handleZoomIn() {
             if (!this.animationPlaying) {
-                let index = 11
+                let index = this.zoomOutLevels
 
                 if (this.zoomLevel < 0) {
                     index = Math.abs(this.zoomLevel) - 1 //use the index-1 if we are already zoomed out
                 }
                 else if (this.zoomLevel > 0) {
-                    index = this.zoomLevel + 11
+                    index = this.zoomLevel + this.zoomOutLevels
                 }
-                if (this.zoomLevel < 10) {
+                if (this.zoomLevel < this.zoomInLevels - 1) {
                     let baseViewbox = this.gsvg.viewBox["baseVal"]
     
                     let offsetX = (250 - baseViewbox["width"] / 2)
                     let offsetY = (250 - baseViewbox["height"] / 2)
     
-                    let width = Math.max((baseViewbox["width"] - this.zoomIncrementX[index]), 5)
-                    let height = Math.max((baseViewbox["height"] - this.zoomIncrementY[index]), 5)
+                    let width = Math.max((baseViewbox["width"] - this.zoomIncrementX[index]), 3)
+                    let height = Math.max((baseViewbox["height"] - this.zoomIncrementY[index]), 3)
     
                     let x = (250 - width / 2) + (baseViewbox["x"] - offsetX)
                     let y = (250 - height / 2) + (baseViewbox["y"] - offsetY)
@@ -440,17 +442,17 @@ export function farmAPI(_els, _setup) {
                     index = Math.abs(this.zoomLevel)
                 }
                 else if (this.zoomLevel > 0) {
-                    index = this.zoomLevel + 11 - 1 //use the index-1 if we are already zoomed in 
+                    index = this.zoomLevel + this.zoomOutLevels - 1 //use the index-1 if we are already zoomed in 
                 }
-                if (this.zoomLevel > -10) {
+                if (this.zoomLevel > -this.zoomOutLevels) {
                     let svgBBox = this.gsvg.getBoundingClientRect()
                     let baseViewbox = this.gsvg.viewBox["baseVal"]
     
                     let offsetX = (250 - baseViewbox["width"] / 2)
                     let offsetY = (250 - baseViewbox["height"] / 2)
     
-                    let width = Math.max((baseViewbox["width"] + this.zoomIncrementX[index]), 5)
-                    let height = Math.max((baseViewbox["height"] + this.zoomIncrementY[index]), 5)
+                    let width = (baseViewbox["width"] + this.zoomIncrementX[index])
+                    let height = (baseViewbox["height"] + this.zoomIncrementY[index])
     
                     let x = (250 - width / 2) + (baseViewbox["x"] - offsetX)
                     let y = (250 - height / 2) + (baseViewbox["y"] - offsetY)
@@ -571,20 +573,20 @@ export function farmAPI(_els, _setup) {
             let lastWidth = baseViewbox["width"]
             let lastHeight = baseViewbox["height"]
 
-            for (let i = 0; i < 11; i++) {
+            for (let i = 0; i < this.zoomOutLevels; i++) {
                 let temp = lastWidth / 3;
                 this.zoomIncrementX.push(temp);
-                lastWidth -= temp
+                lastWidth += temp
 
                 temp = lastHeight / 3;
                 this.zoomIncrementY.push(temp);
-                lastHeight -= temp
+                lastHeight += temp
             }
 
             lastWidth = baseViewbox["width"]
             lastHeight = baseViewbox["height"]
 
-            for (let i = 0; i < 11; i++) {
+            for (let i = 0; i < this.zoomInLevels; i++) {
                 let temp = lastWidth / 3;
                 this.zoomIncrementX.push(temp);
                 lastWidth -= temp
