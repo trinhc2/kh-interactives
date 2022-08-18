@@ -158,7 +158,7 @@ export function farmAPI(_els, _setup) {
 
                     //animate flower
                     let png = document.createElementNS(this.svgns, "use")
-                    gsap.set(png, { attr: { id: rectID, href: "#wheatPNG" }, x: xVal, y: yVal, scaleX: 0, scaleY: 0.24, visibility: "hidden" })
+                    gsap.set(png, { attr: { id: rectID, href: "#bed" }, x: xVal, y: yVal, scaleX: 0, scaleY: 0.24, visibility: "hidden" })
                     this.gsvg.getElementById("fill").appendChild(png)
                     //temp.to(png, { scaleX: 0.22, duration: 1 }, "<")
 
@@ -528,15 +528,16 @@ export function farmAPI(_els, _setup) {
 
                 //creating wheat elements for deposit animation
                 for (let i = 0; i < Math.ceil(self.harvested * 10) - 1; i++) {
+                    console.log(i)
                     let wheat = document.createElementNS(this.svgns, "use")
-                    self.TL.set(wheat, { attr: { href: "#singleWheat" }, x: pt.x + 22, y: pt.y + 28 }, "<+=0.1")
+                    self.TL.set(wheat, { attr: { href: "#single" }, x: pt.x + 22, y: pt.y + 28 }, "<+=0.1")
                     this.gsvg.appendChild(wheat)
                     self.TL.to(wheat, { x: 367, y: 86, duration: 2, onComplete: function () { wheat.remove() } }, "<")
                 }
 
                 //creating the "last" wheat element so that we can expand on OnComplete
                 let wheat = document.createElementNS(this.svgns, "use")
-                self.TL.set(wheat, { attr: { href: "#singleWheat" }, x: pt.x + 22, y: pt.y + 28 }, "<")
+                self.TL.set(wheat, { attr: { href: "#single" }, x: pt.x + 22, y: pt.y + 28 }, "<")
                 this.gsvg.appendChild(wheat)
                 self.TL.to(wheat, {
                     x: 367, y: 86, duration: 2, onComplete: function () {
@@ -638,11 +639,11 @@ export function farmAPI(_els, _setup) {
             let wheatid = 1
             for (let i = 0; i < 5; i++) {
                 let png = document.createElementNS(this.svgns, "use")
-                gsap.set(png, { attr: { id: "wheat" + wheatid, href: "#wheatPNG" }, x: wheatX, y: wheatY, scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
+                gsap.set(png, { attr: { id: "wheat" + wheatid, href: "#bed" }, x: wheatX, y: wheatY, scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
                 document.getElementById("trailer").appendChild(png)
 
                 png = document.createElementNS(this.svgns, "use")
-                gsap.set(png, { attr: { id: "wheat" + (wheatid + 5), href: "#wheatPNG" }, x: (wheatX + 10), y: (wheatY - 7), scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
+                gsap.set(png, { attr: { id: "wheat" + (wheatid + 5), href: "#bed" }, x: (wheatX + 10), y: (wheatY - 7), scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
                 document.getElementById("trailer").appendChild(png)
                 wheatX -= 12
                 wheatY -= 7
