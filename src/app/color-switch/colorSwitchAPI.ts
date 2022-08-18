@@ -47,8 +47,9 @@ export function colorSwitchAPI(_els) {
         }
 
         handlePointerDown(e) {
+            e.preventDefault()
             this.mousedown = true
-            this.dotSpeed = Math.max(1, this.dotSpeed)
+            this.dotSpeed = Math.max(3, this.dotSpeed)
             if (!this.gameStarted) {
                 this.gameStarted = true
                 window.requestAnimationFrame(self.gameloop)
@@ -56,8 +57,10 @@ export function colorSwitchAPI(_els) {
         }
 
         handlePointerUp(e) {
+            e.preventDefault()
             this.mousedown = false
             this.dotSpeed = Math.min(-1, this.dotSpeed)
+            
         }
 
         handleMove(e) {
@@ -119,6 +122,7 @@ export function colorSwitchAPI(_els) {
         gameloop() {
             if (self.gameStarted) {
                 if (self.badCollision) {
+                    self.baroffset -= self.viewboxOffset
                     self.viewboxOffset = 0
                     let previousFills = [] //storing previous fills
 
@@ -148,13 +152,13 @@ export function colorSwitchAPI(_els) {
                             gsap.set(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
                             gsap.set(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` } })
                             self.viewboxOffset += self.dotSpeed
-                            self.dotSpeed = Math.min(self.dotSpeed * 1.1, 5)
+                            self.dotSpeed = Math.min(self.dotSpeed * 1.03, 6)
                         }
                         else if (self.viewboxOffset >= self.viewboxHeight / 3) {
                             //if dot is moving then we can just translate the bars now
                             gsap.set(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
                             self.baroffset += self.dotSpeed
-                            self.dotSpeed = Math.min(self.dotSpeed * 1.1, 5)
+                            self.dotSpeed = Math.min(self.dotSpeed * 1.03, 6)
                         }
                     }
                     if (!self.mousedown) {
@@ -181,14 +185,15 @@ export function colorSwitchAPI(_els) {
 
         checkBarOOB() {
             let bbox = self.nextBar.getBoundingClientRect()
-            if (bbox.y >= self.viewboxHeight) {
+
+            if (bbox.y >= self.gsvg.getBoundingClientRect().height) {
                 //if a bar goes off screen we remove it and generate a new one, we also update our what our currentBar "points" to
                 self.dotText.textContent = self.currentBar.getAttribute("product")
                 gsap.set(self.dotText, { x: 0 - self.dotText.getBBox().width / 2 })
                 self.nextBar.innerHTML = ''
                 self.generateBar(self.nextBar, self.baroffset + self.viewboxHeight)
 
-                gsap.set(this.gsvg.getElementById("line"), { y: 0 - (self.baroffset) })
+                gsap.set(self.gsvg.getElementById("line"), { y: 0 - (self.baroffset) })
 
             }
         }
@@ -280,7 +285,7 @@ export function colorSwitchAPI(_els) {
 
             document.addEventListener("pointerdown", e => this.handlePointerDown(e))
             document.addEventListener("pointerup", e => this.handlePointerUp(e))
-            this.gsvg.addEventListener("pointermove", e => this.handleMove(e))
+            //this.gsvg.addEventListener("pointermove", e => this.handleMove(e))
 
 
         }
