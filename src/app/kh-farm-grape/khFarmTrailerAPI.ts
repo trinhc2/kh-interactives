@@ -364,14 +364,13 @@ export function farmAPI(_els, _setup) {
                             self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
                             gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
                         }
-                        console.log(self.animationPlaying)
                     }
                 })
 
                 //animate entire row of wheat that the combine is placed on
                 arr.forEach(e => {
                     self.TL.to(e, {
-                        scaleX: 0, duration: (self.harvestDuration - 1) / 50, delay: 0.001,
+                        scaleX: 0, duration: (self.harvestDuration - 1) / 50 + 0.002, delay: 0.001,
                         onStart: function () {
                             if (self.wheatScale >= 0.8 && self.wheatNumber < 10) {//if the trailer wheat has reached full size, move onto the next trailer wheat png
                                 self.wheatScale = 0;
@@ -397,7 +396,7 @@ export function farmAPI(_els, _setup) {
                             gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
                         },
                         onComplete: function () { gsap.set(e, { visibility: "hidden" }) }
-                    }, `<+=${(self.harvestDuration - 1) / 50}`)
+                    }, `<+=${(self.harvestDuration - 1) / 50 + 0.002}`)
                 })
                 self.animationPlaying = true;
             }
@@ -408,16 +407,15 @@ export function farmAPI(_els, _setup) {
 
         handleZoomIn() {
             if (!this.animationPlaying) {
-                let index = 8
+                let index = 11
 
                 if (this.zoomLevel < 0) {
                     index = Math.abs(this.zoomLevel) - 1 //use the index-1 if we are already zoomed out
                 }
                 else if (this.zoomLevel > 0) {
-                    index = this.zoomLevel + 8
+                    index = this.zoomLevel + 11
                 }
-                if (this.zoomLevel < 7) {
-                    console.log("this")
+                if (this.zoomLevel < 10) {
                     let baseViewbox = this.gsvg.viewBox["baseVal"]
     
                     let offsetX = (250 - baseViewbox["width"] / 2)
@@ -442,9 +440,9 @@ export function farmAPI(_els, _setup) {
                     index = Math.abs(this.zoomLevel)
                 }
                 else if (this.zoomLevel > 0) {
-                    index = this.zoomLevel + 8 - 1 //use the index-1 if we are already zoomed in 
+                    index = this.zoomLevel + 11 - 1 //use the index-1 if we are already zoomed in 
                 }
-                if (this.zoomLevel > -7) {
+                if (this.zoomLevel > -10) {
                     let svgBBox = this.gsvg.getBoundingClientRect()
                     let baseViewbox = this.gsvg.viewBox["baseVal"]
     
@@ -573,7 +571,7 @@ export function farmAPI(_els, _setup) {
             let lastWidth = baseViewbox["width"]
             let lastHeight = baseViewbox["height"]
 
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 11; i++) {
                 let temp = lastWidth / 3;
                 this.zoomIncrementX.push(temp);
                 lastWidth -= temp
@@ -586,7 +584,7 @@ export function farmAPI(_els, _setup) {
             lastWidth = baseViewbox["width"]
             lastHeight = baseViewbox["height"]
 
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 11; i++) {
                 let temp = lastWidth / 3;
                 this.zoomIncrementX.push(temp);
                 lastWidth -= temp
@@ -595,7 +593,6 @@ export function farmAPI(_els, _setup) {
                 this.zoomIncrementY.push(temp);
                 lastHeight -= temp
             }
-            console.log(this.zoomIncrementX, this.zoomIncrementY)
         }
 
         init() {
@@ -639,11 +636,11 @@ export function farmAPI(_els, _setup) {
             let wheatid = 1
             for (let i = 0; i < 5; i++) {
                 let png = document.createElementNS(this.svgns, "use")
-                gsap.set(png, { attr: { id: "wheat" + wheatid, href: "#bed" }, x: wheatX, y: wheatY, scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
+                gsap.set(png, { attr: { id: "wheat" + wheatid, href: "#trailerBed" }, x: wheatX, y: wheatY, scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
                 document.getElementById("trailer").appendChild(png)
 
                 png = document.createElementNS(this.svgns, "use")
-                gsap.set(png, { attr: { id: "wheat" + (wheatid + 5), href: "#bed" }, x: (wheatX + 10), y: (wheatY - 7), scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
+                gsap.set(png, { attr: { id: "wheat" + (wheatid + 5), href: "#trailerBed" }, x: (wheatX + 10), y: (wheatY - 7), scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
                 document.getElementById("trailer").appendChild(png)
                 wheatX -= 12
                 wheatY -= 7
