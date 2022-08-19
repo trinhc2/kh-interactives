@@ -13,6 +13,7 @@ import { KhFractionCollectionComponent } from './kh-fraction-collection/kh-fract
 import { KhFarmTrailerComponent } from './kh-farm-trailer/kh-farm-trailer.component';
 import { ColorSwitchComponent } from './color-switch/color-switch.component';
 import { KhFarmGrapeComponent } from './kh-farm-grape/kh-farm-grape.component';
+import { KhZoomSpaceComponent } from './kh-zoom-space/kh-zoom-space.component';
 
 
 
@@ -30,7 +31,8 @@ const routes: Routes = [
   { path: 'farmflower', component: KhFarmFlowerComponent},
   { path: 'farmtrailer', component: KhFarmTrailerComponent},
   { path: 'colorSwitch', component: ColorSwitchComponent},
-  { path: 'farmgrape', component: KhFarmGrapeComponent}
+  { path: 'farmgrape', component: KhFarmGrapeComponent},
+  { path: 'zoomspace', component: KhZoomSpaceComponent}
 ]
 
 @NgModule({

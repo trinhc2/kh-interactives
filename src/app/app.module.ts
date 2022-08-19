@@ -20,6 +20,7 @@ import { KhFractionCollectionComponent } from './kh-fraction-collection/kh-fract
 import { KhFarmTrailerComponent } from './kh-farm-trailer/kh-farm-trailer.component';
 import { ColorSwitchComponent } from './color-switch/color-switch.component';
 import { KhFarmGrapeComponent } from './kh-farm-grape/kh-farm-grape.component';
+import { KhZoomSpaceComponent } from './kh-zoom-space/kh-zoom-space.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { KhFarmGrapeComponent } from './kh-farm-grape/kh-farm-grape.component';
     KhFractionCollectionComponent,
     KhFarmTrailerComponent,
     ColorSwitchComponent,
-    KhFarmGrapeComponent
+    KhFarmGrapeComponent,
+    KhZoomSpaceComponent
   ],
   imports: [
     BrowserModule,
