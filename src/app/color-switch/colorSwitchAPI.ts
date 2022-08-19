@@ -90,8 +90,8 @@ export function colorSwitchAPI(_els) {
             let nextNum = Math.floor(Math.random() * (4 + 1))
             for (let i = 0; i < 5; i++) {
 
-                let firstNum = Math.floor(Math.random() * (9 - 1 + 1) + 1)
-                let secondNum = Math.floor(Math.random() * (9 - 1 + 1) + 1)
+                let firstNum = Math.floor(Math.random() * (9 - 2 + 1) + 2)
+                let secondNum = Math.floor(Math.random() * (9 - 2 + 1) + 2)
                 let product = firstNum * secondNum
 
                 if (i == nextNum) {
@@ -202,6 +202,7 @@ export function colorSwitchAPI(_els) {
             let arr = gsap.utils.toArray("g", self.currentBar)
             let collisions = 0
             self.collidedElement = []
+            let goodCollision = false
 
             for (let i = 0; i < arr.length; i++) {
                 let element = arr[i]
@@ -212,32 +213,32 @@ export function colorSwitchAPI(_els) {
 
                 }
             }
-            if (collisions == 1) {
-                if (self.collidedElement[0].getAttribute("product") == self.dotText.textContent) {
-                    console.log("correct!")
-                    arr.forEach(element => {
-                        let rect = element.childNodes[0]
-                        gsap.set(rect, { fill: "rgb(0,246,0)" })
-                    });
 
-                    //swap next bar with current bar
-                    let temp = self.nextBar.innerHTML
-                    let tempAttribute = self.nextBar.getAttribute("product")
-
-                    self.nextBar.innerHTML = self.currentBar.innerHTML
-                    self.currentBar.innerHTML = temp
-                    self.currentBar.setAttribute("product", tempAttribute)
-
-                }
-                else {
-                    console.log("try again!")
-                    //self.baroffset -= this.viewboxOffset
-                    //self.viewboxOffset = 0 //moves dot back to pre acceleration position
-                    self.badCollision = true
+            if (collisions >= 1) {
+                for (let i = 0; i < self.collidedElement.length; i++){
+                    if (self.collidedElement[i].getAttribute("product") == self.dotText.textContent) {
+                        goodCollision = true
+                    }
                 }
             }
-            else if (collisions > 1) {
-                console.log("double collision, try again!")
+
+            if (goodCollision) {
+                console.log("correct!")
+                arr.forEach(element => {
+                    let rect = element.childNodes[0]
+                    gsap.set(rect, { fill: "rgb(0,246,0)" })
+                });
+
+                //swap next bar with current bar
+                let temp = self.nextBar.innerHTML
+                let tempAttribute = self.nextBar.getAttribute("product")
+
+                self.nextBar.innerHTML = self.currentBar.innerHTML
+                self.currentBar.innerHTML = temp
+                self.currentBar.setAttribute("product", tempAttribute)
+            }
+            else if (collisions >= 1 && !goodCollision) {
+                console.log("try again!")
                 //self.baroffset -= this.viewboxOffset
                 //self.viewboxOffset = 0 //moves dot back to pre acceleration position
                 self.badCollision = true
