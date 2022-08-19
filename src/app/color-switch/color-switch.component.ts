@@ -13,7 +13,7 @@ export class ColorSwitchComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
 
-    const els = [this.lowerRenderEl.nativeElement]
+    const els = [this.lowerRenderEl.nativeElement, this.upperRenderEl.nativeElement]
 
     const interactive = colorSwitchAPI(els)
 

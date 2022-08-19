@@ -5,6 +5,11 @@ import { generate } from "rxjs"
 export function colorSwitchAPI(_els) {
     let self = {} as colorSwitchClass
 
+    interface BarInput {
+        target: number
+        equations: number[][]
+    }
+
     class colorSwitchClass {
         els: (SVGSVGElement)[]
         gsvg: SVGSVGElement
@@ -28,6 +33,10 @@ export function colorSwitchAPI(_els) {
         badCollision = false
         collidedElement = []
         gameStarted = false
+        bars = []
+        barsIndex = 2
+        score = 0
+        scoreText: SVGTextElement
 
 
 
@@ -41,6 +50,7 @@ export function colorSwitchAPI(_els) {
             this.currentBar = document.getElementById("currentBar") as unknown as SVGSVGElement
             this.nextBar = document.getElementById("nextBar") as unknown as SVGSVGElement
             this.dotBBox = this.dot.getBBox()
+            this.scoreText = document.getElementById("score") as unknown as SVGTextElement
             //this.gsvgu = els[1]
 
             this.init()
@@ -84,7 +94,7 @@ export function colorSwitchAPI(_els) {
             gsap.set(self.dot, { x: xPos })
         }
 
-        generateBar(barGroup, offset = 0) {
+        generateBarRandom(barGroup, offset = 0) {
 
             //selecting random bar to set new dot text to
             let nextNum = Math.floor(Math.random() * (4 + 1))
@@ -118,6 +128,38 @@ export function colorSwitchAPI(_els) {
                 barGroup.appendChild(group)
             }
         }
+
+        generateBar(barGroup, barInput: BarInput, offset = 0) {
+
+            //selecting random bar to set new dot text to
+            gsap.set(barGroup, { attr: { product: barInput.target } })
+            for (let i = 0; i < 5; i++) {
+
+                let firstNum = barInput.equations[i][0]
+                let secondNum = barInput.equations[i][1]
+                let product = firstNum * secondNum
+
+                //creating individual bars
+                let group = document.createElementNS(this.svgns, "g");
+
+                let section = document.createElementNS(self.svgns, "rect")
+                gsap.set(section, { width: self.sectionWidth, height: self.sectionHeight, fill: self.colorDict[i], rx: 5, ry: 5 })
+                group.appendChild(section)
+
+                let sectionText = document.createElementNS(this.svgns, "text") as SVGTextElement
+                gsap.set(sectionText, { x: 0, y: 0, fontFamily: 'Arial', fontWeight: 'bold', textContent: `${firstNum} x ${secondNum}`, fontSize: `20px`, userSelect: 'none' })
+                group.appendChild(sectionText)
+                let textBBox = sectionText.getBBox()
+                gsap.set(sectionText, { x: self.sectionWidth / 2 - textBBox.width / 2, y: self.sectionHeight / 2 + textBBox.height / 4 })
+
+
+                gsap.set(group, { attr: { product: product }, x: i * this.sectionWidth, y: 0 - offset })
+
+                //appending to bar group
+                barGroup.appendChild(group)
+            }
+        }
+
 
         gameloop() {
             if (self.gameStarted) {
@@ -191,8 +233,10 @@ export function colorSwitchAPI(_els) {
                 self.dotText.textContent = self.currentBar.getAttribute("product")
                 gsap.set(self.dotText, { x: 0 - self.dotText.getBBox().width / 2 })
                 self.nextBar.innerHTML = ''
-                self.generateBar(self.nextBar, self.baroffset + self.viewboxHeight)
-
+                self.generateBar(self.nextBar, self.bars[self.barsIndex++], self.baroffset + self.viewboxHeight)
+                if (self.barsIndex >= 4){
+                    self.barsIndex = 0
+                }
                 gsap.set(self.gsvg.getElementById("line"), { y: 0 - (self.baroffset) })
 
             }
@@ -236,6 +280,9 @@ export function colorSwitchAPI(_els) {
                 self.nextBar.innerHTML = self.currentBar.innerHTML
                 self.currentBar.innerHTML = temp
                 self.currentBar.setAttribute("product", tempAttribute)
+
+                self.score++;
+                self.scoreText.textContent = String(self.score)
             }
             else if (collisions >= 1 && !goodCollision) {
                 console.log("try again!")
@@ -270,9 +317,20 @@ export function colorSwitchAPI(_els) {
 
             gsap.registerPlugin(Draggable)
 
-            this.generateBar(this.nextBar, self.viewboxHeight)
+            let bar1 = {target: 42, equations: [[7,6],[6,6],[5,7],[8,5],[8,8]]} as BarInput
+            let bar2 = {target: 48, equations: [[8,6],[12,3],[7,7],[8,8],[8,9]]} as BarInput
+            let bar3 = {target: 54, equations: [[9,6],[8,7],[7,6],[8,9],[8,6]]} as BarInput
+            let bar4 = {target: 63, equations: [[6,8],[7,9],[8,8],[5,12],[7,6]]} as BarInput
 
-            this.generateBar(this.currentBar)
+            this.bars = [bar1, bar2, bar3, bar4]
+
+            this.generateBar(this.nextBar, this.bars[1], self.viewboxHeight)
+            this.generateBar(this.currentBar, this.bars[0])
+            
+
+            //this.generateBarRandom(this.nextBar, self.viewboxHeight)
+
+            //this.generateBarRandom(this.currentBar)
             this.dotText.textContent = this.currentBar.getAttribute("product")
             gsap.set(this.dotText, { x: 0 - this.dotText.getBBox().width / 2 })
 
@@ -286,6 +344,17 @@ export function colorSwitchAPI(_els) {
 
             document.addEventListener("pointerdown", e => this.handlePointerDown(e))
             document.addEventListener("pointerup", e => this.handlePointerUp(e))
+            document.addEventListener('keydown', event => {
+                if (event.code === 'Space') {
+                  this.handlePointerDown(event)
+                }
+              })
+
+              document.addEventListener('keyup', event => {
+                if (event.code === 'Space') {
+                  this.handlePointerUp(event)
+                }
+              })
             //this.gsvg.addEventListener("pointermove", e => this.handleMove(e))
 
 
