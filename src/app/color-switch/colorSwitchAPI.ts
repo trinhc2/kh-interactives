@@ -29,6 +29,7 @@ export function colorSwitchAPI(_els) {
         viewboxWidth = 500
         viewboxHeight = 750
         dotSpeed = 1
+        maxSpeed = 4
         dotBBox: any
         badCollision = false
         collidedElement = []
@@ -37,6 +38,7 @@ export function colorSwitchAPI(_els) {
         barsIndex = 2
         score = 0
         scoreText: SVGTextElement
+        barSpeed = 1.5
 
 
 
@@ -59,7 +61,7 @@ export function colorSwitchAPI(_els) {
         handlePointerDown(e) {
             e.preventDefault()
             this.mousedown = true
-            this.dotSpeed = Math.max(3, this.dotSpeed)
+            this.dotSpeed = Math.max(this.dotSpeed, this.maxSpeed-2)
             if (!this.gameStarted) {
                 this.gameStarted = true
                 window.requestAnimationFrame(self.gameloop)
@@ -163,6 +165,7 @@ export function colorSwitchAPI(_els) {
 
         gameloop() {
             if (self.gameStarted) {
+                console.log(self.dotSpeed)
                 if (self.badCollision) {
                     self.baroffset -= self.viewboxOffset
                     self.viewboxOffset = 0
@@ -194,13 +197,13 @@ export function colorSwitchAPI(_els) {
                             gsap.set(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
                             gsap.set(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` } })
                             self.viewboxOffset += self.dotSpeed
-                            self.dotSpeed = Math.min(self.dotSpeed * 1.03, 6)
+                            self.dotSpeed = Math.min(self.dotSpeed * 1.03, self.maxSpeed)
                         }
                         else if (self.viewboxOffset >= self.viewboxHeight / 3) {
                             //if dot is moving then we can just translate the bars now
                             gsap.set(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
                             self.baroffset += self.dotSpeed
-                            self.dotSpeed = Math.min(self.dotSpeed * 1.03, 6)
+                            self.dotSpeed = Math.min(self.dotSpeed * 1.03, self.maxSpeed)
                         }
                     }
                     if (!self.mousedown) {
@@ -247,6 +250,7 @@ export function colorSwitchAPI(_els) {
             let collisions = 0
             self.collidedElement = []
             let goodCollision = false
+            let index = 0
 
             for (let i = 0; i < arr.length; i++) {
                 let element = arr[i]
@@ -262,6 +266,7 @@ export function colorSwitchAPI(_els) {
                 for (let i = 0; i < self.collidedElement.length; i++){
                     if (self.collidedElement[i].getAttribute("product") == self.dotText.textContent) {
                         goodCollision = true
+                        index = i
                     }
                 }
             }
@@ -270,8 +275,10 @@ export function colorSwitchAPI(_els) {
                 console.log("correct!")
                 arr.forEach(element => {
                     let rect = element.childNodes[0]
-                    gsap.set(rect, { fill: "rgb(0,246,0)" })
+                    gsap.set(rect, { fill: self.collidedElement[index].childNodes[0].style.fill })
                 });
+
+                self.collidedElement[index].childNodes[0].style.fill = "rgb(0,246,0)"
 
                 //swap next bar with current bar
                 let temp = self.nextBar.innerHTML
@@ -283,12 +290,16 @@ export function colorSwitchAPI(_els) {
 
                 self.score++;
                 self.scoreText.textContent = String(self.score)
+                self.maxSpeed++
+                self.barSpeed = Math.min(self.barSpeed + 0.5, 4)
             }
             else if (collisions >= 1 && !goodCollision) {
                 console.log("try again!")
                 //self.baroffset -= this.viewboxOffset
                 //self.viewboxOffset = 0 //moves dot back to pre acceleration position
                 self.badCollision = true
+                self.maxSpeed = Math.min(5, self.maxSpeed)
+                self.barSpeed = Math.min(2, self.barSpeed)
             }
         }
 
@@ -297,7 +308,7 @@ export function colorSwitchAPI(_els) {
             //let element = arr[0]
             arr.forEach(subarr => {
                 gsap.utils.toArray("g", subarr).forEach(element => {
-                    gsap.set(element, { x: `-=2` })
+                    gsap.set(element, { x: `-=${self.barSpeed}` })
                     let bbox = element.getBoundingClientRect()
                     var pt = self.gsvg.createSVGPoint()
                     pt.x = bbox.x + bbox.width
@@ -318,9 +329,9 @@ export function colorSwitchAPI(_els) {
             gsap.registerPlugin(Draggable)
 
             let bar1 = {target: 42, equations: [[7,6],[6,6],[5,7],[8,5],[8,8]]} as BarInput
-            let bar2 = {target: 48, equations: [[8,6],[12,3],[7,7],[8,8],[8,9]]} as BarInput
-            let bar3 = {target: 54, equations: [[9,6],[8,7],[7,6],[8,9],[8,6]]} as BarInput
-            let bar4 = {target: 63, equations: [[6,8],[7,9],[8,8],[5,12],[7,6]]} as BarInput
+            let bar2 = {target: 48, equations: [[8,9],[12,3],[7,7],[8,8],[8,6]]} as BarInput
+            let bar3 = {target: 54, equations: [[8,7],[9,6],[7,6],[8,9],[8,6]]} as BarInput
+            let bar4 = {target: 63, equations: [[6,8],[5,12],[8,8],[7,9],[7,6]]} as BarInput
 
             this.bars = [bar1, bar2, bar3, bar4]
 
