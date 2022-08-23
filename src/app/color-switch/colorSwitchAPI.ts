@@ -1,5 +1,5 @@
+import { CustomEase } from "gsap/all"
 import { gsap, Draggable } from "gsap/all"
-import { generate } from "rxjs"
 
 
 export function colorSwitchAPI(_els) {
@@ -32,6 +32,7 @@ export function colorSwitchAPI(_els) {
         maxSpeed = 4
         dotBBox: any
         badCollision = false
+        goodCollision = false
         collidedElement = []
         gameStarted = false
         bars = []
@@ -61,7 +62,7 @@ export function colorSwitchAPI(_els) {
         handlePointerDown(e) {
             e.preventDefault()
             this.mousedown = true
-            this.dotSpeed = Math.max(this.dotSpeed, this.maxSpeed-2)
+            this.dotSpeed = Math.max(this.dotSpeed, this.maxSpeed - 2)
             if (!this.gameStarted) {
                 this.gameStarted = true
                 window.requestAnimationFrame(self.gameloop)
@@ -72,7 +73,7 @@ export function colorSwitchAPI(_els) {
             e.preventDefault()
             this.mousedown = false
             this.dotSpeed = Math.min(-1, this.dotSpeed)
-            
+
         }
 
         handleMove(e) {
@@ -165,9 +166,8 @@ export function colorSwitchAPI(_els) {
 
         gameloop() {
             if (self.gameStarted) {
-                console.log(self.dotSpeed)
                 if (self.badCollision) {
-                    self.baroffset -= self.viewboxOffset
+                    self.baroffset -= self.viewboxHeight / 3
                     self.viewboxOffset = 0
                     let previousFills = [] //storing previous fills
 
@@ -177,7 +177,7 @@ export function colorSwitchAPI(_els) {
                         gsap.set(rect, { fill: `rgb(246,0,0)` })
                     }
 
-                    gsap.to(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
+                    gsap.to(self.bar, { y: self.baroffset + self.viewboxOffset })
                     gsap.to(self.gsvg, {
                         attr: { viewBox: `0 0 ${self.viewboxWidth} ${self.viewboxHeight}` },
                         onComplete: function () {
@@ -188,6 +188,22 @@ export function colorSwitchAPI(_els) {
                             }
                             window.requestAnimationFrame(self.gameloop)
                         }
+                    }, "<")
+                }
+                else if (self.goodCollision) {
+
+                    self.baroffset += 100
+                    self.viewboxOffset += 100
+
+                    gsap.to(self.bar, { y: self.baroffset + self.viewboxOffset, duration: 0.4, ease:CustomEase.create("custom", "M0,0,C0.394,0.18,0.924,0.862,1,1")})
+                    gsap.to(self.gsvg, {
+                        attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` },
+                        onComplete: function () {
+                            self.goodCollision = false
+                            window.requestAnimationFrame(self.gameloop)
+                        },
+                        duration:0.4,
+                        ease: CustomEase.create("custom", "M0,0,C0.394,0.18,0.924,0.862,1,1")
                     }, "<")
                 }
                 else {
@@ -237,7 +253,7 @@ export function colorSwitchAPI(_els) {
                 gsap.set(self.dotText, { x: 0 - self.dotText.getBBox().width / 2 })
                 self.nextBar.innerHTML = ''
                 self.generateBar(self.nextBar, self.bars[self.barsIndex++], self.baroffset + self.viewboxHeight)
-                if (self.barsIndex >= 4){
+                if (self.barsIndex >= 4) {
                     self.barsIndex = 0
                 }
                 gsap.set(self.gsvg.getElementById("line"), { y: 0 - (self.baroffset) })
@@ -263,7 +279,7 @@ export function colorSwitchAPI(_els) {
             }
 
             if (collisions >= 1) {
-                for (let i = 0; i < self.collidedElement.length; i++){
+                for (let i = 0; i < self.collidedElement.length; i++) {
                     if (self.collidedElement[i].getAttribute("product") == self.dotText.textContent) {
                         goodCollision = true
                         index = i
@@ -292,6 +308,8 @@ export function colorSwitchAPI(_els) {
                 self.scoreText.textContent = String(self.score)
                 self.maxSpeed++
                 self.barSpeed = Math.min(self.barSpeed + 0.5, 4)
+
+                self.goodCollision = true
             }
             else if (collisions >= 1 && !goodCollision) {
                 console.log("try again!")
@@ -304,22 +322,20 @@ export function colorSwitchAPI(_els) {
         }
 
         animateBar() {
-            let arr = gsap.utils.toArray("g", self.bar)
+            let arr = gsap.utils.toArray("g", self.currentBar)
             //let element = arr[0]
-            arr.forEach(subarr => {
-                gsap.utils.toArray("g", subarr).forEach(element => {
-                    gsap.set(element, { x: `-=${self.barSpeed}` })
-                    let bbox = element.getBoundingClientRect()
-                    var pt = self.gsvg.createSVGPoint()
-                    pt.x = bbox.x + bbox.width
-                    pt.y = bbox.y
-                    pt = pt.matrixTransform(self.gsvg.getScreenCTM().inverse())
-                    if (pt.x <= 0) {
-                        gsap.set(element, { x: self.viewboxWidth })
-                    }
-                });
-
+            arr.forEach(element => {
+                gsap.set(element, { x: `-=${self.barSpeed}` })
+                let bbox = element.getBoundingClientRect()
+                var pt = self.gsvg.createSVGPoint()
+                pt.x = bbox.x + bbox.width
+                pt.y = bbox.y
+                pt = pt.matrixTransform(self.gsvg.getScreenCTM().inverse())
+                if (pt.x <= 0) {
+                    gsap.set(element, { x: self.viewboxWidth })
+                }
             });
+
             //console.log(arr)
         }
 
@@ -327,17 +343,18 @@ export function colorSwitchAPI(_els) {
         init() {
 
             gsap.registerPlugin(Draggable)
+            gsap.registerPlugin(CustomEase)
 
-            let bar1 = {target: 42, equations: [[7,6],[6,6],[5,7],[8,5],[8,8]]} as BarInput
-            let bar2 = {target: 48, equations: [[8,9],[12,3],[7,7],[8,8],[8,6]]} as BarInput
-            let bar3 = {target: 54, equations: [[8,7],[9,6],[7,6],[8,9],[8,6]]} as BarInput
-            let bar4 = {target: 63, equations: [[6,8],[5,12],[8,8],[7,9],[7,6]]} as BarInput
+            let bar1 = { target: 42, equations: [[7, 6], [6, 6], [5, 7], [8, 5], [8, 8]] } as BarInput
+            let bar2 = { target: 48, equations: [[8, 9], [12, 3], [7, 7], [8, 8], [8, 6]] } as BarInput
+            let bar3 = { target: 54, equations: [[8, 7], [9, 6], [7, 6], [8, 9], [8, 6]] } as BarInput
+            let bar4 = { target: 63, equations: [[6, 8], [5, 12], [8, 8], [7, 9], [7, 6]] } as BarInput
 
             this.bars = [bar1, bar2, bar3, bar4]
 
             this.generateBar(this.nextBar, this.bars[1], self.viewboxHeight)
             this.generateBar(this.currentBar, this.bars[0])
-            
+
 
             //this.generateBarRandom(this.nextBar, self.viewboxHeight)
 
@@ -357,15 +374,15 @@ export function colorSwitchAPI(_els) {
             document.addEventListener("pointerup", e => this.handlePointerUp(e))
             document.addEventListener('keydown', event => {
                 if (event.code === 'Space') {
-                  this.handlePointerDown(event)
+                    this.handlePointerDown(event)
                 }
-              })
+            })
 
-              document.addEventListener('keyup', event => {
+            document.addEventListener('keyup', event => {
                 if (event.code === 'Space') {
-                  this.handlePointerUp(event)
+                    this.handlePointerUp(event)
                 }
-              })
+            })
             //this.gsvg.addEventListener("pointermove", e => this.handleMove(e))
 
 
