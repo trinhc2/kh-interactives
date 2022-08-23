@@ -1,6 +1,5 @@
 import { CustomEase } from "gsap/all"
 import { gsap, Draggable } from "gsap/all"
-import { iif } from "rxjs"
 
 
 export function colorSwitchAPI(_els) {
@@ -200,11 +199,11 @@ export function colorSwitchAPI(_els) {
                     self.baroffset += 200
 
                     //gsap.set(self.gsvg.getElementById("line"), { y: `-=100` })
-                    gsap.to(self.bar, 
-                        { 
-                            y: self.baroffset + self.viewboxOffset, 
-                            duration: 0.3, 
-                            ease:CustomEase.create("custom", "M0,0,C0.394,0.18,0.924,0.862,1,1"),
+                    gsap.to(self.bar,
+                        {
+                            y: self.baroffset + self.viewboxOffset,
+                            duration: 0.3,
+                            ease: CustomEase.create("custom", "M0,0,C0.394,0.18,0.924,0.862,1,1"),
                             onComplete: function () {
                                 self.goodCollision = false
                                 window.requestAnimationFrame(self.gameloop)
@@ -267,6 +266,8 @@ export function colorSwitchAPI(_els) {
                 self.scoreText.textContent = String(self.score)
 
                 self.currentBarArr = gsap.utils.toArray("g", self.currentBar)
+                self.equationIndex = 0
+                self.equationPosition = 0
 
             }
         }
@@ -333,12 +334,12 @@ export function colorSwitchAPI(_els) {
                 gsap.set(element, { x: `-=${self.barSpeed}` })
             })
 
-            if (self.equationPosition <= self.equationClientWidth*-1) {
+            if (self.equationPosition <= self.equationClientWidth * -1) {
                 //console.log(arr[self.equationIndex])
                 gsap.set(self.currentBarArr[self.equationIndex], { x: self.viewboxWidth })
                 self.equationPosition = 0;
                 self.equationIndex++;
-                if (self.equationIndex >= 5){
+                if (self.equationIndex >= 5) {
                     self.equationIndex = 0
                 }
             }
@@ -398,7 +399,7 @@ export function colorSwitchAPI(_els) {
                 }
             })
 
-            window.addEventListener('resize', function(event) {
+            window.addEventListener('resize', function (event) {
                 self.windowHeight = self.gsvg.getBoundingClientRect().height
                 self.equationClientWidth = gsap.utils.toArray("g", self.currentBar)[0].getBoundingClientRect().width
             })
