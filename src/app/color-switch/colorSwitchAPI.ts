@@ -40,6 +40,7 @@ export function colorSwitchAPI(_els) {
         score = 0
         scoreText: SVGTextElement
         barSpeed = 1.5
+        windowHeight = 0
 
 
 
@@ -192,19 +193,20 @@ export function colorSwitchAPI(_els) {
                 }
                 else if (self.goodCollision) {
 
-                    self.baroffset += 100
-                    self.viewboxOffset += 100
+                    self.baroffset += 200
 
-                    gsap.to(self.bar, { y: self.baroffset + self.viewboxOffset, duration: 0.4, ease:CustomEase.create("custom", "M0,0,C0.394,0.18,0.924,0.862,1,1")})
-                    gsap.to(self.gsvg, {
-                        attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` },
-                        onComplete: function () {
-                            self.goodCollision = false
-                            window.requestAnimationFrame(self.gameloop)
-                        },
-                        duration:0.4,
-                        ease: CustomEase.create("custom", "M0,0,C0.394,0.18,0.924,0.862,1,1")
-                    }, "<")
+                    //gsap.set(self.gsvg.getElementById("line"), { y: `-=100` })
+                    gsap.to(self.bar, 
+                        { 
+                            y: self.baroffset + self.viewboxOffset, 
+                            duration: 0.3, 
+                            ease:CustomEase.create("custom", "M0,0,C0.394,0.18,0.924,0.862,1,1"),
+                            onComplete: function () {
+                                self.goodCollision = false
+                                window.requestAnimationFrame(self.gameloop)
+                            },
+                        }
+                    )
                 }
                 else {
                     if (self.mousedown) {
@@ -245,9 +247,8 @@ export function colorSwitchAPI(_els) {
         }
 
         checkBarOOB() {
-            let bbox = self.nextBar.getBoundingClientRect()
-
-            if (bbox.y >= self.gsvg.getBoundingClientRect().height) {
+            if (self.baroffset >= self.windowHeight * (self.score + 1)) {
+                console.log("hit")
                 //if a bar goes off screen we remove it and generate a new one, we also update our what our currentBar "points" to
                 self.dotText.textContent = self.currentBar.getAttribute("product")
                 gsap.set(self.dotText, { x: 0 - self.dotText.getBBox().width / 2 })
@@ -257,6 +258,9 @@ export function colorSwitchAPI(_els) {
                     self.barsIndex = 0
                 }
                 gsap.set(self.gsvg.getElementById("line"), { y: 0 - (self.baroffset) })
+
+                self.score++;
+                self.scoreText.textContent = String(self.score)
 
             }
         }
@@ -304,8 +308,6 @@ export function colorSwitchAPI(_els) {
                 self.currentBar.innerHTML = temp
                 self.currentBar.setAttribute("product", tempAttribute)
 
-                self.score++;
-                self.scoreText.textContent = String(self.score)
                 self.maxSpeed++
                 self.barSpeed = Math.min(self.barSpeed + 0.5, 4)
 
@@ -355,6 +357,8 @@ export function colorSwitchAPI(_els) {
             this.generateBar(this.nextBar, this.bars[1], self.viewboxHeight)
             this.generateBar(this.currentBar, this.bars[0])
 
+            this.windowHeight = self.gsvg.getBoundingClientRect().height
+
 
             //this.generateBarRandom(this.nextBar, self.viewboxHeight)
 
@@ -382,6 +386,10 @@ export function colorSwitchAPI(_els) {
                 if (event.code === 'Space') {
                     this.handlePointerUp(event)
                 }
+            })
+
+            window.addEventListener('resize', function(event) {
+                self.windowHeight = self.gsvg.getBoundingClientRect().height
             })
             //this.gsvg.addEventListener("pointermove", e => this.handleMove(e))
 
