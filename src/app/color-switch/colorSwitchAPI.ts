@@ -1,5 +1,6 @@
 import { CustomEase } from "gsap/all"
 import { gsap, Draggable } from "gsap/all"
+import { iif } from "rxjs"
 
 
 export function colorSwitchAPI(_els) {
@@ -41,7 +42,10 @@ export function colorSwitchAPI(_els) {
         scoreText: SVGTextElement
         barSpeed = 1.5
         windowHeight = 0
-
+        equationClientWidth = 0
+        equationPosition = 0
+        equationIndex = 0
+        currentBarArr = []
 
 
         constructor(els) {
@@ -262,18 +266,19 @@ export function colorSwitchAPI(_els) {
                 self.score++;
                 self.scoreText.textContent = String(self.score)
 
+                self.currentBarArr = gsap.utils.toArray("g", self.currentBar)
+
             }
         }
 
         collisionTest() {
-            let arr = gsap.utils.toArray("g", self.currentBar)
             let collisions = 0
             self.collidedElement = []
             let goodCollision = false
             let index = 0
 
-            for (let i = 0; i < arr.length; i++) {
-                let element = arr[i]
+            for (let i = 0; i < self.currentBarArr.length; i++) {
+                let element = self.currentBarArr[i]
                 if (Draggable.hitTest(self.dot, element)) {
                     collisions++
                     self.collidedElement.push(element)
@@ -293,7 +298,7 @@ export function colorSwitchAPI(_els) {
 
             if (goodCollision) {
                 console.log("correct!")
-                arr.forEach(element => {
+                self.currentBarArr.forEach(element => {
                     let rect = element.childNodes[0]
                     gsap.set(rect, { fill: self.collidedElement[index].childNodes[0].style.fill })
                 });
@@ -324,21 +329,23 @@ export function colorSwitchAPI(_els) {
         }
 
         animateBar() {
-            let arr = gsap.utils.toArray("g", self.currentBar)
-            //let element = arr[0]
-            arr.forEach(element => {
+            self.currentBarArr.forEach(element => {
                 gsap.set(element, { x: `-=${self.barSpeed}` })
-                let bbox = element.getBoundingClientRect()
-                var pt = self.gsvg.createSVGPoint()
-                pt.x = bbox.x + bbox.width
-                pt.y = bbox.y
-                pt = pt.matrixTransform(self.gsvg.getScreenCTM().inverse())
-                if (pt.x <= 0) {
-                    gsap.set(element, { x: self.viewboxWidth })
-                }
-            });
+            })
 
-            //console.log(arr)
+            if (self.equationPosition <= self.equationClientWidth*-1) {
+                //console.log(arr[self.equationIndex])
+                gsap.set(self.currentBarArr[self.equationIndex], { x: self.viewboxWidth })
+                self.equationPosition = 0;
+                self.equationIndex++;
+                if (self.equationIndex >= 5){
+                    self.equationIndex = 0
+                }
+            }
+
+            self.equationPosition -= self.barSpeed
+
+
         }
 
 
@@ -357,7 +364,10 @@ export function colorSwitchAPI(_els) {
             this.generateBar(this.nextBar, this.bars[1], self.viewboxHeight)
             this.generateBar(this.currentBar, this.bars[0])
 
+            self.currentBarArr = gsap.utils.toArray("g", self.currentBar)
+
             this.windowHeight = self.gsvg.getBoundingClientRect().height
+            this.equationClientWidth = gsap.utils.toArray("g", self.currentBar)[0].getBoundingClientRect().width
 
 
             //this.generateBarRandom(this.nextBar, self.viewboxHeight)
@@ -390,6 +400,7 @@ export function colorSwitchAPI(_els) {
 
             window.addEventListener('resize', function(event) {
                 self.windowHeight = self.gsvg.getBoundingClientRect().height
+                self.equationClientWidth = gsap.utils.toArray("g", self.currentBar)[0].getBoundingClientRect().width
             })
             //this.gsvg.addEventListener("pointermove", e => this.handleMove(e))
 
