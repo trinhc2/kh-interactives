@@ -14,6 +14,7 @@ import { KhFarmTrailerComponent } from './kh-farm-trailer/kh-farm-trailer.compon
 import { ColorSwitchComponent } from './color-switch/color-switch.component';
 import { KhFarmGrapeComponent } from './kh-farm-grape/kh-farm-grape.component';
 import { KhZoomSpaceComponent } from './kh-zoom-space/kh-zoom-space.component';
+import { IndexComponent } from './index/index.component';
 
 
 
@@ -32,7 +33,8 @@ const routes: Routes = [
   { path: 'farmtrailer', component: KhFarmTrailerComponent},
   { path: 'colorSwitch', component: ColorSwitchComponent},
   { path: 'farmgrape', component: KhFarmGrapeComponent},
-  { path: 'zoomspace', component: KhZoomSpaceComponent}
+  { path: 'zoomspace', component: KhZoomSpaceComponent},
+  { path: '', component: IndexComponent}
 ]
 
 @NgModule({

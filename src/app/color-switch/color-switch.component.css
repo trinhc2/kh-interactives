@@ -12,6 +12,10 @@ svg {
     right: 0;
 }
 
+.upperRenderEl {
+    pointer-events: none;
+}
+
 text{
     user-select: none;
 }

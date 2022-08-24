@@ -10,7 +10,6 @@ import { TestComponent } from './test/test.component';
 import { KhDecomposeNumberComponent } from './kh-decompose-number/kh-decompose-number.component';
 import { KhSliderInputComponent } from './kh-slider-input/kh-slider-input.component';
 import { KhFarmComponent } from './kh-farm/kh-farm.component';
-import {MatButtonModule} from '@angular/material/button';
 import { KhFarmRandomComponent } from './kh-farm-random/kh-farm-random.component';
 import { KhZoomComponent } from './kh-zoom/kh-zoom.component';
 import { KhFractionToolComponent } from './kh-fraction-tool/kh-fraction-tool.component';
@@ -21,6 +20,9 @@ import { KhFarmTrailerComponent } from './kh-farm-trailer/kh-farm-trailer.compon
 import { ColorSwitchComponent } from './color-switch/color-switch.component';
 import { KhFarmGrapeComponent } from './kh-farm-grape/kh-farm-grape.component';
 import { KhZoomSpaceComponent } from './kh-zoom-space/kh-zoom-space.component';
+import { IndexComponent } from './index/index.component';
+import {MatCardModule} from '@angular/material/card';
+import {MatButtonModule} from '@angular/material/button';
 
 @NgModule({
   declarations: [
@@ -41,13 +43,20 @@ import { KhZoomSpaceComponent } from './kh-zoom-space/kh-zoom-space.component';
     KhFarmTrailerComponent,
     ColorSwitchComponent,
     KhFarmGrapeComponent,
-    KhZoomSpaceComponent
+    KhZoomSpaceComponent,
+    IndexComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
+    MatCardModule,
     MatButtonModule
   ],
+  exports: [
+    MatCardModule,
+    MatButtonModule
+    
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })
