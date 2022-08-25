@@ -29,6 +29,9 @@ import {MatButtonModule} from '@angular/material/button';
 import { MoonGameContainerComponent } from './moon-game-container/moon-game-container.component';
 import { HundredsChartOverlapComponent } from './hundreds-chart-overlap/hundreds-chart-overlap.component';
 import { MultiplicationChartComponent } from './multiplication-chart/multiplication-chart.component'
+import { DecomposeAsteroidsComponent } from './decompose-asteroids/decompose-asteroids.component';
+import { DecomposeToPlanetComponent} from './decompose-to-planet/decompose-to-planet.component';
+import { DecomposeNumberLeiahComponent } from './decompose-number-leiah/decompose-number-leiah.component'
 
 @NgModule({
   declarations: [
@@ -56,7 +59,10 @@ import { MultiplicationChartComponent } from './multiplication-chart/multiplicat
     MoonfactoryComponent,
     MoonGameContainerComponent,
     MultiplicationChartComponent,
-    HundredsChartOverlapComponent
+    HundredsChartOverlapComponent,
+    DecomposeAsteroidsComponent,
+    DecomposeToPlanetComponent,
+    DecomposeNumberLeiahComponent
     
   ],
   imports: [

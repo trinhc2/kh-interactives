@@ -1,0 +1,31 @@
+.number {
+    alignment-baseline: text-before-edge;
+    text-anchor: start;
+    user-select: none;
+}
+
+#numberDisplay, #num, #buttons, #slider, #goButton, #restart {
+    cursor: pointer;
+    pointer-events: bounding-box;
+}
+
+#num, #minText, #maxText {
+    user-select:none
+}
+
+svg {
+    height: auto;
+    width:  auto;
+    max-width: 1300px;
+    min-width: 300px;
+}
+
+.B{fill:#dcdcdc}
+.C{fill:#828282}
+.D{fill:#7c133e}
+.E{fill:#fa3548}
+.F{fill:#ae1f4c}
+.G{stroke-linecap:round}
+.H{stroke-linejoin:round}
+.I{stroke-miterlimit:10}
+.J{fill:#fff555}

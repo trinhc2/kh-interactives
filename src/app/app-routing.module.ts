@@ -20,6 +20,9 @@ import { MoonfactoryComponent } from './moonfactory/moonfactory.component';
 import { MoonGameContainerComponent } from './moon-game-container/moon-game-container.component';
 import { HundredsChartOverlapComponent } from './hundreds-chart-overlap/hundreds-chart-overlap.component';
 import { MultiplicationChartComponent } from './multiplication-chart/multiplication-chart.component';
+import { DecomposeAsteroidsComponent } from './decompose-asteroids/decompose-asteroids.component';
+import { DecomposeToPlanetComponent } from './decompose-to-planet/decompose-to-planet.component';
+import { DecomposeNumberLeiahComponent } from './decompose-number-leiah/decompose-number-leiah.component';
 
 
 
@@ -43,7 +46,10 @@ const routes: Routes = [
   { path: 'moonGame', component: MoonGameContainerComponent},
   { path: 'moonFactory', component: MoonfactoryComponent},
   { path: 'hundredsChart', component:HundredsChartOverlapComponent},
-  { path: 'multiplicationChart', component:MultiplicationChartComponent}
+  { path: 'multiplicationChart', component:MultiplicationChartComponent},
+  { path: 'decomposeAsteroids', component: DecomposeAsteroidsComponent},
+  { path: 'decomposePlanet', component:DecomposeToPlanetComponent},
+  { path: 'decompose2', component: DecomposeNumberLeiahComponent}
 ]
 
 @NgModule({
