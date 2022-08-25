@@ -44,7 +44,7 @@ export class KhFarmFlowerComponent implements AfterViewInit {
 
     const els = [this.lowerRenderEl.nativeElement,this.upperRenderEl.nativeElement]
 
-    const interactive = farmAPI(els, setup)
+    setTimeout( () => {    const interactive = farmAPI(els, setup) }, 2000)
 
   }
 
