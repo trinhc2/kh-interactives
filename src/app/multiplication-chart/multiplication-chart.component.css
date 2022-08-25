@@ -1,0 +1,27 @@
+text{
+    font-family:"Poppins";
+    pointer-events:none;
+    user-select:none;
+    
+}
+svg{
+
+    pointer-events:visiblePainted;
+    user-select:none;
+    width:80%;
+    height:auto;
+} 
+
+#container{
+    float:left;
+    width:"50%";
+    height:"50%"
+}
+
+#menu{
+    float:left;
+}
+
+#wrapper{
+    overflow:hidden;
+}

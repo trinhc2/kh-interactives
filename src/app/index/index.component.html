@@ -1,157 +1,222 @@
-<h1>Knowledgehook Manipulatives</h1>
-<nav>
-    <ul>
-        <li><a routerLink="/farmgrape" routerLinkActive="active" ariaCurrentWhenActive="page">Grape Farm</a></li>
-        <li><a routerLink="/farmtrailer" routerLinkActive="active" ariaCurrentWhenActive="page">Wheat Farm</a></li>
-        <li><a routerLink="/decompose" routerLinkActive="active" ariaCurrentWhenActive="page">Number Decomposition</a>
-        </li>
-        <li><a routerLink="/zoom" routerLinkActive="active" ariaCurrentWhenActive="page">Farm Zoom</a></li>
-        <li><a routerLink="/zoomboat" routerLinkActive="active" ariaCurrentWhenActive="page">Boat Zoom</a></li>
-        <li><a routerLink="/zoomspace" routerLinkActive="active" ariaCurrentWhenActive="page">Space Zoom</a></li>
-        <li><a routerLink="/colorSwitch" routerLinkActive="active" ariaCurrentWhenActive="page">Color Switch
-                Prototype</a></li>
-        <li><a routerLink="/fraction" routerLinkActive="active" ariaCurrentWhenActive="page">Fraction Sandbox</a></li>
-        <li><a routerLink="/fractionCollection" routerLinkActive="active" ariaCurrentWhenActive="page">Fraction
-                Collection Sandbox</a></li>
-    </ul>
-</nav>
-<!-- The routed views render in the <router-outlet>-->
-<router-outlet></router-outlet>
+<html>
 
-<div class="cardContainer">
-    <mat-card class="example-card">
-        <mat-card-header>
-            <mat-card-title>Grape Farm</mat-card-title>
-        </mat-card-header>
-        <img mat-card-image src="../../assets/index/farmgrape.png" alt="Grape Farm Manipulative Screenshot">
-        <mat-card-content>
-            <p>
-                Decimals
-            </p>
-        </mat-card-content>
-        <mat-card-actions>
-            <button mat-button routerLink="/farmgrape">OPEN</button>
-        </mat-card-actions>
-    </mat-card>
+<body>
+    <h1>Knowledgehook Manipulatives</h1>
 
-    <mat-card class="example-card">
-        <mat-card-header>
-            <mat-card-title>Wheat Farm</mat-card-title>
-        </mat-card-header>
-        <img mat-card-image src="../../assets/index/farmtrailer.png">
-        <mat-card-content>
-            <p>
-                Decimals
-            </p>
-        </mat-card-content>
-        <mat-card-actions>
-            <button mat-button routerLink="/farmtrailer">OPEN</button>
-        </mat-card-actions>
-    </mat-card>
+    <!-- The routed views render in the <router-outlet>-->
+    <router-outlet></router-outlet>
 
-    <mat-card class="example-card">
-        <mat-card-header>
-            <mat-card-title>Number Decomposition</mat-card-title>
-        </mat-card-header>
-        <img mat-card-image src="../../assets/index/decompose.png" >
-        <mat-card-content>
-            <p>
-                Base Ten Blocks, Visual Proof
-            </p>
-        </mat-card-content>
-        <mat-card-actions>
-            <button mat-button routerLink="/decompose">OPEN</button>
-        </mat-card-actions>
-    </mat-card>
+    <div class="cardContainer">
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Grape Farm</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/farmgrape.png" alt="Grape Farm Manipulative Screenshot">
+            <mat-card-content>
+                <p>
+                    Decimals
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/farmgrape">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
 
-    <mat-card class="example-card">
-        <mat-card-header>
-            <mat-card-title>Farm Zoom</mat-card-title>
-        </mat-card-header>
-        <img mat-card-image src="../../assets/index/zoom.png">
-        <mat-card-content>
-            <p>
-                Decimals
-            </p>
-        </mat-card-content>
-        <mat-card-actions>
-            <button mat-button routerLink="/zoom">OPEN</button>
-        </mat-card-actions>
-    </mat-card>
-    
-    <mat-card class="example-card">
-        <mat-card-header>
-            <mat-card-title>Boat Zoom</mat-card-title>
-        </mat-card-header>
-        <img mat-card-image src="../../assets/index/zoomboat.png">
-        <mat-card-content>
-            <p>
-                Decimals
-            </p>
-        </mat-card-content>
-        <mat-card-actions>
-            <button mat-button routerLink="/zoomboat">OPEN</button>
-        </mat-card-actions>
-    </mat-card>
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Wheat Farm</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/farmtrailer.png">
+            <mat-card-content>
+                <p>
+                    Decimals
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/farmtrailer">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
 
-    <mat-card class="example-card">
-        <mat-card-header>
-            <mat-card-title>Space Zoom</mat-card-title>
-        </mat-card-header>
-        <img mat-card-image src="../../assets/index/zoomspace.png">
-        <mat-card-content>
-            <p>
-                Decimals
-            </p>
-        </mat-card-content>
-        <mat-card-actions>
-            <button mat-button routerLink="/zoomspace">OPEN</button>
-        </mat-card-actions>
-    </mat-card>
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Number Decomposition</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/decompose.png">
+            <mat-card-content>
+                <p>
+                    Base Ten Blocks, Visual Proof
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/decompose">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
 
-    <mat-card class="example-card">
-        <mat-card-header>
-            <mat-card-title>Color Switch</mat-card-title>
-        </mat-card-header>
-        <img mat-card-image src="../../assets/index/colorswitch.png">
-        <mat-card-content>
-            <p>
-                Multiplication Facts
-            </p>
-        </mat-card-content>
-        <mat-card-actions>
-            <button mat-button routerLink="/colorSwitch">OPEN</button>
-        </mat-card-actions>
-    </mat-card>
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Farm Zoom</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/zoom.png">
+            <mat-card-content>
+                <p>
+                    Decimals
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/zoom">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
 
-    <mat-card class="example-card">
-        <mat-card-header>
-            <mat-card-title>Fraction Workshop</mat-card-title>
-        </mat-card-header>
-        <img mat-card-image src="../../assets/index/fraction.png">
-        <mat-card-content>
-            <p>
-                Fractions
-            </p>
-        </mat-card-content>
-        <mat-card-actions>
-            <button mat-button routerLink="/fraction">OPEN</button>
-        </mat-card-actions>
-    </mat-card>
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Boat Zoom</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/zoomboat.png">
+            <mat-card-content>
+                <p>
+                    Decimals
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/zoomboat">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
 
-    <mat-card class="example-card">
-        <mat-card-header>
-            <mat-card-title>Fraction Collection Workshop</mat-card-title>
-        </mat-card-header>
-        <img mat-card-image src="../../assets/index/fractioncollection.png">
-        <mat-card-content>
-            <p>
-                Fractions
-            </p>
-        </mat-card-content>
-        <mat-card-actions>
-            <button mat-button routerLink="/fractionCollection">OPEN</button>
-        </mat-card-actions>
-    </mat-card>
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Space Zoom</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/zoomspace.png">
+            <mat-card-content>
+                <p>
+                    Decimals
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/zoomspace">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
 
-</div>
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Color Switch</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/colorswitch.png">
+            <mat-card-content>
+                <p>
+                    Multiplication Facts
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/colorSwitch">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
+
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Fraction Workshop</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/fraction.png">
+            <mat-card-content>
+                <p>
+                    Fractions
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/fraction">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
+
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Fraction Collection Workshop</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/fractioncollection.png">
+            <mat-card-content>
+                <p>
+                    Fractions
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/fractionCollection">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
+
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Planet Factory</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/planetfactory.png">
+            <mat-card-content>
+                <p>
+                    Numbers
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/planetFactory">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
+
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Moon Factory</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/moonFactory.png">
+            <mat-card-content>
+                <p>
+                    Numbers
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/moonFactory">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
+
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Moon Game</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/moonGame.png">
+            <mat-card-content>
+                <p>
+                    Numbers
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/moonGame">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
+
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Hundreds Chart</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/hundredsChart.png">
+            <mat-card-content>
+                <p>
+                    Numbers
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/hundredsChart">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
+
+        <mat-card class="example-card">
+            <mat-card-header>
+                <mat-card-title>Multiplication Chart</mat-card-title>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/index/multiplicationChart.png">
+            <mat-card-content>
+                <p>
+                    Numbers
+                </p>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button routerLink="/multiplicationChart">OPEN</button>
+            </mat-card-actions>
+        </mat-card>
+    </div>
+</body>
+
+</html>

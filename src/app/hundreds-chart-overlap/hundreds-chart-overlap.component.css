@@ -1,0 +1,46 @@
+svg{
+    
+    pointer-events:visiblePainted;
+    user-select:none;
+    
+   
+
+} 
+
+ellipse{
+    pointer-events: none;
+}
+
+circle{
+    pointer-events:none;
+}
+
+.menu{
+    pointer-events:fill;
+}
+
+text{
+    pointer-events: none;
+    user-select:"none";
+    user-select: text;
+   fill: #24353eff;
+   font-family:'Poppins'
+  }
+
+  body,html{
+    height:100vh;
+ 
+  }
+ #container{
+
+    padding-top: 1em;
+    padding-left: 1em;
+   height:90vh;
+   width:auto;
+   aspect-ratio: 3/4;
+
+  }
+
+
+
+

@@ -15,6 +15,11 @@ import { ColorSwitchComponent } from './color-switch/color-switch.component';
 import { KhFarmGrapeComponent } from './kh-farm-grape/kh-farm-grape.component';
 import { KhZoomSpaceComponent } from './kh-zoom-space/kh-zoom-space.component';
 import { IndexComponent } from './index/index.component';
+import { PlanetfactoryComponent } from './planetfactory/planetfactory.component';
+import { MoonfactoryComponent } from './moonfactory/moonfactory.component';
+import { MoonGameContainerComponent } from './moon-game-container/moon-game-container.component';
+import { HundredsChartOverlapComponent } from './hundreds-chart-overlap/hundreds-chart-overlap.component';
+import { MultiplicationChartComponent } from './multiplication-chart/multiplication-chart.component';
 
 
 
@@ -23,7 +28,6 @@ const routes: Routes = [
   { path: 'slider', component: KhSliderInputComponent },
   { path: 'farm', component: KhFarmComponent },
   { path: 'decompose', component: KhDecomposeNumberComponent },
-  { path: 'draw', component: ContainerComponent },
   { path: 'farmrand', component: KhFarmRandomComponent},
   { path: 'zoom', component: KhZoomComponent},
   { path: 'zoomboat', component: KhImageZoomComponent},
@@ -34,7 +38,12 @@ const routes: Routes = [
   { path: 'colorSwitch', component: ColorSwitchComponent},
   { path: 'farmgrape', component: KhFarmGrapeComponent},
   { path: 'zoomspace', component: KhZoomSpaceComponent},
-  { path: '', component: IndexComponent}
+  { path: '', component: IndexComponent},
+  { path: 'planetFactory', component: PlanetfactoryComponent},
+  { path: 'moonGame', component: MoonGameContainerComponent},
+  { path: 'moonFactory', component: MoonfactoryComponent},
+  { path: 'hundredsChart', component:HundredsChartOverlapComponent},
+  { path: 'multiplicationChart', component:MultiplicationChartComponent}
 ]
 
 @NgModule({

@@ -21,8 +21,14 @@ import { ColorSwitchComponent } from './color-switch/color-switch.component';
 import { KhFarmGrapeComponent } from './kh-farm-grape/kh-farm-grape.component';
 import { KhZoomSpaceComponent } from './kh-zoom-space/kh-zoom-space.component';
 import { IndexComponent } from './index/index.component';
+import { PlanetfactoryComponent } from './planetfactory/planetfactory.component';
+import { Moongame1Component } from './moongame1/moongame1.component';
+import { MoonfactoryComponent } from './moonfactory/moonfactory.component'
 import {MatCardModule} from '@angular/material/card';
 import {MatButtonModule} from '@angular/material/button';
+import { MoonGameContainerComponent } from './moon-game-container/moon-game-container.component';
+import { HundredsChartOverlapComponent } from './hundreds-chart-overlap/hundreds-chart-overlap.component';
+import { MultiplicationChartComponent } from './multiplication-chart/multiplication-chart.component'
 
 @NgModule({
   declarations: [
@@ -44,7 +50,14 @@ import {MatButtonModule} from '@angular/material/button';
     ColorSwitchComponent,
     KhFarmGrapeComponent,
     KhZoomSpaceComponent,
-    IndexComponent
+    IndexComponent,
+    PlanetfactoryComponent,
+    Moongame1Component,
+    MoonfactoryComponent,
+    MoonGameContainerComponent,
+    MultiplicationChartComponent,
+    HundredsChartOverlapComponent
+    
   ],
   imports: [
     BrowserModule,
