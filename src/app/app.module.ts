@@ -63,11 +63,11 @@ import { MultiplicationChartComponent } from './multiplication-chart/multiplicat
     BrowserModule,
     AppRoutingModule,
     MatCardModule,
-    MatButtonModule
+    MatButtonModule,
   ],
   exports: [
     MatCardModule,
-    MatButtonModule
+    MatButtonModule,
     
     ],
   providers: [],
