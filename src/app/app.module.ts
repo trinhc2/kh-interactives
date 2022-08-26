@@ -31,7 +31,10 @@ import { HundredsChartOverlapComponent } from './hundreds-chart-overlap/hundreds
 import { MultiplicationChartComponent } from './multiplication-chart/multiplication-chart.component'
 import { DecomposeAsteroidsComponent } from './decompose-asteroids/decompose-asteroids.component';
 import { DecomposeToPlanetComponent} from './decompose-to-planet/decompose-to-planet.component';
-import { DecomposeNumberLeiahComponent } from './decompose-number-leiah/decompose-number-leiah.component'
+import { DecomposeNumberLeiahComponent } from './decompose-number-leiah/decompose-number-leiah.component';
+import { TenthSquaresComponent } from './tenth-squares/tenth-squares.component';
+import { TradeBlocksComponent } from './trade-blocks/trade-blocks.component'
+import { DecimalTableComponent, HundredsTableComponent, ThousandsTableComponent} from './block-tables/block-tables.component'
 
 @NgModule({
   declarations: [
@@ -62,7 +65,12 @@ import { DecomposeNumberLeiahComponent } from './decompose-number-leiah/decompos
     HundredsChartOverlapComponent,
     DecomposeAsteroidsComponent,
     DecomposeToPlanetComponent,
-    DecomposeNumberLeiahComponent
+    DecomposeNumberLeiahComponent,
+    TenthSquaresComponent,
+    TradeBlocksComponent,
+    DecimalTableComponent,
+    HundredsTableComponent,
+    ThousandsTableComponent,
     
   ],
   imports: [

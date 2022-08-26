@@ -23,6 +23,9 @@ import { MultiplicationChartComponent } from './multiplication-chart/multiplicat
 import { DecomposeAsteroidsComponent } from './decompose-asteroids/decompose-asteroids.component';
 import { DecomposeToPlanetComponent } from './decompose-to-planet/decompose-to-planet.component';
 import { DecomposeNumberLeiahComponent } from './decompose-number-leiah/decompose-number-leiah.component';
+import { TenthSquaresComponent } from './tenth-squares/tenth-squares.component';
+import { TradeBlocksComponent } from './trade-blocks/trade-blocks.component';
+import { DecimalTableComponent, HundredsTableComponent, ThousandsTableComponent} from './block-tables/block-tables.component'
 
 
 
@@ -49,7 +52,12 @@ const routes: Routes = [
   { path: 'multiplicationChart', component:MultiplicationChartComponent},
   { path: 'decomposeAsteroids', component: DecomposeAsteroidsComponent},
   { path: 'decomposePlanet', component:DecomposeToPlanetComponent},
-  { path: 'decompose2', component: DecomposeNumberLeiahComponent}
+  { path: 'decompose2', component: DecomposeNumberLeiahComponent},
+  { path: 'tenthSquares', component: TenthSquaresComponent},
+  { path: 'tradeBlocks', component: TradeBlocksComponent},
+  { path: 'decimalsBlocks', component: DecimalTableComponent},
+  { path: 'hundredsBlocks', component: HundredsTableComponent},
+  { path: 'thousandsBlocks', component: ThousandsTableComponent}
 ]
 
 @NgModule({
