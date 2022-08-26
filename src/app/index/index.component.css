@@ -11,8 +11,8 @@ body {
     margin-top: 20px;
 }
 .card {
-    width: 350px;
-    height: 400px;
+    max-width: 350px;
+    max-height: 400px;
     margin: 20px 50px;
     padding: 0px
 }
