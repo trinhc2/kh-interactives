@@ -35,6 +35,7 @@ import { DecomposeNumberLeiahComponent } from './decompose-number-leiah/decompos
 import { TenthSquaresComponent } from './tenth-squares/tenth-squares.component';
 import { TradeBlocksComponent } from './trade-blocks/trade-blocks.component'
 import { DecimalTableComponent, HundredsTableComponent, ThousandsTableComponent} from './block-tables/block-tables.component'
+import { IntegerTilesComponent } from './integer-tiles/integer-tiles.component'
 
 @NgModule({
   declarations: [
@@ -71,7 +72,7 @@ import { DecimalTableComponent, HundredsTableComponent, ThousandsTableComponent}
     DecimalTableComponent,
     HundredsTableComponent,
     ThousandsTableComponent,
-    
+    IntegerTilesComponent
   ],
   imports: [
     BrowserModule,
