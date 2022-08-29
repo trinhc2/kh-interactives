@@ -8,7 +8,7 @@ export interface farmSetup {
     plotWidth: number
     plotColor: string
     lineColor: string
-
+    crop: string
 }
 
 export function farmAPI(_els, _setup) {
@@ -39,7 +39,6 @@ export function farmAPI(_els, _setup) {
         move: HTMLElement
         zoomLevel = 0
         plotArray = Array.from(Array(20), () => new Array(50))
-        colorDictionary = { "rgb(239, 90, 104)": "pink", "rgb(103, 78, 167)": "purple", "rgb(0, 169, 211)": "blue", "rgb(254, 201, 0)": "wheat" }
         isDragging = false;
         dragEnabled = false;
         dragStart = { x: 0, y: 0 }
@@ -52,12 +51,12 @@ export function farmAPI(_els, _setup) {
         harvestTotalBox: SVGSVGElement
         largeCombineDraggable: any
         animationPlaying = false
-        beds: SVGSVGElement
-        plots: SVGSVGElement
-        rows: SVGSVGElement
-        wheat: SVGSVGElement
-        wheatScale = 0;
-        wheatNumber = 1
+        bedsButton: SVGSVGElement
+        plotsButton: SVGSVGElement
+        rowsButton: SVGSVGElement
+        trailerCrop: SVGSVGElement
+        trailerCropScale = 0;
+        trailerCropID = 1
         barnCounterText: SVGSVGElement
         deposited = 0
         depositAnimating = false
@@ -69,6 +68,12 @@ export function farmAPI(_els, _setup) {
 
         zoomIncrementX = []
         zoomIncrementY = []
+        zoomOutLevels = 2
+        zoomInLevels = 13
+
+        plotHREF: string
+        singleHREF: string
+        trailerHREF: string
 
         constructor(els, setup) {
             self = this
@@ -90,11 +95,10 @@ export function farmAPI(_els, _setup) {
             this.harvestTotalText = this.gsvg.getElementById("harvestTotalText") as SVGSVGElement
             this.harvestTotalBox = this.gsvg.getElementById("harvestTotalBox") as SVGSVGElement
             this.zoomControls = this.gsvgu.getElementById("zoomControls") as SVGSVGElement
-            this.beds = this.gsvgu.getElementById("beds") as SVGSVGElement
-            this.plots = this.gsvgu.getElementById("plots") as SVGSVGElement
-            this.rows = this.gsvgu.getElementById("rows") as SVGSVGElement
-            this.gridState = this.beds
-
+            this.bedsButton = this.gsvgu.getElementById("beds") as SVGSVGElement
+            this.plotsButton = this.gsvgu.getElementById("plots") as SVGSVGElement
+            this.rowsButton = this.gsvgu.getElementById("rows") as SVGSVGElement
+            this.gridState = this.bedsButton
 
             this.init()
         }
@@ -140,7 +144,7 @@ export function farmAPI(_els, _setup) {
             }
         }
 
-        //pre-fills plots with wheat pngs
+        //pre-fills plots with crop pngs
         fillPlot() {
 
             let innerGridIncrementX = this.plotIncrementWidth / 5;
@@ -158,7 +162,7 @@ export function farmAPI(_els, _setup) {
 
                     //animate flower
                     let png = document.createElementNS(this.svgns, "use")
-                    gsap.set(png, { attr: { id: rectID, href: "#wheatPNG" }, x: xVal, y: yVal, scaleX: 0, scaleY: 0.24, visibility: "hidden" })
+                    gsap.set(png, { attr: { id: rectID, href: self.plotHREF }, x: xVal, y: yVal, scaleX: 0, scaleY: 0.24, visibility: "hidden" })
                     this.gsvg.getElementById("fill").appendChild(png)
                     //temp.to(png, { scaleX: 0.22, duration: 1 }, "<")
 
@@ -248,7 +252,7 @@ export function farmAPI(_els, _setup) {
                 //if element exists where clicking, remove it
                 if (this.plotArray[i][j]) {
                     let timeline = gsap.timeline()
-                    if (this.gridState == this.beds) { //if working with beds
+                    if (this.gridState == this.bedsButton) { //if working with beds
                         if (self.plotArray[i][j].style.visibility == "hidden") {//if current bed is hidden, unhide it
                             gsap.set(this.plotArray[i][j], { visibility: "visible", })
                             gsap.to(this.plotArray[i][j], { scaleX: 0.22, duration: 1, })
@@ -259,7 +263,7 @@ export function farmAPI(_els, _setup) {
                         }
 
                     }
-                    else if (this.gridState == this.plots) {//if working with plots
+                    else if (this.gridState == this.plotsButton) {//if working with plots
                         if (self.plotArray[i][j].style.visibility == "hidden") {//if current bed is hidden, unhide it
                             let index = Math.floor(i / 2) * 2
                             for (let jIndex = Math.floor(j / 5) * 5 + 4; jIndex >= Math.floor(j / 5) * 5; jIndex--) {
@@ -333,7 +337,7 @@ export function farmAPI(_els, _setup) {
                 //pre calculating the two rows to be harvested
                 let preCount = 0;
 
-                const arr = []//creating array of wheat elements to be harvested
+                const arr = []//creating array of crop elements to be harvested
                 for (let j = 0; j < 50; j++) {
                     let el1 = this.plotArray[Math.floor(self.snappedIndex * 2 / 2) * 2][j]
                     let el2 = this.plotArray[Math.floor(self.snappedIndex * 2 / 2) * 2 + 1][j]
@@ -364,32 +368,31 @@ export function farmAPI(_els, _setup) {
                             self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
                             gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
                         }
-                        console.log(self.animationPlaying)
                     }
                 })
 
-                //animate entire row of wheat that the combine is placed on
+                //animate entire row of crops that the combine is placed on
                 arr.forEach(e => {
                     self.TL.to(e, {
-                        scaleX: 0, duration: (self.harvestDuration - 1) / 50, delay: 0.001,
+                        scaleX: 0, duration: (self.harvestDuration - 1) / 50 + 0.002, delay: 0.001,
                         onStart: function () {
-                            if (self.wheatScale >= 0.8 && self.wheatNumber < 10) {//if the trailer wheat has reached full size, move onto the next trailer wheat png
-                                self.wheatScale = 0;
-                                self.wheatNumber++
-                                self.wheat = self.gsvg.getElementById("wheat" + self.wheatNumber) as SVGSVGElement
+                            if (self.trailerCropScale >= 0.8 && self.trailerCropID < 10) {//if the trailer crop has reached full size, move onto the next trailer crop png
+                                self.trailerCropScale = 0;
+                                self.trailerCropID++
+                                self.trailerCrop = self.gsvg.getElementById("crop" + self.trailerCropID) as SVGSVGElement
                             }
-                            if (e[0].style.visibility == "visible") {//if subrow 1 wheat element is visible
+                            if (e[0].style.visibility == "visible") {//if subrow 1 crop element is visible
                                 self.harvested += 0.001 //increment harvest count
-                                self.wheatScale += 0.008 //increment trailer wheatscale
-                                if (self.wheatNumber <= 10 && self.wheatScale <= 0.8) {
-                                    gsap.set(self.wheat, { scaleX: self.wheatScale, scaleY: self.wheatScale })//actually update scale of trailer wheat
+                                self.trailerCropScale += 0.008 //increment trailer crop scale
+                                if (self.trailerCropID <= 10 && self.trailerCropScale <= 0.8) {
+                                    gsap.set(self.trailerCrop, { scaleX: self.trailerCropScale, scaleY: self.trailerCropScale })//actually update scale of trailer crop
                                 }
                             }
-                            if (e[1].style.visibility == "visible") {//if subrow 2 wheat element is visible
+                            if (e[1].style.visibility == "visible") {//if subrow 2 crop element is visible
                                 self.harvested += 0.001
-                                self.wheatScale += 0.008
-                                if (self.wheatNumber <= 10 && self.wheatScale <= 0.8) {
-                                    gsap.set(self.wheat, { scaleX: self.wheatScale, scaleY: self.wheatScale })
+                                self.trailerCropScale += 0.008
+                                if (self.trailerCropID <= 10 && self.trailerCropScale <= 0.8) {
+                                    gsap.set(self.trailerCrop, { scaleX: self.trailerCropScale, scaleY: self.trailerCropScale })
                                 }
                             }
                             //update harvested text
@@ -397,7 +400,7 @@ export function farmAPI(_els, _setup) {
                             gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
                         },
                         onComplete: function () { gsap.set(e, { visibility: "hidden" }) }
-                    }, `<+=${(self.harvestDuration - 1) / 50}`)
+                    }, `<+=${(self.harvestDuration - 1) / 50 + 0.002}`)
                 })
                 self.animationPlaying = true;
             }
@@ -408,23 +411,22 @@ export function farmAPI(_els, _setup) {
 
         handleZoomIn() {
             if (!this.animationPlaying) {
-                let index = 8
+                let index = this.zoomOutLevels
 
                 if (this.zoomLevel < 0) {
                     index = Math.abs(this.zoomLevel) - 1 //use the index-1 if we are already zoomed out
                 }
                 else if (this.zoomLevel > 0) {
-                    index = this.zoomLevel + 8
+                    index = this.zoomLevel + this.zoomOutLevels
                 }
-                if (this.zoomLevel < 7) {
-                    console.log("this")
+                if (this.zoomLevel < this.zoomInLevels - 1) {
                     let baseViewbox = this.gsvg.viewBox["baseVal"]
     
                     let offsetX = (250 - baseViewbox["width"] / 2)
                     let offsetY = (250 - baseViewbox["height"] / 2)
     
-                    let width = Math.max((baseViewbox["width"] - this.zoomIncrementX[index]), 5)
-                    let height = Math.max((baseViewbox["height"] - this.zoomIncrementY[index]), 5)
+                    let width = Math.max((baseViewbox["width"] - this.zoomIncrementX[index]), 3)
+                    let height = Math.max((baseViewbox["height"] - this.zoomIncrementY[index]), 3)
     
                     let x = (250 - width / 2) + (baseViewbox["x"] - offsetX)
                     let y = (250 - height / 2) + (baseViewbox["y"] - offsetY)
@@ -442,17 +444,17 @@ export function farmAPI(_els, _setup) {
                     index = Math.abs(this.zoomLevel)
                 }
                 else if (this.zoomLevel > 0) {
-                    index = this.zoomLevel + 8 - 1 //use the index-1 if we are already zoomed in 
+                    index = this.zoomLevel + this.zoomOutLevels - 1 //use the index-1 if we are already zoomed in 
                 }
-                if (this.zoomLevel > -7) {
+                if (this.zoomLevel > -this.zoomOutLevels) {
                     let svgBBox = this.gsvg.getBoundingClientRect()
                     let baseViewbox = this.gsvg.viewBox["baseVal"]
     
                     let offsetX = (250 - baseViewbox["width"] / 2)
                     let offsetY = (250 - baseViewbox["height"] / 2)
     
-                    let width = Math.max((baseViewbox["width"] + this.zoomIncrementX[index]), 5)
-                    let height = Math.max((baseViewbox["height"] + this.zoomIncrementY[index]), 5)
+                    let width = (baseViewbox["width"] + this.zoomIncrementX[index])
+                    let height = (baseViewbox["height"] + this.zoomIncrementY[index])
     
                     let x = (250 - width / 2) + (baseViewbox["x"] - offsetX)
                     let y = (250 - height / 2) + (baseViewbox["y"] - offsetY)
@@ -468,20 +470,20 @@ export function farmAPI(_els, _setup) {
         handleGridToggle(element) {
             gsap.utils.toArray("rect", this.gridState)[0].style.fill = "#93c47d"
             this.gridState = element
-            if (this.gridState == this.beds) {
+            if (this.gridState == this.bedsButton) {
                 gsap.set(this.thousands, { display: "block" })
                 gsap.set(this.hundreds, { display: "block" })
-                gsap.utils.toArray("rect", this.beds)[0].style.fill = "#c3e7b3"
+                gsap.utils.toArray("rect", this.bedsButton)[0].style.fill = "#c3e7b3"
             }
-            else if (this.gridState == this.plots) {
+            else if (this.gridState == this.plotsButton) {
                 gsap.set(this.thousands, { display: "none" })
                 gsap.set(this.hundreds, { display: "block" })
-                gsap.utils.toArray("rect", this.plots)[0].style.fill = "#c3e7b3"
+                gsap.utils.toArray("rect", this.plotsButton)[0].style.fill = "#c3e7b3"
             }
             else {
                 gsap.set(this.thousands, { display: "none" })
                 gsap.set(this.hundreds, { display: "none" })
-                gsap.utils.toArray("rect", this.rows)[0].style.fill = "#c3e7b3"
+                gsap.utils.toArray("rect", this.rowsButton)[0].style.fill = "#c3e7b3"
             }
         }
 
@@ -526,21 +528,21 @@ export function farmAPI(_els, _setup) {
 
                 let bbox = self.harvestTotalText.getBoundingClientRect()
 
-                //creating wheat elements for deposit animation
+                //creating crop elements for deposit animation
                 for (let i = 0; i < Math.ceil(self.harvested * 10) - 1; i++) {
-                    let wheat = document.createElementNS(this.svgns, "use")
-                    self.TL.set(wheat, { attr: { href: "#singleWheat" }, x: pt.x + 22, y: pt.y + 28 }, "<+=0.1")
-                    this.gsvg.appendChild(wheat)
-                    self.TL.to(wheat, { x: 367, y: 86, duration: 2, onComplete: function () { wheat.remove() } }, "<")
+                    let crop = document.createElementNS(this.svgns, "use")
+                    self.TL.set(crop, { attr: { href: self.singleHREF }, x: pt.x + 22, y: pt.y + 28 }, "<+=0.1")
+                    this.gsvg.appendChild(crop)
+                    self.TL.to(crop, { x: 367, y: 86, duration: 2, onComplete: function () { crop.remove() } }, "<")
                 }
 
-                //creating the "last" wheat element so that we can expand on OnComplete
-                let wheat = document.createElementNS(this.svgns, "use")
-                self.TL.set(wheat, { attr: { href: "#singleWheat" }, x: pt.x + 22, y: pt.y + 28 }, "<")
-                this.gsvg.appendChild(wheat)
-                self.TL.to(wheat, {
+                //creating the "last" crop element so that we can expand on OnComplete
+                let crop = document.createElementNS(this.svgns, "use")
+                self.TL.set(crop, { attr: { href: self.singleHREF }, x: pt.x + 22, y: pt.y + 28 }, "<")
+                this.gsvg.appendChild(crop)
+                self.TL.to(crop, {
                     x: 367, y: 86, duration: 2, onComplete: function () {
-                        wheat.remove()
+                        crop.remove()
 
                         //update combine and barn numbers
                         self.deposited += self.harvested
@@ -550,7 +552,7 @@ export function farmAPI(_els, _setup) {
                         self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
                         gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
 
-                        //reset wheat in trailer
+                        //reset crop in trailer
                         gsap.utils.toArray("use", document.getElementById("trailer")).forEach(element => {
                             gsap.set(element, { scaleX: 0, scaleY: 0 })
                         })
@@ -559,11 +561,11 @@ export function farmAPI(_els, _setup) {
                     }
                 }, "<")
 
-                //reset trailer wheat variables
-                self.wheatScale = 0;
-                self.wheatNumber = 1
+                //reset trailer crop variables
+                self.trailerCropScale = 0;
+                self.trailerCropID = 1
                 self.largeCombineDraggable[0].enable()
-                self.wheat = self.gsvg.getElementById("wheat" + self.wheatNumber) as SVGSVGElement
+                self.trailerCrop = self.gsvg.getElementById("crop" + self.trailerCropID) as SVGSVGElement
             }
         }
 
@@ -572,20 +574,20 @@ export function farmAPI(_els, _setup) {
             let lastWidth = baseViewbox["width"]
             let lastHeight = baseViewbox["height"]
 
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < this.zoomOutLevels; i++) {
                 let temp = lastWidth / 3;
                 this.zoomIncrementX.push(temp);
-                lastWidth -= temp
+                lastWidth += temp
 
                 temp = lastHeight / 3;
                 this.zoomIncrementY.push(temp);
-                lastHeight -= temp
+                lastHeight += temp
             }
 
             lastWidth = baseViewbox["width"]
             lastHeight = baseViewbox["height"]
 
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < this.zoomInLevels; i++) {
                 let temp = lastWidth / 3;
                 this.zoomIncrementX.push(temp);
                 lastWidth -= temp
@@ -594,7 +596,6 @@ export function farmAPI(_els, _setup) {
                 this.zoomIncrementY.push(temp);
                 lastHeight -= temp
             }
-            console.log(this.zoomIncrementX, this.zoomIncrementY)
         }
 
         init() {
@@ -609,6 +610,27 @@ export function farmAPI(_els, _setup) {
             this.plotIncrementWidth = this.plotBBox.width / 10;
             this.plotIncrementHeight = this.plotBBox.height / 10;
 
+            //determine crop
+            if (this.setup.crop.toLowerCase() == "grape"){
+                this.plotHREF = "#plotGrape"
+                this.singleHREF = "#singleGrape"
+                this.trailerHREF = "#trailerGrape"
+            }
+            else {
+                this.plotHREF = "#plotWheat"
+                this.singleHREF = "#singleWheat"
+                this.trailerHREF = "#trailerWheat"
+            }
+
+            //plant icon init
+            let png = document.createElementNS(this.svgns, "use")
+
+            let plantBBox = (this.plant as unknown as SVGSVGElement).getBBox()
+
+            gsap.set(png, { attr: {href: self.singleHREF }, scale:1.5})
+            let pngBBox = (png as unknown as SVGSVGElement).getBBox()
+            gsap.set(png, { x: plantBBox.x + plantBBox.width/2 - (pngBBox.width*1.5)/2, y:plantBBox.y + plantBBox.height/2 - (pngBBox.height*1.5)/2})
+            this.plant.appendChild(png)
 
             //generating grid lines
             this.generateLines()
@@ -620,7 +642,7 @@ export function farmAPI(_els, _setup) {
             //setting colors
             gsap.set(this.gsvg, { backgroundColor: "rgb(33, 192, 96)" })
             gsap.utils.toArray("circle", this.plant)[0].style.fill = "#c3e7b3"
-            gsap.utils.toArray("rect", this.beds)[0].style.fill = "#c3e7b3"
+            gsap.utils.toArray("rect", this.bedsButton)[0].style.fill = "#c3e7b3"
 
             //fill-box allows rotation about center
             gsap.set(this.farmGroup, { transformOrigin: "center", transformBox: "fill-box", rotate: 45, skewX: 165, skewY: 165 })
@@ -633,22 +655,22 @@ export function farmAPI(_els, _setup) {
             this.harvestTotalText.textContent = "0"
             gsap.set(this.harvestTotalText, { x: - this.harvestTotalText.getBBox().width / 2 })
 
-            let wheatX = -46
-            let wheatY = 10
-            let wheatid = 1
+            let cropX = -46
+            let cropY = 10
+            let cropid = 1
             for (let i = 0; i < 5; i++) {
                 let png = document.createElementNS(this.svgns, "use")
-                gsap.set(png, { attr: { id: "wheat" + wheatid, href: "#wheatPNG" }, x: wheatX, y: wheatY, scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
+                gsap.set(png, { attr: { id: "crop" + cropid, href: self.trailerHREF }, x: cropX, y: cropY, scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
                 document.getElementById("trailer").appendChild(png)
 
                 png = document.createElementNS(this.svgns, "use")
-                gsap.set(png, { attr: { id: "wheat" + (wheatid + 5), href: "#wheatPNG" }, x: (wheatX + 10), y: (wheatY - 7), scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
+                gsap.set(png, { attr: { id: "crop" + (cropid + 5), href: self.trailerHREF }, x: (cropX + 10), y: (cropY - 7), scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
                 document.getElementById("trailer").appendChild(png)
-                wheatX -= 12
-                wheatY -= 7
-                wheatid++
+                cropX -= 12
+                cropY -= 7
+                cropid++
             }
-            this.wheat = this.gsvg.getElementById("wheat1") as SVGSVGElement
+            this.trailerCrop = this.gsvg.getElementById("crop1") as SVGSVGElement
             var pt = this.gsvg.createSVGPoint()
 
             let largeCombineSnapPoints = []

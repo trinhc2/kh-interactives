@@ -16,12 +16,12 @@
     touch-action: pinch-zoom;
 }
 
-#zoomIn, #zoomOut, #center{
-    cursor:pointer;
+#zoomIn, #zoomOut, #center {
+    cursor: pointer;
     pointer-events: all;
 }
 
-#ui rect{
+#ui rect {
     filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.4));
 }
 

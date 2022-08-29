@@ -528,7 +528,6 @@ export function farmAPI(_els, _setup) {
 
                 //creating wheat elements for deposit animation
                 for (let i = 0; i < Math.ceil(self.harvested * 10) - 1; i++) {
-                    console.log(i)
                     let wheat = document.createElementNS(this.svgns, "use")
                     self.TL.set(wheat, { attr: { href: "#single" }, x: pt.x + 22, y: pt.y + 28 }, "<+=0.1")
                     this.gsvg.appendChild(wheat)

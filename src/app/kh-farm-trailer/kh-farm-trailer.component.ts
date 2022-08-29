@@ -30,7 +30,10 @@ export class KhFarmTrailerComponent implements AfterViewInit {
   @Input()
   private lineColor: string = "rgb(52, 128, 104)"
 
-  ngAfterViewInit(): void {
+  @Input()
+  private crop: string = "grape"
+
+  public ngAfterViewInit(): void {
 
 
     const setup = {
@@ -39,7 +42,8 @@ export class KhFarmTrailerComponent implements AfterViewInit {
       plotWidth: this.plotWidth,
       plotHeight: this.plotHeight,
       plotColor: this.plotColor,
-      lineColor: this.lineColor
+      lineColor: this.lineColor,
+      crop: this.crop
     } as farmSetup
 
     const els = [this.lowerRenderEl.nativeElement,this.upperRenderEl.nativeElement]
