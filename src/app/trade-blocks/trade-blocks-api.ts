@@ -201,6 +201,8 @@ export function blocksAPI(_els, _setup) {
             gsap.set(self.onesToTenArrow, {visibility : "hidden"});
             gsap.set(self.tenToOnesArrow, {visibility : "hidden"});
 
+            gsap.set(self.els, {pointerEvents: "auto"})
+
         }
 
         /** Adds 'block' to given arr at the specified 'num' place */
@@ -227,17 +229,17 @@ export function blocksAPI(_els, _setup) {
             var block : Node;
             if (val == 100) {
                 block = this.hundredRef.cloneNode(true);
-                this.addBlockToArr(self.filledHundreds, {el : block, num : number, x : xVal, y : yVal} );
+                this.addBlockToArr(self.filledHundreds, {el : block, num : number, x : xVal, y : yVal, visibility:"visible"} );
                 this.numHundreds += 1;
             }
             else if (val == 10) {
                 block = this.tensRef.cloneNode(true);  
-                this.addBlockToArr(self.filledTens, {el : block, num : number, x : xVal, y : yVal} )      
+                this.addBlockToArr(self.filledTens, {el : block, num : number, x : xVal, y : yVal, visibility:"visible"} )      
                 this.numTens += 1;  
             }
             else if (val == 1){
                 block = this.onesRef.cloneNode(true);
-                this.addBlockToArr(self.filledOnes, {el : block, num : number, x : xVal, y : yVal} )
+                this.addBlockToArr(self.filledOnes, {el : block, num : number, x : xVal, y : yVal, visibility:"visible"} )
                 this.numOnes +=1;
             }
             
@@ -248,7 +250,7 @@ export function blocksAPI(_els, _setup) {
             */
 
             //add block to screen 
-            gsap.set(block, {x : xVal, y : yVal });
+            gsap.set(block, {x : xVal, y : yVal, visibility:"visible"});
             self.layer.appendChild(block);
 
             this.filledBlocks.push(block);
@@ -259,7 +261,7 @@ export function blocksAPI(_els, _setup) {
             this.checkTrade()
 
             //if block is clicked, remove it 
-            block.addEventListener('click', function () {
+            block.addEventListener('pointerdown', function () {
                 self.layer.removeChild(block);
                 self.totalNum -= val;
                 self.updateText()
@@ -319,7 +321,7 @@ export function blocksAPI(_els, _setup) {
 
             coords.forEach(c => {
                 var blankBlock = ref.cloneNode(true);
-                gsap.set(blankBlock, {x : c.x, y : c.y});
+                gsap.set(blankBlock, {x : c.x, y : c.y, visibility:"visible"});
                 self.layer.appendChild(blankBlock);
 
                 arr.push({el : blankBlock, num : index, x : c.x, y : c.y});
@@ -388,9 +390,12 @@ export function blocksAPI(_els, _setup) {
 
             //10 Tens --> 1 Hundred
             gsap.set(self.tensToHundredArrow, {visibility : "hidden"});
-            self.tensToHundredArrow.addEventListener('click', function() {
+            self.tensToHundredArrow.addEventListener('pointerdown', function() {
                 var tempArr = [];
                 var index = self.findFirstBlank(self.filledHundreds);
+
+                //disable pointer events
+                gsap.set(self.els, {pointerEvents: "none"})
 
                 //Initialize timeline
                 self.tl = gsap.timeline({paused : true,
@@ -411,6 +416,9 @@ export function blocksAPI(_els, _setup) {
                         gsap.set(self.tensToHundredArrow, {visibility : "hidden"});
 
                         self.checkTrade();
+
+                        //renable pointer events
+                        gsap.set(self.els, {pointerEvents: "auto"})
                     }
                 });
 
@@ -421,7 +429,7 @@ export function blocksAPI(_els, _setup) {
                 //Replace all tens with animating blocks (so the event listener is removed)
                 self.filledTens.forEach(block => {
                     var temp = self.tensRef.cloneNode(true);
-                    gsap.set(temp, {x : block.x, y : block.y})
+                    gsap.set(temp, {x : block.x, y : block.y, visibility:"visible"})
                     self.layer.appendChild(temp);
                     self.layer.removeChild(block.el);
                     tempArr.push(temp);
@@ -464,9 +472,11 @@ export function blocksAPI(_els, _setup) {
 
             //1 Hundred --> 10 Tens
             gsap.set(self.hundredToTensArrow, {visibility : "hidden"});
-            self.hundredToTensArrow.addEventListener('click', function() {
+            self.hundredToTensArrow.addEventListener('pointerdown', function() {
                 var tempArr = [];
                 var index = self.findLastFilled(self.filledHundreds);
+
+                gsap.set(self.els, {pointerEvents: "none"})
 
                 //Initialize timeline
                 self.tl = gsap.timeline({paused : true,
@@ -488,6 +498,7 @@ export function blocksAPI(_els, _setup) {
                         gsap.set(self.hundredToTensArrow, {visibility : "hidden"});
 
                         self.checkTrade();
+                        gsap.set(self.els, {pointerEvents: "auto"})
                     }
                 });
                 
@@ -506,7 +517,7 @@ export function blocksAPI(_els, _setup) {
                 //create 10 tens in the position of the hundred
                 for (var i = 9; i >= 0; i--) {
                     var temp = self.tensRef.cloneNode(true);
-                    gsap.set(temp, {x : xVal - 13, y : yVal + 65 + i*8.65, scale : 0.95})
+                    gsap.set(temp, {x : xVal - 13, y : yVal + 65 + i*8.65, scale : 0.95, visibility:"visible"})
                     self.layer.appendChild(temp);
                     tempArr.push(temp);
                 }
@@ -547,9 +558,11 @@ export function blocksAPI(_els, _setup) {
             
             //10 Ones --> 1 Ten
             gsap.set(self.onesToTenArrow, {visibility : "hidden"});
-            self.onesToTenArrow.addEventListener('click', function() {
+            self.onesToTenArrow.addEventListener('pointerdown', function() {
                 var tempArr = [];
                 var index = self.findFirstBlank(self.filledTens);
+
+                gsap.set(self.els, {pointerEvents: "none"})
 
                 //Initialize timeline
                 self.tl = gsap.timeline({paused : true,
@@ -570,7 +583,7 @@ export function blocksAPI(_els, _setup) {
                         gsap.set(self.onesToTenArrow, {visibility : "hidden"});
 
                         self.checkTrade();
-
+                        gsap.set(self.els, {pointerEvents: "auto"})
                     }
                 });
                 
@@ -581,7 +594,7 @@ export function blocksAPI(_els, _setup) {
                 //Replace all ones with animating blocks (so the event listener is removed)
                 self.filledOnes.forEach(block => {
                     var temp = self.onesRef.cloneNode(true);
-                    gsap.set(temp, {x : block.x, y : block.y})
+                    gsap.set(temp, {x : block.x, y : block.y, visibility:"visible"})
                     self.layer.appendChild(temp);
                     self.layer.removeChild(block.el);
                     tempArr.push(temp);
@@ -624,9 +637,11 @@ export function blocksAPI(_els, _setup) {
 
             //1 Ten --> 10 Ones
             gsap.set(self.tenToOnesArrow, {visibility : "hidden"});
-            self.tenToOnesArrow.addEventListener('click', function() {
+            self.tenToOnesArrow.addEventListener('pointerdown', function() {
                 var tempArr = [];
                 var index = self.findLastFilled(self.filledTens);
+
+                gsap.set(self.els, {pointerEvents: "none"})
 
                 //Initialize timeline
                 self.tl = gsap.timeline({paused : true,
@@ -648,6 +663,7 @@ export function blocksAPI(_els, _setup) {
                         gsap.set(self.onesToTenArrow, {visibility : "hidden"});
 
                         self.checkTrade();
+                        gsap.set(self.els, {pointerEvents: "auto"})
                     }
                 });
 
@@ -664,7 +680,7 @@ export function blocksAPI(_els, _setup) {
                 //create ones to animation with in the position of a ten
                 for (var i = 9; i >= 0; i--) {
                     var temp = self.onesRef.cloneNode(true);
-                    gsap.set(temp, {x : 491 +2.5 + i*9, y : 178 + 4.2 + index * 51.5, scale : 0.85})
+                    gsap.set(temp, {x : 491 +2.5 + i*9, y : 178 + 4.2 + index * 51.5, scale : 0.85, visibility:"visible"})
                     self.layer.appendChild(temp);
                     tempArr.push(temp);
                 }
@@ -706,14 +722,14 @@ export function blocksAPI(_els, _setup) {
         /** Set up for the hundreds chart with trading arrows */
         hundredArrowsSetup() {
             this.updateText()
-            this.restartBtn.addEventListener('click', function() {self.clear()});
+            this.restartBtn.addEventListener('pointerdown', function() {self.clear()});
 
             //draw blank hundreds
             var hundredCoords = this.gridCoords(0, 0, 94, 128,4,3);
             this.addBlankBlocks(hundredCoords, 100);
 
             this.blankHundreds.forEach(block => {
-                (block.el).addEventListener('click', function() {
+                (block.el).addEventListener('pointerdown', function() {
                     self.fillBlock(block.num, 144 + (block.num % 3) * 94, 120 + ((block.num  - block.num % 3) / 3) * 128 , 100);
                 })
             }) 
@@ -723,7 +739,7 @@ export function blocksAPI(_els, _setup) {
             this.addBlankBlocks(tenCoords, 10);
 
             this.blankTens.forEach(block => {
-                (block.el).addEventListener('click', function() {
+                (block.el).addEventListener('pointerdown', function() {
                     self.fillBlock(block.num, 491, 178 + block.num * 51.5 , 10);
                 })
             })
@@ -733,7 +749,7 @@ export function blocksAPI(_els, _setup) {
             this.addBlankBlocks(oneCoords, 1);
 
             this.blankOnes.forEach(block => {
-                (block.el).addEventListener('click', function() {
+                (block.el).addEventListener('pointerdown', function() {
                     self.fillBlock(block.num, 679.7 + (block.num % 2) * 75,222 + ((block.num  - block.num % 2) / 2) * 100 , 1);
                 })
             })
@@ -746,6 +762,10 @@ export function blocksAPI(_els, _setup) {
                 self.arrowSetup();
                 self.hundredArrowsSetup()
             }
+
+            gsap.set(self.onesRef, {visibility: "hidden"})
+            gsap.set(self.tensRef, {visibility: "hidden"})
+            gsap.set(self.hundredRef, {visibility: "hidden"})
             //TO DO : ADD VERSIONS FOR THE THOUSANDS AND DECIMAL CHARTS
         }
         

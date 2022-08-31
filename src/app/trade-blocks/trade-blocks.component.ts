@@ -1,4 +1,4 @@
-import { Component, OnInit , AfterViewInit} from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef} from '@angular/core';
 import { blocksAPI, blocksSetup} from "./trade-blocks-api";
 
 
@@ -8,6 +8,7 @@ import { blocksAPI, blocksSetup} from "./trade-blocks-api";
   styleUrls: ['./trade-blocks.component.css']
 })
 export class TradeBlocksComponent implements AfterViewInit {
+  @ViewChild('renderEl') public renderEl?: ElementRef<SVGSVGElement>;
 
   constructor() { }
 
@@ -17,7 +18,7 @@ export class TradeBlocksComponent implements AfterViewInit {
       version : "arrowsHundredsChart"
     } as blocksSetup
 
-    const els = null; //this.renderEl.nativeElement; 
+    const els = this.renderEl.nativeElement; 
     const interactive = blocksAPI(els, setup);
   }
 
