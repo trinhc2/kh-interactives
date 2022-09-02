@@ -27,6 +27,7 @@ import { TenthSquaresComponent } from './tenth-squares/tenth-squares.component';
 import { TradeBlocksComponent } from './trade-blocks/trade-blocks.component';
 import { DecimalTableComponent, HundredsTableComponent, ThousandsTableComponent} from './block-tables/block-tables.component'
 import { IntegerTilesComponent } from './integer-tiles/integer-tiles.component';
+import { WindowTestComponent } from './window-test/window-test.component';
 
 
 
@@ -59,7 +60,8 @@ const routes: Routes = [
   { path: 'decimalsBlocks', component: DecimalTableComponent},
   { path: 'hundredsBlocks', component: HundredsTableComponent},
   { path: 'thousandsBlocks', component: ThousandsTableComponent},
-  { path: 'integerTiles', component: IntegerTilesComponent}
+  { path: 'integerTiles', component: IntegerTilesComponent},
+  { path: 'window', component: WindowTestComponent}
 ]
 
 @NgModule({
