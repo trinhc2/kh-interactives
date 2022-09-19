@@ -28,6 +28,7 @@ import { TradeBlocksComponent } from './trade-blocks/trade-blocks.component';
 import { DecimalTableComponent, HundredsTableComponent, ThousandsTableComponent} from './block-tables/block-tables.component'
 import { IntegerTilesComponent } from './integer-tiles/integer-tiles.component';
 import { WindowTestComponent } from './window-test/window-test.component';
+import { FarmTargetComponent } from './farm-target/farm-target.component';
 
 
 
@@ -61,7 +62,8 @@ const routes: Routes = [
   { path: 'hundredsBlocks', component: HundredsTableComponent},
   { path: 'thousandsBlocks', component: ThousandsTableComponent},
   { path: 'integerTiles', component: IntegerTilesComponent},
-  { path: 'window', component: WindowTestComponent}
+  { path: 'window', component: WindowTestComponent},
+  { path: 'farmTarget', component: FarmTargetComponent}
 ]
 
 @NgModule({

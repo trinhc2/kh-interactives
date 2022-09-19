@@ -36,7 +36,8 @@ import { TenthSquaresComponent } from './tenth-squares/tenth-squares.component';
 import { TradeBlocksComponent } from './trade-blocks/trade-blocks.component'
 import { DecimalTableComponent, HundredsTableComponent, ThousandsTableComponent} from './block-tables/block-tables.component'
 import { IntegerTilesComponent } from './integer-tiles/integer-tiles.component';
-import { WindowTestComponent } from './window-test/window-test.component'
+import { WindowTestComponent } from './window-test/window-test.component';
+import { FarmTargetComponent } from './farm-target/farm-target.component'
 
 @NgModule({
   declarations: [
@@ -74,7 +75,8 @@ import { WindowTestComponent } from './window-test/window-test.component'
     HundredsTableComponent,
     ThousandsTableComponent,
     IntegerTilesComponent,
-    WindowTestComponent
+    WindowTestComponent,
+    FarmTargetComponent
   ],
   imports: [
     BrowserModule,
