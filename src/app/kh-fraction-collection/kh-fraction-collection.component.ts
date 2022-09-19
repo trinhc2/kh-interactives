@@ -1,5 +1,5 @@
 import { Component, ElementRef, AfterViewInit, ViewChild, Input } from '@angular/core';
-import {fractionAPI, fractionSetup} from "./khFractionAPI"
+import {FractionClass, FractionSetup} from "./khFractionAPI"
 
 @Component({
   selector: 'app-kh-fraction-collection',
@@ -16,7 +16,7 @@ export class KhFractionCollectionComponent implements AfterViewInit {
   @Input()
   private snapTo: string = "20 20"
 
-  ngAfterViewInit(): void {
+  public ngAfterViewInit(): void {
 
     const bar = [{
       "frame": "0 100 200 100",
@@ -27,12 +27,19 @@ export class KhFractionCollectionComponent implements AfterViewInit {
       "maxDenom": 4
     },
     {
-      "frame": "0 200 100 200",
+      "frame": "0 250 100 150",
       "draggable": true,
       "startArray": [1,1,0,1,0,0,0],
       "lockX": true,
       "controls": "right",
       "maxDenom": 20
+    },
+    {
+      "frame": "300 200 50 50",
+      "draggable": true,
+      "startArray": [1,1,1,1,1,1,0,0,0],
+      "controls": "top",
+      "maxDenom": 10
     }
     ]
 
@@ -40,11 +47,11 @@ export class KhFractionCollectionComponent implements AfterViewInit {
       backgroundImage: this.backgroundImage,
       snapTo: this.snapTo,
       bar: bar
-    } as fractionSetup
+    } as FractionSetup
 
     const els = this.renderEl.nativeElement
 
-    const interactive = fractionAPI(els, setup)
+    const interactive = new FractionClass(els, setup)
 
   }
 
