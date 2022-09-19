@@ -670,10 +670,12 @@ export function farmAPI(els: SVGSVGElement[], setup: farmSetup) {
                 //for (let i = 1; i < 20; i++) {
                 pt.x = this.setup.plotWidth + this.largeCombineText.getBBox().width + 63
                 //pt.y = ((19 - i) * (this.plotIncrementHeight / 2)) + 20
-                pt.y = (Math.floor((20 - i * 2) / 2) * (this.plotIncrementHeight / 2) * 2) - 74 //+20 for offset 
-                pt = pt.matrixTransform(this.farmGroup.getScreenCTM()!)
+                
+                pt.y = (Math.floor((20 - i * 2) / 2) * this.plotIncrementHeight) - 73
+                pt = pt.matrixTransform(this.farmGroup.getScreenCTM())
                 pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse())
                 let temp = { x: pt.x, y: pt.y }
+                console.log(temp)
                 largeCombineSnapPoints.push(temp)
             }
 
@@ -686,7 +688,7 @@ export function farmAPI(els: SVGSVGElement[], setup: farmSetup) {
                 onPress: function () {
                     if (self.pointerState == self.moveButton) {
                         self.dragEnabled = false
-                    }
+                    }    
                 },
                 onDragStart: function () {
                     self.didUserDrag = true

@@ -476,7 +476,6 @@ export function farmAPI(_els, _setup) {
                 pt = pt.matrixTransform(this.farmGroup.getScreenCTM())
                 pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
                 let temp = { x: pt.x, y: pt.y }
-                console.log(pt)
                 largeCombineSnapPoints.push(temp)
             }
 

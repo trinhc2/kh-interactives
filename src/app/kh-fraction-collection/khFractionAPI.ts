@@ -5,12 +5,12 @@ const svgns = "http://www.w3.org/2000/svg";
 export interface FractionSetup {
     backgroundImage: string
     snapTo: string
-    bar: { "frame": string, "draggable": boolean, "startArray": number[], "lockY": boolean, "lockX": boolean, "controls": string, "maxDenom": number }[]
+    bar: { "frame": string, "draggable": boolean, "startArray": number[], "lockY": boolean, "lockX": boolean, "controls": string, "maxDenom": number, 'color': string }[]
 }
 
     class FractionCollection {
         private id: number
-        private setup: { "frame": string, "draggable": boolean, "startArray": number[], "lockY": boolean, "lockX": boolean, "controls": string, "maxDenom": number }
+        private setup: { "frame": string, "draggable": boolean, "startArray": number[], "lockY": boolean, "lockX": boolean, "controls": string, "maxDenom": number, 'color': string }
         private fractionClass: FractionClass
         private fractionid: string
         public fractionGroup: SVGSVGElement
@@ -32,6 +32,7 @@ export interface FractionSetup {
         private lockX = false
         private lockY = false
         private controls = "bottom"
+        private color = "rgb(224, 102, 102)"
 
         public constructor(fractionClass: FractionClass, id: number, setup = null) {
             this.id = id
@@ -52,6 +53,8 @@ export interface FractionSetup {
                 this.controls = setup.controls || "bottom"
 
                 this.maxDenom = setup.maxDenom || 12
+
+                this.color = setup.color || "rgb(224, 102, 102)"
             }
 
             this.fractionFilledInArray = new Array(this.maxDenom).fill(0)
@@ -115,7 +118,7 @@ export interface FractionSetup {
                         rectWidth += (this.fractionWidth / this.denom)
                     }
                     if (this.setup.startArray[i] == 1) {
-                        gsap.set(this.fractionArray[this.maxDenom - 1 - i], { fill: "rgb(224, 102, 102)" })
+                        gsap.set(this.fractionArray[this.maxDenom - 1 - i], { fill: this.color })
                         this.fractionFilledInArray[i] = 1
                     }
                     this.denom++;
@@ -138,6 +141,8 @@ export interface FractionSetup {
 
             let controlEl = this.fractionClass.gsvg.getElementById("controls").cloneNode(true)
             let bbox = (this.fractionClass.gsvg.getElementById("controls") as unknown as SVGSVGElement).getBBox()
+
+            gsap.set(controlEl.childNodes[0], { fill: this.color})
 
             if (this.controls == "left") {
                 gsap.set(controlEl, { rotation: 90, transformOrigin: "center" })
@@ -235,7 +240,7 @@ export interface FractionSetup {
             let element = e.target as SVGSVGElement
             if (!this.dragged && element.tagName == "rect" && element.parentNode == this.fractionGroup && this.uiActive == true) {
                 if (element.style.fill == "rgb(255, 255, 255)") {
-                    gsap.set(element, { fill: "rgb(224, 102, 102)" })
+                    gsap.set(element, { fill: this.color })
                     this.fractionFilledInArray[element.getAttribute("numerator")] = 1
                 }
                 else {

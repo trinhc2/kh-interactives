@@ -24,7 +24,8 @@ export class KhFractionCollectionComponent implements AfterViewInit {
       "startArray": [0, 1],
       "lockY": true,
       "controls": "bottom",
-      "maxDenom": 4
+      "maxDenom": 4,
+      "color": "#0a3693"
     },
     {
       "frame": "0 250 100 150",

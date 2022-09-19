@@ -496,5 +496,6 @@ export function fractionAPI(_els) {
 
         }
     }
+    
     return new fractionClass(_els);
 }

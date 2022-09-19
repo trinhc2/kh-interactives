@@ -48,6 +48,20 @@ export function windowAPI(els: SVGSVGElement, setup: windowSetup) {
                 this.xOffset += pngBBox.width+10
             }
 
+            let use = document.createElementNS(this.svgns, "use") as SVGImageElement
+            gsap.set(use, { attr: {href: "#boat" }, height: "60px", x: this.xOffset, visibility: "hidden", y:150})
+            this.imageReferences.push(use)
+            this.els.appendChild(use)
+            let pngBBox = use.getBBox() //get bbox after appending to svg
+            this.xOffset += pngBBox.width+10
+
+            use = document.createElementNS(this.svgns, "use") as SVGImageElement
+            gsap.set(use, { attr: {href: "#farm" }, height: "60px", x: this.xOffset, visibility: "hidden", y:150})
+            this.imageReferences.push(use)
+            this.els.appendChild(use)
+            pngBBox = use.getBBox() //get bbox after appending to svg
+            this.xOffset += pngBBox.width+10
+
             gsap.set(this.imageReferences[0], {visibility: "visible"})
 
             document.getElementById("next").addEventListener("pointerdown", () => this.handleNext())
