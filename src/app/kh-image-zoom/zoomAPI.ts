@@ -197,7 +197,6 @@ export function zoomAPI(_els, _setup) {
             this.gsvgu.getElementById("center").addEventListener("pointerdown", e => this.handleCenter())
         }
 
-
-    }
+    } 
     return new zoomClass(_els, _setup);
 }
