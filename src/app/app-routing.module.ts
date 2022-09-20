@@ -29,6 +29,7 @@ import { DecimalTableComponent, HundredsTableComponent, ThousandsTableComponent}
 import { IntegerTilesComponent } from './integer-tiles/integer-tiles.component';
 import { WindowTestComponent } from './window-test/window-test.component';
 import { FarmTargetComponent } from './farm-target/farm-target.component';
+import { DecomposeBoatComponent } from './decompose-boat/decompose-boat.component';
 
 
 
@@ -63,7 +64,8 @@ const routes: Routes = [
   { path: 'thousandsBlocks', component: ThousandsTableComponent},
   { path: 'integerTiles', component: IntegerTilesComponent},
   { path: 'window', component: WindowTestComponent},
-  { path: 'farmTarget', component: FarmTargetComponent}
+  { path: 'farmTarget', component: FarmTargetComponent},
+  { path: 'decomposeBoat', component: DecomposeBoatComponent}
 ]
 
 @NgModule({
