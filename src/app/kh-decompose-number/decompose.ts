@@ -11,10 +11,10 @@ export function decomposeNumber(_els, _setup) {
         els: SVGSVGElement;
         setup: decomposeSetup;
         //#region decomposition variables
-        refToOne: HTMLElement
-        refToTen: HTMLElement
-        refToHundred: HTMLElement
-        refToThousand: HTMLElement
+        refToOne = "#one"
+        refToTen = "#ten"
+        refToHundred = "#hundred"
+        refToThousand = "#thousand"
         textSize = 14;
         svgns = "http://www.w3.org/2000/svg";
         color = "#ff7f50";
@@ -46,10 +46,6 @@ export function decomposeNumber(_els, _setup) {
             self = this
             this.els = els
             this.setup = setup
-            this.refToOne = this.els.getElementById("one") as HTMLElement;
-            this.refToTen = this.els.getElementById("ten") as HTMLElement;
-            this.refToHundred = this.els.getElementById("hundred") as HTMLElement;
-            this.refToThousand = this.els.getElementById("thousand") as HTMLElement;
             this.drawnElements = this.els.getElementById("drawnElements") as SVGSVGElement
             this.T = gsap.timeline({ paused: false });
 
@@ -68,11 +64,11 @@ export function decomposeNumber(_els, _setup) {
         //#region DECOMPOSITION FUNCTIONS
 
         showObject(object, duration) {
-            return self.T.to(object, { opacity: 1, duration: duration })
+            return self.T.to(object, { visibility: "visible", duration: duration })
         }
 
         hideObject(object, duration) {
-            return self.T.to(object, { opacity: 0, duration: duration })
+            return self.T.to(object, { visibility: "hidden", duration: duration })
         }
 
         translateObject(object, xVal, yVal) {
@@ -144,16 +140,15 @@ export function decomposeNumber(_els, _setup) {
                     currentAsset = this.refToThousand
                 }
                 let decrementText = document.createElementNS(this.svgns, "text") as SVGTextElement
-                gsap.set(decrementText, { attr: { id: 'decrementText' + (decrementNumID), class: "number" }, x: numBBox.x - (numBBox.width / 2), y: numBBox.y + this.yTextOffset, fontFamily: 'Poppins', textContent: decrementVal.toString(), fontSize: this.textSize, opacity: 0, fill: this.color })
-                console.log(decrementText.getBBox())
+                gsap.set(decrementText, { attr: { id: 'decrementText' + (decrementNumID), class: "number" }, x: numBBox.x - (numBBox.width / 2), y: numBBox.y + this.yTextOffset, fontFamily: 'Poppins', textContent: decrementVal.toString(), fontSize: this.textSize, visibility: "hidden", fill: this.color })
                 this.drawnElements.appendChild(decrementText)
 
-                let decrementAsset = currentAsset.cloneNode(true);
-                gsap.set(decrementAsset, { attr: { id: 'decrementAsset' + (decrementNumID), x: currentAsset.getBBox().x, y: currentAsset.getBBox().y, width: currentAsset.getBBox().width, height: currentAsset.getBBox().height }, opacity: 0 })
+                let decrementAsset = document.createElementNS(this.svgns, "use") as SVGUseElement
+                gsap.set(decrementAsset, { attr: { href: currentAsset, id: 'decrementAsset' + (decrementNumID)}, visibility: "hidden"})
                 this.drawnElements.appendChild(decrementAsset)
 
                 let number = document.createElementNS(this.svgns, "text") as SVGTextElement
-                gsap.set(number, { attr: { id: 'text' + (i), class: 'number' }, x: numBBox.x - (numBBox.width / 2), y: numBBox.y + this.yTextOffset, fontFamily: 'Poppins', textContent: i, fontSize: this.textSize, opacity: 0 })
+                gsap.set(number, { attr: { id: 'text' + (i), class: 'number' }, x: numBBox.x - (numBBox.width / 2), y: numBBox.y + this.yTextOffset, fontFamily: 'Poppins', textContent: i, fontSize: this.textSize, visibility: "hidden"})
                 this.drawnElements.appendChild(number)
 
                 i -= decrementVal
@@ -194,13 +189,13 @@ export function decomposeNumber(_els, _setup) {
                 for (let i = startingNumber; i > decrementVal - 1;) {
 
                     let decrementText = this.els.getElementById('decrementText' + decrementNumID);
-                    let decrementAsset = this.els.getElementById("decrementAsset" + decrementNumID) as SVGSVGElement;
+                    let decrementAsset = this.els.getElementById("decrementAsset" + decrementNumID) as SVGUseElement;
                     let currentNum = '#text' + i;
                     let nextNum = '#text' + (i - decrementVal);
 
                     if (assetRowCount[decrementVal] == 3) {//if we have filled row with 3 objects of unique type then proceed to next row
                         assetRowCount[decrementVal] = 0;
-                        yVal += (parseInt(decrementAsset.getAttribute("height")) * this.assetScale) + 10
+                        yVal += (decrementAsset.getBBox().height * this.assetScale) + 10
                         xVal = xOffset
                     }
                     
@@ -215,11 +210,10 @@ export function decomposeNumber(_els, _setup) {
                     this.translateObject(decrementText, xVal, yVal)
                     this.T.to(decrementText, { duration: 0.5, scale: 0.01 })//scale
 
-                    this.T.set(decrementAsset, { x: xVal, y: yVal, opacity: 1 })
-                    this.T.to(decrementAsset, { scale: this.assetScale, duration: 0.5, onComplete: this.redrawElements}, "<")
+                    this.T.set(decrementAsset, { x: xVal, y: yVal, visibility: "visible" })
+                    this.T.to(decrementAsset, { scale: this.assetScale, duration: 0.5, onComplete: this.redrawElements})
                     decrementNumID++;
-                    
-                    xVal += (parseInt(decrementAsset.getAttribute("width"))) * this.assetScale + 10
+                    xVal += (decrementAsset.getBBox().width * this.assetScale) + 10
                     maxXVal = Math.max(maxXVal,xVal)//keep track of the furthest xValue
                     assetRowCount[decrementVal]++;
 
@@ -232,7 +226,6 @@ export function decomposeNumber(_els, _setup) {
                         xOffset = maxXVal + 25 //set x to furthest x
                         xVal = xOffset
                     }
-
                 }
                 this.animationFinished = true;
             }
