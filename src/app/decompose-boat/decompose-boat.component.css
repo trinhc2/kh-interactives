@@ -4,7 +4,7 @@
   user-select: none;
 }
 
-#numberDisplay, #num, #buttons, #slider, #goButton, #restart {
+#numberDisplay, #num, #buttons g, #slider, #goButton, #restart {
   cursor: pointer;
   pointer-events: bounding-box;
 }

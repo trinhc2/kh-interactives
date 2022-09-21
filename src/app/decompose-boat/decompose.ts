@@ -38,8 +38,8 @@ export function decomposeNumber(_els, _setup) {
     maxText: SVGSVGElement
     sliderOpen = false;
     increment: number
-    max = 22222;
-    min = 0
+    sliderMax = 50000;
+    sliderMin = 0
     //#endregion
 
     constructor(els, setup) {
@@ -205,7 +205,7 @@ export function decomposeNumber(_els, _setup) {
           if (assetRowCount[decrementVal] == 3) {//if we have filled row with 3 objects of unique type then proceed to next row
             assetRowCount[decrementVal] = 0;
             yVal += ((assetBBox).height) + 10
-            xVal -= ((assetBBox.width) + 2) * 3
+            xVal -= ((assetBBox.width) + 3) * 3
           }
 
           this.hideObject(currentNum, 0);
@@ -220,7 +220,7 @@ export function decomposeNumber(_els, _setup) {
           this.T.to(decrementText, { duration: 0.5, scale: 0.01 })//scale
 
           this.T.set(decrementAsset, { x: xVal, y: yVal, visibility: "visible" })
-          this.T.to(decrementAsset, {scale: 1, duration: 0.5, onComplete: this.redrawElements })
+          this.T.to(decrementAsset, { scale: 1, duration: 0.5, onComplete: this.redrawElements })
 
           decrementNumID++;
           xVal += (assetBBox.width) + 3
@@ -264,7 +264,7 @@ export function decomposeNumber(_els, _setup) {
       this.animationFinished = false
       this.animationStarted = false
       this.sliderOpen = false
-      this.sliderValueHasBeenUpdated(self.min);
+      this.sliderValueHasBeenUpdated(self.sliderMin);
       this.T.resume()
 
     }
@@ -274,8 +274,8 @@ export function decomposeNumber(_els, _setup) {
     inputFieldPressed() {
       if (!this.sliderOpen && !this.animationFinished) {
         if (this.num.style.display == "none") {
-          this.num.textContent = String(this.min)
-          this.numValue = this.min
+          this.num.textContent = String(this.sliderMin)
+          this.numValue = this.sliderMin
           this.num.style.display = "block"
         }
         gsap.set(this.num, { x: -(this.num.getBBox().width / 2) })
@@ -290,13 +290,13 @@ export function decomposeNumber(_els, _setup) {
 
     buttonPressed(button) {
       let newNumber = parseInt(this.num.textContent) + parseInt(button.getAttribute("val"))
-      if (newNumber > this.max) {
-        newNumber = this.max
+      if (newNumber > this.sliderMax) {
+        newNumber = this.sliderMax
       }
-      else if (newNumber < this.min) {
-        newNumber = this.min
+      else if (newNumber < this.sliderMin) {
+        newNumber = this.sliderMin
       }
-      if (newNumber <= this.max && newNumber >= this.min) {
+      if (newNumber <= this.sliderMax && newNumber >= this.sliderMin) {
         this.sliderValueHasBeenUpdated(newNumber)
       }
     }
@@ -305,7 +305,7 @@ export function decomposeNumber(_els, _setup) {
       this.num.textContent = value
       this.numValue = value
       gsap.set(this.num, { x: -(this.num.getBBox().width / 2) })
-      gsap.set(this.slider, { x: this.increment * (value - this.min) })
+      gsap.set(this.slider, { x: this.increment * (value - this.sliderMin) })
     }
 
     addEventListenersAndInteractivity() {
@@ -331,7 +331,7 @@ export function decomposeNumber(_els, _setup) {
           controllerDraggable[0].disable()
         },
         onDrag: function () {
-          self.sliderValueHasBeenUpdated(Math.round(this.x / self.increment) + Number(self.min))
+          self.sliderValueHasBeenUpdated(Math.round(this.x / self.increment) + Number(self.sliderMin))
         },
         onDragEnd: function () {
           controllerDraggable[0].enable()
@@ -349,15 +349,15 @@ export function decomposeNumber(_els, _setup) {
 
       //calculating increments for slider
       let barWidth = Math.round(this.sliderBar.getBBox().width - this.slider.getBBox().width)
-      this.increment = barWidth / (this.max - this.min);
+      this.increment = barWidth / (this.sliderMax - this.sliderMin);
 
       gsap.set(this.sliderControls, { display: "none" })
       gsap.set(this.num, { display: "none" })
 
       //setting slider max and mins and repositioning the max
-      this.els.getElementById("maxTextInner").textContent = String(this.max)
+      this.els.getElementById("maxText").textContent = String(this.sliderMax)
       gsap.set(this.maxText, { x: `-=${this.maxText.getBBox().width}` })
-      this.els.getElementById("minTextInner").textContent = String(this.min)
+      this.els.getElementById("minText").textContent = String(this.sliderMin)
 
       this.addEventListenersAndInteractivity()
     }
