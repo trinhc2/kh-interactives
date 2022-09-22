@@ -108,7 +108,9 @@ export function zoomAPI(_els, _setup) {
             var pt = this.fetchedSVG.createSVGPoint()
             pt.x = e.clientX
             pt.y = e.clientY
+            console.log(pt)
             pt = pt.matrixTransform(this.fetchedSVG.getScreenCTM().inverse())
+            console.log(pt)
 
             this.dragStart.x = pt.x
             this.dragStart.y = pt.y
