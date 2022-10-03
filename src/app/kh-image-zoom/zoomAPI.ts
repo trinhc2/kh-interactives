@@ -31,6 +31,7 @@ export function zoomAPI(_els, _setup) {
             this.els = els
             this.gsvgu = els[0]
             this.setup = setup
+            this.fetchedSVG = els[1]
             //this.gsvgu = els[1]
 
             this.zoomIn = this.gsvgu.getElementById("zoomIn") as SVGSVGElement
@@ -177,7 +178,7 @@ export function zoomAPI(_els, _setup) {
         async init() {
             gsap.set(this.ui, { x: 250 - this.ui.getBBox().x - this.ui.getBBox().width / 2, y: 450 - this.ui.getBBox().y })
 
-            await this.getSVG()// need this to finish because it sets the fetched svg to the class
+            //await this.getSVG()// need this to finish because it sets the fetched svg to the class
 
             let baseViewbox = this.fetchedSVG.viewBox["baseVal"]
 

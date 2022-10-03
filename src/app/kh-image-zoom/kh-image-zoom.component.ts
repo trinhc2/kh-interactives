@@ -26,7 +26,7 @@ export class KhImageZoomComponent implements AfterViewInit {
       backgroundColor: this.backgroundColor
     } as zoomSetup
 
-    const els = [this.upperRenderEl.nativeElement]
+    const els = [this.upperRenderEl.nativeElement, this.lowerRenderEl.nativeElement]
 
     const interactive = zoomAPI(els, setup)
 
