@@ -40,3 +40,9 @@ svg {
 #zoomOut:hover path, #zoomIn:hover path, #zoomOut:hover circle, #zoomIn:hover circle {
     stroke: #c3e7b3 !important;
 }
+
+button {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+}

@@ -26,6 +26,9 @@ import { Moongame1Component } from './moongame1/moongame1.component';
 import { MoonfactoryComponent } from './moonfactory/moonfactory.component'
 import {MatCardModule} from '@angular/material/card';
 import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatDialogModule} from '@angular/material/dialog';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; 
 import { MoonGameContainerComponent } from './moon-game-container/moon-game-container.component';
 import { HundredsChartOverlapComponent } from './hundreds-chart-overlap/hundreds-chart-overlap.component';
 import { MultiplicationChartComponent } from './multiplication-chart/multiplication-chart.component'
@@ -85,10 +88,16 @@ import { DecomposeBoatComponent } from './decompose-boat/decompose-boat.componen
     AppRoutingModule,
     MatCardModule,
     MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    BrowserAnimationsModule
   ],
   exports: [
     MatCardModule,
     MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    BrowserAnimationsModule
     
     ],
   providers: [],

@@ -1,5 +1,6 @@
 import { Component, ElementRef, Input, AfterViewInit, ViewChild, Output, EventEmitter } from '@angular/core';
 import { farmAPI, farmSetup} from "./khFarmTrailerAPI"
+import {MatDialog} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-kh-farm-trailer',
@@ -10,7 +11,7 @@ export class KhFarmTrailerComponent implements AfterViewInit {
   @ViewChild('lowerRenderEl') public lowerRenderEl?: ElementRef<SVGSVGElement>;
   @ViewChild('upperRenderEl') public upperRenderEl?: ElementRef<SVGSVGElement>;
 
-  constructor() { }
+  constructor(public dialog: MatDialog) { }
 
   @Input()
   private width: number = 500
@@ -52,4 +53,15 @@ export class KhFarmTrailerComponent implements AfterViewInit {
 
   }
 
+  openDialog(){
+    console.log("click!")
+    this.dialog.open(DialogContent)
+  }
+
 }
+
+@Component({
+  selector: 'dialog-content',
+  templateUrl: 'dialog-content.html',
+})
+export class DialogContent {}
