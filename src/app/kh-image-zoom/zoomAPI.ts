@@ -1,8 +1,13 @@
 import { gsap } from "gsap/all"
 
+const svgns = 'http://www.w3.org/2000/svg'
+
 export interface zoomSetup {
     image: string
     backgroundColor: string
+    width: string
+    height: string
+    viewBox: string
 }
 
 export function zoomAPI(_els, _setup) {
@@ -32,7 +37,6 @@ export function zoomAPI(_els, _setup) {
             this.gsvgu = els[0]
             this.setup = setup
             this.fetchedSVG = els[1]
-            //this.gsvgu = els[1]
 
             this.zoomIn = this.gsvgu.getElementById("zoomIn") as SVGSVGElement
             this.zoomOut = this.gsvgu.getElementById("zoomOut") as SVGSVGElement
@@ -133,19 +137,6 @@ export function zoomAPI(_els, _setup) {
             this.isDragging = false;
         }
 
-        getSVG() {
-            //https://stackoverflow.com/questions/45240363/can-i-use-javascript-fetch-to-insert-an-inline-svg-in-the-dom
-            let el = document.querySelector("#lowerRender")
-            return fetch(this.setup.image)
-                .then(r => r.text())
-                .then(text => {
-                    el.innerHTML = text;
-                    self.fetchedSVG = el.querySelector('svg')
-                })
-                .catch(console.error.bind(console));
-
-        }
-
         //pre calculating the zoom increments because doing it dynamically is not consistent with alternating zoom in and zoom out
         //storing the increments for zooming in and out in the same array, first 11 are for zooming out, last 11 are for zooming in
         calculateZoomIncrements() {
@@ -175,10 +166,22 @@ export function zoomAPI(_els, _setup) {
             }
         }
 
-        async init() {
+        init() {
             gsap.set(this.ui, { x: 250 - this.ui.getBBox().x - this.ui.getBBox().width / 2, y: 450 - this.ui.getBBox().y })
 
-            //await this.getSVG()// need this to finish because it sets the fetched svg to the class
+            //set lower svg viewbox and width/height
+            gsap.set(this.fetchedSVG, {attr: {viewBox: this.setup.viewBox, width: this.setup.width, height: this.setup.height}})
+
+            //add image to defs
+            const image = document.createElementNS(svgns, 'image')
+            gsap.set(image, {attr: {id: "fetchedImage", href: this.setup.image }})
+            this.fetchedSVG.querySelector('defs').append(image)
+            console.log("svg", this.fetchedSVG)
+
+            //render element to screen
+            let use = document.createElementNS(svgns, 'use')
+            gsap.set(use, {attr: {href: "#fetchedImage"}})
+            this.fetchedSVG.appendChild(use)
 
             let baseViewbox = this.fetchedSVG.viewBox["baseVal"]
 
