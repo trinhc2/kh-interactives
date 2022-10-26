@@ -1,737 +1,842 @@
-import { gsap, Draggable } from "gsap/all"
+import { Draggable, gsap } from 'gsap/all'
 
+const svgns = 'http://www.w3.org/2000/svg'
 
-export interface farmSetup {
-    height: number
-    width: number
-    plotHeight: number
-    plotWidth: number
-    plotColor: string
-    lineColor: string
-    crop: string
+export interface FarmSetup {
+  type: string
 }
 
-export function farmAPI(els: SVGSVGElement[], setup: farmSetup) {
-    let self = {} as farmClass
-
-    class farmClass {
-        els: (SVGSVGElement)[]
-        gsvg: SVGSVGElement
-        gsvgu: SVGSVGElement
-        setup: farmSetup;
-        svgns: string;
-        outerLineStrokeWidth = 2;
-        innerLineStrokeWidth = 1;
-        plotBBox: any;
-        plotIncrementHeight: number;
-        plotIncrementWidth: number;
-        borderGroup: SVGSVGElement
-        tensGroup: SVGSVGElement
-        hundredsGroup: SVGSVGElement
-        thousandsGroup: SVGSVGElement
-        farmGroup: SVGSVGElement
-        largeCombine: SVGSVGElement
-        largeCombineText: SVGSVGElement
-        gridState: SVGSVGElement
-        pointerState: SVGSVGElement
-        zoomControls: SVGSVGElement
-        plantButton: SVGSVGElement
-        moveButton: SVGSVGElement
-        zoomLevel = 0
-        plotArray = Array.from(Array(20), () => new Array(50))
-        isDragging = false;
-        dragEnabled = false;
-        dragStart = { x: 0, y: 0 }
-        svgDefaultWidthHeight = 500
-        TL = gsap.timeline()
-        cropsHarvested = 0
-        harvestDuration = 5
-        lastHarvestedIndex: number
-        harvestTotalText: SVGSVGElement
-        harvestTotalBox: SVGSVGElement
-        largeCombineDraggable: any
-        animationPlaying = false
-        bedsButton: SVGSVGElement
-        plotsButton: SVGSVGElement
-        rowsButton: SVGSVGElement
-        trailerCrop: SVGSVGElement
-        trailerCropScale = 0;
-        trailerCropID = 1
-        barnCounterText: SVGSVGElement
-        cropsDeposited = 0
-        depositAnimating = false
-        plantAnimating = false
-        pause = false
-        didUserDrag = false //for deposit, event is on pointer up so checks if the user dragged before firing event, to differentiate between drag and click.
-        isCombineSnapped = false
-        snappedIndex = 0
-
-        zoomIncrementX: number[] = []
-        zoomIncrementY: number[] = []
-        zoomOutLevels = 2
-        zoomInLevels = 13
-
-        plotHREF: string
-        singleHREF: string
-        trailerHREF: string
-
-        constructor(els, setup) {
-            self = this
-            this.els = els
-            this.gsvg = els[0]
-            this.gsvgu = els[1]
-            this.setup = setup
-            this.svgns = "http://www.w3.org/2000/svg";
-            this.borderGroup = this.gsvg.getElementById("border") as SVGSVGElement
-            this.tensGroup = this.gsvg.getElementById("tens") as SVGSVGElement
-            this.hundredsGroup = this.gsvg.getElementById("hundreds") as SVGSVGElement
-            this.thousandsGroup = this.gsvg.getElementById("thousands") as SVGSVGElement
-            this.farmGroup = this.gsvg.getElementById("farmGroup") as SVGSVGElement
-            this.largeCombine = this.gsvg.getElementById("largeCombine") as SVGSVGElement
-            this.largeCombineText = this.gsvg.getElementById("largeCombineText") as SVGSVGElement
-            this.plantButton = this.gsvgu.getElementById("plant") as SVGSVGElement
-            this.moveButton = this.gsvgu.getElementById("move") as SVGSVGElement
-            this.pointerState = this.plantButton
-            this.harvestTotalText = this.gsvg.getElementById("harvestTotalText") as SVGSVGElement
-            this.harvestTotalBox = this.gsvg.getElementById("harvestTotalBox") as SVGSVGElement
-            this.zoomControls = this.gsvgu.getElementById("zoomControls") as SVGSVGElement
-            this.bedsButton = this.gsvgu.getElementById("beds") as SVGSVGElement
-            this.plotsButton = this.gsvgu.getElementById("plots") as SVGSVGElement
-            this.rowsButton = this.gsvgu.getElementById("rows") as SVGSVGElement
-            this.gridState = this.bedsButton
-
-            this.init()
-        }
-
-        //generates lines of the plot
-        generateLines(): void {
-            //draw outer lines
-            for (let i = 0; i < 11; i++) {
-                let x = i * this.plotIncrementWidth
-                let y = i * this.plotIncrementHeight
-
-                let verticalLine = document.createElementNS(this.svgns, "line")
-                gsap.set(verticalLine, { attr: { x1: x, y1: this.plotBBox.y - this.outerLineStrokeWidth / 2, x2: x, y2: this.plotBBox.height + this.outerLineStrokeWidth / 2, stroke: this.setup.lineColor }, strokeWidth: this.outerLineStrokeWidth })
-
-                let horizontalLine = document.createElementNS(this.svgns, "line")
-                gsap.set(horizontalLine, { attr: { x1: this.plotBBox.x, y1: y, x2: this.plotBBox.width, y2: y, stroke: this.setup.lineColor }, strokeWidth: this.outerLineStrokeWidth })
-
-                //append lines to border group if applicable
-                if (i == 10 || i == 0) {
-                    this.borderGroup.appendChild(verticalLine)
-                    this.borderGroup.appendChild(horizontalLine)
-                }
-                else {
-                    this.tensGroup.appendChild(horizontalLine)
-                    this.hundredsGroup.appendChild(verticalLine)
-                }
-
-                //we skip drawing inner lines for the last iteration
-                if (i < 10) {
-                    //draw inner lines
-                    for (let j = 1; j < 5; j++) {
-                        let innerGridIncrementX = (this.plotIncrementWidth - this.outerLineStrokeWidth) / 5;
-                        let innerVerticalLine = document.createElementNS(this.svgns, "line")
-                        gsap.set(innerVerticalLine, { attr: { x1: x + innerGridIncrementX * j + this.outerLineStrokeWidth / 2, y1: this.plotBBox.y, x2: x + innerGridIncrementX * j + this.outerLineStrokeWidth / 2, y2: this.plotBBox.height, stroke: this.setup.lineColor }, strokeWidth: this.innerLineStrokeWidth })
-                        this.thousandsGroup.appendChild(innerVerticalLine)
-                    }
-                    let innerGridIncrementY = this.plotIncrementHeight / 2
-                    let innerHorizontalLine = document.createElementNS(this.svgns, "line")
-                    gsap.set(innerHorizontalLine, { attr: { x1: this.plotBBox.x, y1: y + innerGridIncrementY, x2: this.plotBBox.width, y2: y + innerGridIncrementY, stroke: this.setup.lineColor }, strokeWidth: this.innerLineStrokeWidth })
-                    this.thousandsGroup.appendChild(innerHorizontalLine)
-                }
-            }
-        }
-
-        //pre-fills plots with crop pngs
-        fillPlot(): void {
-
-            let innerGridIncrementX = this.plotIncrementWidth / 5;
-            let innerGridIncrementY = this.plotIncrementHeight / 2
-
-            for (let index = 0; index < 20; index++) {
-                for (let jIndex = 50; jIndex > 0; jIndex--) {
-                    //console.log(temp)
-                    let plotArrayI = 19 - index
-                    let plotArrayJ = jIndex - 1
-
-                    let xVal = (50 - jIndex) * (innerGridIncrementX) + (1 - ((50 - jIndex) % 5) * 0.2)
-                    let yVal = (index) * (innerGridIncrementY) + (0.8 - (index % 2) * 0.5)
-                    let rectID = `${plotArrayI}-${plotArrayJ}`
-
-                    //animate flower
-                    let png = document.createElementNS(this.svgns, "use")
-                    gsap.set(png, { attr: { id: rectID, href: self.plotHREF }, x: xVal, y: yVal, scaleX: 0, scaleY: 0.24, visibility: "hidden" })
-                    this.gsvg.getElementById("fill").appendChild(png)
-                    //temp.to(png, { scaleX: 0.22, duration: 1 }, "<")
-
-                    this.plotArray[plotArrayI][plotArrayJ] = png
-                }
-            }
-        }
-
-        handlePointerDown(e: PointerEvent): void {
-            //if user has screen drag enabled
-            if (this.dragEnabled && !this.animationPlaying) {
-                //start screen drag
-                var pt = this.gsvg.createSVGPoint()
-                pt.x = e.clientX
-                pt.y = e.clientY
-                pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse())
-
-                this.dragStart.x = pt.x
-                this.dragStart.y = pt.y
-                this.isDragging = true;
-            }
-            //else we pause the animation if playing
-            else if (this.animationPlaying) {
-                if (this.pause) {
-                    this.TL.resume()
-                    this.pause = false
-                }
-                else {
-                    this.TL.pause()
-                    this.pause = true
-                }
-            }
-        }
-
-        whileDrag(e: PointerEvent): void {
-            if (this.isDragging && !this.animationPlaying) {
-                //update screen drag
-                let baseViewbox = this.gsvg.viewBox["baseVal"]
-                var pt = this.gsvg.createSVGPoint()
-                pt.x = e.clientX
-                pt.y = e.clientY
-                pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse())
-                gsap.set(this.gsvg, { attr: { viewBox: `${baseViewbox["x"] + (this.dragStart.x - pt.x)} ${baseViewbox["y"] + (this.dragStart.y - pt.y)} ${baseViewbox["width"]} ${baseViewbox["height"]}` } });
-            }
-        }
-
-        endDrag(): void {
-            this.isDragging = false;
-        }
-
-        plantOrRemoveFlower(e: PointerEvent): void {
-            if (this.pointerState == this.plantButton && !this.plantAnimating && !this.animationPlaying) {
-                var i;
-                var j;
-
-                //this.plantAnimating = true
-
-                //Calculate original point
-                var pt = this.gsvg.createSVGPoint()
-                pt.x = e.clientX
-                pt.y = e.clientY
-                pt = pt.matrixTransform(this.farmGroup.getScreenCTM()!.inverse())
-
-                //checks bounds so that rects cannot be placed outside of plot
-                if (pt.x < 0) {
-                    pt.x = 0
-                }
-                else if (pt.x > this.setup.plotHeight) {
-                    pt.x = this.setup.plotHeight - 1
-                }
-                if (pt.y < 0) {
-                    pt.y = 0
-                }
-                else if (pt.y > this.setup.plotWidth) {
-                    pt.y = this.setup.plotWidth - 1
-                }
-                //console.log("point after inverse", pt)
-
-                let innerGridIncrementX = this.plotIncrementWidth / 5;
-                let innerGridIncrementY = this.plotIncrementHeight / 2
-
-                //current grid is rotated for plant/harvest animation, (0,0 is actually 19,49)
-                i = 19 - Math.floor(pt.y / innerGridIncrementY);
-                j = 49 - Math.floor(pt.x / innerGridIncrementX)
-
-
-                //if element exists where clicking, remove it
-                if (this.plotArray[i][j]) {
-                    let timeline = gsap.timeline()
-                    if (this.gridState == this.bedsButton) { //if working with beds
-                        if (self.plotArray[i][j].style.visibility == "hidden") {//if current bed is hidden, unhide it
-                            gsap.set(this.plotArray[i][j], { visibility: "visible", })
-                            gsap.to(this.plotArray[i][j], { scaleX: 0.22, duration: 1, })
-                        }
-                        else {//else hide it
-                            gsap.to(this.plotArray[i][j], { scaleX: 0, duration: 1, })
-                            gsap.set(this.plotArray[i][j], { visibility: "hidden", delay: 1 })
-                        }
-
-                    }
-                    else if (this.gridState == this.plotsButton) {//if working with plots
-                        if (self.plotArray[i][j].style.visibility == "hidden") {//if current bed is hidden, unhide it
-                            let index = Math.floor(i / 2) * 2
-                            for (let jIndex = Math.floor(j / 5) * 5 + 4; jIndex >= Math.floor(j / 5) * 5; jIndex--) {
-                                timeline.set(this.plotArray[index][jIndex], { visibility: "visible" }, "<+=0.05")
-                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0.22, duration: 1, }, "<")
-
-                                timeline.set(this.plotArray[index + 1][jIndex], { visibility: "visible" }, "<")
-                                timeline.to(this.plotArray[index + 1][jIndex], { scaleX: 0.22, duration: 1, }, "<")
-                            }
-
-                        }
-                        else {//else hide it
-                            let index = Math.floor(i / 2) * 2
-                            for (let jIndex = Math.floor(j / 5) * 5; jIndex < Math.floor(j / 5) * 5 + 5; jIndex++) {
-                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0, duration: 1, onComplete: function () { timeline.set(self.plotArray[index][jIndex], { visibility: "hidden" }) } }, "<+=0.05",)
-                                timeline.to(this.plotArray[index + 1][jIndex], { scaleX: 0, duration: 1, onComplete: function () { timeline.set(self.plotArray[index + 1][jIndex], { visibility: "hidden" }) } }, "<")
-                            }
-
-                        }
-                    }
-                    else {//else (working with rows)
-                        if (self.plotArray[i][j].style.visibility == "hidden") {//if current row is hidden, unhide it
-                            let index = Math.floor(i / 2) * 2
-                            for (let jIndex = 49; jIndex >= 0; jIndex--) {
-                                timeline.set(this.plotArray[index][jIndex], { visibility: "visible" }, "<+=0.02")
-                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0.22, duration: 1, }, "<")
-
-                                timeline.set(this.plotArray[index + 1][jIndex], { visibility: "visible" }, "<")
-                                timeline.to(this.plotArray[index + 1][jIndex], { scaleX: 0.22, duration: 1, }, "<")
-                            }
-
-                        }
-                        else {//else hide it
-                            let index = Math.floor(i / 2) * 2
-                            for (let jIndex = 0; jIndex < 50; jIndex++) {
-                                timeline.to(this.plotArray[index][jIndex], { scaleX: 0, duration: 1, onComplete: function () { timeline.set(self.plotArray[index][jIndex], { visibility: "hidden" }) } }, "<+=0.02",)
-                                timeline.to(this.plotArray[index + 1][jIndex], { scaleX: 0, duration: 1, onComplete: function () { timeline.set(self.plotArray[index + 1][jIndex], { visibility: "hidden" }) } }, "<")
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-
-        handlePlay(): void {
-            if (!self.animationPlaying && self.isCombineSnapped) {
-                var largept = this.gsvg.createSVGPoint()
-
-                //calculating end position
-                largept.x = self.largeCombineDraggable[0].x
-                largept.y = self.largeCombineDraggable[0].y
-
-                //current point is transformed 1.farmgroup 2. screenMatrix inverse
-                largept = largept.matrixTransform(self.gsvg.getScreenCTM()!) //undo screenmatrix to get position relative to farm
-                largept = largept.matrixTransform(self.farmGroup.getScreenCTM()!.inverse()) //undo farmgroup to calculate end position
-
-                largept.x -= self.setup.plotWidth + this.largeCombine.getBBox().width / 2 + 5
-
-                largept = largept.matrixTransform(self.farmGroup.getScreenCTM()!)
-                largept = largept.matrixTransform(self.gsvg.getScreenCTM()!.inverse())
-
-                //prevent combine from being draggable after animation start
-                self.largeCombineDraggable[0].disable()
-
-                //pre calculating the two rows to be harvested
-                let preCount = 0;
-
-                const arr: any[] = []//creating array of crop elements to be harvested
-                for (let j = 0; j < 50; j++) {
-                    let el1 = this.plotArray[Math.floor(self.snappedIndex * 2 / 2) * 2][j]
-                    let el2 = this.plotArray[Math.floor(self.snappedIndex * 2 / 2) * 2 + 1][j]
-
-                    if (el1.style.visibility == "visible") {
-                        preCount += 0.001
-                    }
-                    if (el2.style.visibility == "visible") {
-                        preCount += 0.001
-                    }
-                    let temp = [el1, el2]
-                    //console.log(temp)
-                    arr.push(temp)
-                }
-
-                let postCount = self.cropsHarvested + preCount
-
-                //animate combine
-                self.TL.to(self.largeCombineText, {
-                    x: largept.x, y: largept.y, duration: self.harvestDuration, ease: "linear",
-                    onComplete: function () {
-                        self.animationPlaying = false;
-                        self.largeCombineDraggable[0].enable()
-                        self.isCombineSnapped = false
-
-                        if (self.cropsHarvested != postCount) {//update harvest number if off
-                            self.cropsHarvested = postCount
-                            self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3))
-                            gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
-                        }
-                    }
-                })
-
-                //animate entire row of crops that the combine is placed on
-                arr.forEach(e => {
-                    self.TL.to(e, {
-                        scaleX: 0, duration: (self.harvestDuration - 1) / 50 + 0.002, delay: 0.001,
-                        onStart: function () {
-                            if (self.trailerCropScale >= 0.8 && self.trailerCropID < 10) {//if the trailer crop has reached full size, move onto the next trailer crop png
-                                self.trailerCropScale = 0;
-                                self.trailerCropID++
-                                self.trailerCrop = self.gsvg.getElementById("crop" + self.trailerCropID) as SVGSVGElement
-                            }
-                            if (e[0].style.visibility == "visible") {//if subrow 1 crop element is visible
-                                self.cropsHarvested += 0.001 //increment harvest count
-                                self.trailerCropScale += 0.008 //increment trailer crop scale
-                                if (self.trailerCropID <= 10 && self.trailerCropScale <= 0.8) {
-                                    gsap.set(self.trailerCrop, { scaleX: self.trailerCropScale, scaleY: self.trailerCropScale })//actually update scale of trailer crop
-                                }
-                            }
-                            if (e[1].style.visibility == "visible") {//if subrow 2 crop element is visible
-                                self.cropsHarvested += 0.001
-                                self.trailerCropScale += 0.008
-                                if (self.trailerCropID <= 10 && self.trailerCropScale <= 0.8) {
-                                    gsap.set(self.trailerCrop, { scaleX: self.trailerCropScale, scaleY: self.trailerCropScale })
-                                }
-                            }
-                            //update harvested text
-                            self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3))
-                            gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
-                        },
-                        onComplete: function () { gsap.set(e, { visibility: "hidden" }) }
-                    }, `<+=${(self.harvestDuration - 1) / 50 + 0.002}`)
-                })
-                self.animationPlaying = true;
-            }
-            else {
-                alert("Move the orange combine into place.")
-            }
-        }
-
-        handleZoomIn(): void {
-            if (!this.animationPlaying) {
-                let index = this.zoomOutLevels
-
-                if (this.zoomLevel < 0) {
-                    index = Math.abs(this.zoomLevel) - 1 //use the index-1 if we are already zoomed out
-                }
-                else if (this.zoomLevel > 0) {
-                    index = this.zoomLevel + this.zoomOutLevels
-                }
-                if (this.zoomLevel < this.zoomInLevels - 1) {
-                    let baseViewbox = this.gsvg.viewBox["baseVal"]
-    
-                    let offsetX = (250 - baseViewbox["width"] / 2)
-                    let offsetY = (250 - baseViewbox["height"] / 2)
-    
-                    let width = Math.max((baseViewbox["width"] - this.zoomIncrementX[index]), 3)
-                    let height = Math.max((baseViewbox["height"] - this.zoomIncrementY[index]), 3)
-    
-                    let x = (250 - width / 2) + (baseViewbox["x"] - offsetX)
-                    let y = (250 - height / 2) + (baseViewbox["y"] - offsetY)
-
-                    gsap.to(this.gsvg, { duration: 0, attr: { viewBox: `${x} ${y} ${width} ${height}` } });
-                    this.zoomLevel++
-                }
-            }
-        }
-
-        handleZoomOut(): void {
-            if (!this.animationPlaying) {
-                let index = 0
-                if (this.zoomLevel < 0) {
-                    index = Math.abs(this.zoomLevel)
-                }
-                else if (this.zoomLevel > 0) {
-                    index = this.zoomLevel + this.zoomOutLevels - 1 //use the index-1 if we are already zoomed in 
-                }
-                if (this.zoomLevel > -this.zoomOutLevels) {
-                    let svgBBox = this.gsvg.getBoundingClientRect()
-                    let baseViewbox = this.gsvg.viewBox["baseVal"]
-    
-                    let offsetX = (250 - baseViewbox["width"] / 2)
-                    let offsetY = (250 - baseViewbox["height"] / 2)
-    
-                    let width = (baseViewbox["width"] + this.zoomIncrementX[index])
-                    let height = (baseViewbox["height"] + this.zoomIncrementY[index])
-    
-                    let x = (250 - width / 2) + (baseViewbox["x"] - offsetX)
-                    let y = (250 - height / 2) + (baseViewbox["y"] - offsetY)
-
-                    gsap.to(this.gsvg, { duration: 0, attr: { viewBox: `${x} ${y} ${width} ${height}` } });
-
-                    //gsap.to(this.gsvg, { duration: 0, attr: { viewBox: `${(baseViewbox["x"] - this.zoomIncrement / 2 - svgBBox.x)} ${(baseViewbox["y"] - this.zoomIncrement / 2 - svgBBox.y)} ${(baseViewbox["width"] + this.zoomIncrement)} ${(baseViewbox["height"] + this.zoomIncrement)}` } });
-                    this.zoomLevel--
-                }
-            }
-        }
-
-        handleGridToggle(element: SVGSVGElement): void {
-            gsap.utils.toArray("rect", this.gridState)[0].style.fill = "#93c47d"
-            this.gridState = element
-            if (this.gridState == this.bedsButton) {
-                gsap.set(this.thousandsGroup, { display: "block" })
-                gsap.set(this.hundredsGroup, { display: "block" })
-                gsap.utils.toArray("rect", this.bedsButton)[0].style.fill = "#c3e7b3"
-            }
-            else if (this.gridState == this.plotsButton) {
-                gsap.set(this.thousandsGroup, { display: "none" })
-                gsap.set(this.hundredsGroup, { display: "block" })
-                gsap.utils.toArray("rect", this.plotsButton)[0].style.fill = "#c3e7b3"
-            }
-            else {
-                gsap.set(this.thousandsGroup, { display: "none" })
-                gsap.set(this.hundredsGroup, { display: "none" })
-                gsap.utils.toArray("rect", this.rowsButton)[0].style.fill = "#c3e7b3"
-            }
-        }
-
-        handlePointerChange(element: SVGSVGElement): void {
-            gsap.utils.toArray("circle", this.pointerState)[0].style.fill = "#93c47d"
-            this.pointerState = element
-            this.dragEnabled = false
-            this.gsvg.style.cursor = "default"
-            this.gsvg.style.touchAction = "auto"
-
-            if (this.pointerState == this.plantButton) {
-                this.farmGroup.style.cursor = "pointer"
-            }
-            else if (this.pointerState == this.moveButton) {
-                this.gsvg.style.touchAction = "pinch-zoom";/*lets pointer events work with mobile. only allowing pinch zoom incase user gets locked out*/
-                this.dragEnabled = true
-                this.gsvg.style.cursor = "move"
-                this.farmGroup.style.cursor = "move"
-
-            }
-            gsap.utils.toArray("circle", this.pointerState)[0].style.fill = "#c3e7b3"
-        }
-
-        handleDeposit(): void {
-            if (!self.animationPlaying && !self.depositAnimating && !self.didUserDrag && self.cropsHarvested > 0) {
-                self.TL.clear() //clear timeline else the animation would be buggy
-
-                self.largeCombineDraggable[0].disable()
-                self.depositAnimating = true
-
-                this.barnCounterText.textContent = String(this.cropsDeposited.toFixed(3))
-                gsap.set(this.barnCounterText, { x: 432 - this.barnCounterText.getBBox().width / 2, y: 125 + this.barnCounterText.getBBox().width / 4 })
-
-                this.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3))
-                gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
-
-                //getting position of combine relative to svg
-                var pt = this.gsvg.createSVGPoint()
-                pt.x = this.largeCombineText.getBoundingClientRect().x
-                pt.y = this.largeCombineText.getBoundingClientRect().y
-                pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse())
-
-                //creating crop elements for deposit animation
-                for (let i = 0; i < Math.ceil(self.cropsHarvested * 10) - 1; i++) {
-                    let crop = document.createElementNS(this.svgns, "use")
-                    self.TL.set(crop, { attr: { href: self.singleHREF }, x: pt.x + 22, y: pt.y + 28 }, "<+=0.1")
-                    this.gsvg.appendChild(crop)
-                    self.TL.to(crop, { x: 367, y: 86, duration: 2, onComplete: function () { crop.remove() } }, "<")
-                }
-
-                //creating the "last" crop element so that we can expand on OnComplete
-                let crop = document.createElementNS(this.svgns, "use")
-                self.TL.set(crop, { attr: { href: self.singleHREF }, x: pt.x + 22, y: pt.y + 28 }, "<")
-                this.gsvg.appendChild(crop)
-                self.TL.to(crop, {
-                    x: 367, y: 86, duration: 2, onComplete: function () {
-                        crop.remove()
-
-                        //update combine and barn numbers
-                        self.cropsDeposited += self.cropsHarvested
-                        self.cropsHarvested = 0;
-                        self.barnCounterText.textContent = String(self.cropsDeposited.toFixed(3))
-                        gsap.set(self.barnCounterText, { x: 432 - self.barnCounterText.getBBox().width / 2, y: 125 + self.barnCounterText.getBBox().width / 4 })
-                        self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3))
-                        gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
-
-                        //reset crop in trailer
-                        gsap.utils.toArray("use", document.getElementById("trailer")).forEach(element => {
-                            gsap.set(element, { scaleX: 0, scaleY: 0 })
-                        })
-                        self.depositAnimating = false
-
-                    }
-                }, "<")
-
-                //reset trailer crop variables
-                self.trailerCropScale = 0;
-                self.trailerCropID = 1
-                self.largeCombineDraggable[0].enable()
-                self.trailerCrop = self.gsvg.getElementById("crop" + self.trailerCropID) as SVGSVGElement
-            }
-        }
-
-        calculateZoomIncrements(): void {
-            let baseViewbox = this.gsvg.viewBox["baseVal"]
-            let lastWidth = baseViewbox["width"]
-            let lastHeight = baseViewbox["height"]
-
-            for (let i = 0; i < this.zoomOutLevels; i++) {
-                let temp = lastWidth / 3;
-                this.zoomIncrementX.push(temp);
-                lastWidth += temp
-
-                temp = lastHeight / 3;
-                this.zoomIncrementY.push(temp);
-                lastHeight += temp
-            }
-
-            lastWidth = baseViewbox["width"]
-            lastHeight = baseViewbox["height"]
-
-            for (let i = 0; i < this.zoomInLevels; i++) {
-                let temp = lastWidth / 3;
-                this.zoomIncrementX.push(temp);
-                lastWidth -= temp
-
-                temp = lastHeight / 3;
-                this.zoomIncrementY.push(temp);
-                lastHeight -= temp
-            }
-        }
-
-        init(): void {
-            gsap.registerPlugin(Draggable)
-
-            //farm plot init
-            let farmPlot = document.createElementNS(this.svgns, "rect")
-            gsap.set(farmPlot, { attr: { id: "farmPlot" }, width: this.setup.plotWidth, height: this.setup.plotHeight, fill: this.setup.plotColor })
-            this.gsvg.getElementById("plot").appendChild(farmPlot)
-
-            this.plotBBox = (this.gsvg.getElementById("farmPlot") as SVGSVGElement).getBBox()
-            this.plotIncrementWidth = this.plotBBox.width / 10;
-            this.plotIncrementHeight = this.plotBBox.height / 10;
-
-            //determine crop
-            if (this.setup.crop.toLowerCase() == "grape"){
-                this.plotHREF = "#plotGrape"
-                this.singleHREF = "#singleGrape"
-                this.trailerHREF = "#trailerGrape"
-            }
-            else {
-                this.plotHREF = "#plotWheat"
-                this.singleHREF = "#singleWheat"
-                this.trailerHREF = "#trailerWheat"
-            }
-
-            //plant icon init
-            let png = document.createElementNS(this.svgns, "use")
-
-            let plantBBox = (this.plantButton as unknown as SVGSVGElement).getBBox()
-
-            gsap.set(png, { attr: {href: self.singleHREF }, scale:1.5})
-            let pngBBox = (png as unknown as SVGSVGElement).getBBox()
-            gsap.set(png, { x: plantBBox.x + plantBBox.width/2 - (pngBBox.width*1.5)/2, y:plantBBox.y + plantBBox.height/2 - (pngBBox.height*1.5)/2})
-            this.plantButton.appendChild(png)
-
-            //generating grid lines
-            this.generateLines()
-            this.fillPlot()
-
-            //zoom calculations
-            this.calculateZoomIncrements()
-
-            //setting colors
-            gsap.set(this.gsvg, { backgroundColor: "rgb(33, 192, 96)" })
-            gsap.utils.toArray("circle", this.plantButton)[0].style.fill = "#c3e7b3"
-            gsap.utils.toArray("rect", this.bedsButton)[0].style.fill = "#c3e7b3"
-
-            //fill-box allows rotation about center
-            gsap.set(this.farmGroup, { transformOrigin: "center", transformBox: "fill-box", rotate: 45, skewX: 165, skewY: 165 })
-            gsap.set(this.farmGroup, { x: 125, y: 100 })
-
-            //combine start pos
-            gsap.set(this.largeCombineText, { x: 60 - this.largeCombineText.getBBox().x, y: 70 - this.largeCombineText.getBBox().y })
-
-            //harvest number init
-            this.harvestTotalText.textContent = "0"
-            gsap.set(this.harvestTotalText, { x: - this.harvestTotalText.getBBox().width / 2 })
-
-            let cropX = -46
-            let cropY = 10
-            let cropid = 1
-            for (let i = 0; i < 5; i++) {
-                let png = document.createElementNS(this.svgns, "use")
-                gsap.set(png, { attr: { id: "crop" + cropid, href: self.trailerHREF }, x: cropX, y: cropY, scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
-                document.getElementById("trailer")!.appendChild(png)
-
-                png = document.createElementNS(this.svgns, "use")
-                gsap.set(png, { attr: { id: "crop" + (cropid + 5), href: self.trailerHREF }, x: (cropX + 10), y: (cropY - 7), scaleX: 0, scaleY: 0, rotate: 45, skewX: 165, skewY: 165 })
-                document.getElementById("trailer")!.appendChild(png)
-                cropX -= 12
-                cropY -= 7
-                cropid++
-            }
-            this.trailerCrop = this.gsvg.getElementById("crop1") as SVGSVGElement
-            var pt = this.gsvg.createSVGPoint()
-
-            let largeCombineSnapPoints: {x:number, y:number}[]  = []
-            for (let i = 1; i < 11; i++) {
-                //for (let i = 1; i < 20; i++) {
-                pt.x = this.setup.plotWidth + this.largeCombineText.getBBox().width + 63
-                //pt.y = ((19 - i) * (this.plotIncrementHeight / 2)) + 20
-                
-                pt.y = (Math.floor((20 - i * 2) / 2) * this.plotIncrementHeight) - 73
-                pt = pt.matrixTransform(this.farmGroup.getScreenCTM())
-                pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse())
-                let temp = { x: pt.x, y: pt.y }
-                console.log(temp)
-                largeCombineSnapPoints.push(temp)
-            }
-
-            this.largeCombineDraggable = Draggable.create(this.largeCombineText, {
-                type: 'x,y',
-                liveSnap: {
-                    points: largeCombineSnapPoints,
-                    radius: 50
-                },
-                onPress: function () {
-                    if (self.pointerState == self.moveButton) {
-                        self.dragEnabled = false
-                    }    
-                },
-                onDragStart: function () {
-                    self.didUserDrag = true
-                },
-                onRelease: function () {
-                    for (let index = 0; index < largeCombineSnapPoints.length; index++) {
-                        if (Math.round(this.x) == Math.round(largeCombineSnapPoints[index].x)) {
-                            self.isCombineSnapped = true
-                            self.snappedIndex = index
-                            break;
-                        }
-                    }
-                    if (self.pointerState == self.moveButton) {
-                        self.dragEnabled = true
-                    }
-                    self.didUserDrag = false
-                }
-            })
-
-            let temp = document.createElementNS(this.svgns, "text") as SVGSVGElement
-            //gsap.set(temp, {textContent: "0.001", rotate: -30, skewX: -30, fontSize: 16, fill: "#ffffff", fontFamily: "arial", fontWeight: 600, x:415, y:132})
-            gsap.set(temp, { textContent: "0", rotate: -30, skewX: -30, fontSize: 16, fill: "#ffffff", fontFamily: "arial", fontWeight: 600, userSelect: "none" })
-            gsap.set(temp, { x: 432 - temp.getBBox().width / 2, y: 125 + temp.getBBox().width / 4 })
-            this.barnCounterText = temp
-            this.gsvg.appendChild(temp)
-
-            //event listeners
-            this.farmGroup.addEventListener("pointerdown", (e: PointerEvent) => { this.plantOrRemoveFlower(e) })
-
-            this.gsvgu.getElementById("zoomIn").addEventListener("pointerdown", () => this.handleZoomIn())
-            this.gsvgu.getElementById("zoomOut").addEventListener("pointerdown", () => this.handleZoomOut())
-
-            this.gsvg.addEventListener("pointerdown", (e: PointerEvent) => this.handlePointerDown(e))
-            this.gsvg.addEventListener("pointermove", (e: PointerEvent) => this.whileDrag(e))
-            this.gsvg.addEventListener("pointerup", () => this.endDrag())
-
-            this.harvestTotalBox.addEventListener("pointerup", () => this.handleDeposit())
-
-            this.gsvgu.getElementById("playButton").addEventListener("pointerdown", () => this.handlePlay())
-
-            gsap.utils.toArray(".pointer").forEach((element: SVGSVGElement) => element.addEventListener("pointerdown", () => this.handlePointerChange(element)))
-            gsap.utils.toArray(".grid").forEach((element: SVGSVGElement) => element.addEventListener("pointerdown", () => this.handleGridToggle(element)))
-        }
+export class FarmClass {
+  private gsvg: SVGSVGElement;
+  private gsvgu: SVGSVGElement;
+  private setup: FarmSetup;
+  private outerLineStrokeWidth = 2;
+  private innerLineStrokeWidth = 1;
+  private plotBBox: { x: number, y: number, width: number, height: number };
+  private plotIncrementHeight: number;
+  private plotIncrementWidth: number;
+  private borderGroup: SVGSVGElement;
+  private tensPlotLinesGroup: SVGSVGElement;
+  private hundredsPlotLinesGroup: SVGSVGElement;
+  private thousandsPlotLinesGroup: SVGSVGElement;
+  private farmGroup: SVGSVGElement;
+  private largeCombine: SVGSVGElement;
+  private largeCombineText: SVGSVGElement;
+  private largeCombineTrailer: SVGSVGElement;
+  private gridState: SVGSVGElement;
+  private pointerState: SVGSVGElement;
+  private plantButton: SVGSVGElement;
+  private moveButton: SVGSVGElement;
+  private zoomLevel = 0;
+  private plotArray = Array.from(Array(20), () => new Array(50));
+  private isDragging = false;
+  private dragEnabled = false;
+  private dragStart = { x: 0, y: 0 };
+  private TL = gsap.timeline();
+  private cropsHarvested = 0;
+  private harvestDuration = 5;
+  private harvestTotalText: SVGSVGElement;
+  private harvestTotalBox: SVGSVGElement;
+  private largeCombineDraggable: Draggable[] = [];
+  private animationPlaying = false;
+  private bedsButton: SVGSVGElement;
+  private plotsButton: SVGSVGElement;
+  private rowsButton: SVGSVGElement;
+  private trailerCrop: SVGSVGElement;
+  private trailerCropScale = 0;
+  private trailerCropID = 1;
+  private barnCounterText: SVGTextElement;
+  private cropsDeposited = 0;
+  private depositAnimating = false;
+  private plantAnimating = false;
+  private pause = false;
+  private didUserDrag = false;
+  private isCombineSnapped = false;
+  private snappedIndex = 0;
+
+  private zoomIncrementX: number[] = [];
+  private zoomIncrementY: number[] = [];
+  private zoomOutLevels = 2;
+  private zoomInLevels = 13;
+
+  private plotHREF: string;
+  private singleHREF: string;
+  private trailerHREF: string;
+
+  private lineColor = 'rgb(52, 128, 104)';
+  private plotColor = 'rgb(140, 254, 140)';
+  private plotHeight = 250;
+  private plotWidth = 250;
+  private combine = false;
+
+  public constructor(lowerRenderEl: SVGSVGElement, upperRenderEl: SVGSVGElement, setup: FarmSetup) {
+    this.gsvg = lowerRenderEl;
+    this.gsvgu = upperRenderEl;
+    this.setup = setup;
+    this.borderGroup = this.findElementLower('border') as SVGSVGElement;
+    this.tensPlotLinesGroup = this.findElementLower('tens') as SVGSVGElement;
+    this.hundredsPlotLinesGroup = this.findElementLower('hundreds') as SVGSVGElement;
+    this.thousandsPlotLinesGroup = this.findElementLower('thousands') as SVGSVGElement;
+    this.farmGroup = this.findElementLower('farmGroup') as SVGSVGElement;
+    this.largeCombine = this.findElementLower('largeCombine') as SVGSVGElement;
+    this.largeCombineText = this.findElementLower('largeCombineText') as SVGSVGElement;
+    this.largeCombineTrailer = this.findElementLower('trailer') as SVGSVGElement
+    this.harvestTotalText = this.findElementLower('harvestTotalText') as SVGSVGElement;
+    this.harvestTotalBox = this.findElementLower('harvestTotalBox') as SVGSVGElement;
+    this.bedsButton = this.findElementUpper('beds') as SVGSVGElement;
+    this.plotsButton = this.findElementUpper('plots') as SVGSVGElement;
+    this.rowsButton = this.findElementUpper('rows') as SVGSVGElement;
+    this.plantButton = this.findElementUpper('plant') as SVGSVGElement;
+    this.moveButton = this.findElementUpper('move') as SVGSVGElement;
+    this.pointerState = this.plantButton;
+    this.gridState = this.bedsButton;
+
+    // determine crop
+    if (this.setup.type.toLowerCase() === 'grape') {
+      this.plotHREF = '#plotGrape';
+      this.singleHREF = '#singleGrape';
+      this.trailerHREF = '#trailerGrape';
     }
-    return new farmClass(els, setup);
+    else {
+      this.plotHREF = '#plotWheat';
+      this.singleHREF = '#singleWheat';
+      this.trailerHREF = '#trailerWheat';
+    }
+
+    this.init();
+  }
+
+  private findElementLower(id: string): SVGSVGElement {
+    return this.gsvg.getElementById(id) as SVGSVGElement
+  }
+
+  private findElementUpper(id: string): SVGSVGElement {
+    return this.gsvgu.getElementById(id) as SVGSVGElement
+  }
+
+  private createLineElement(): SVGLineElement {
+    return document.createElementNS(svgns, 'line') as SVGLineElement
+  }
+
+  private createRectElement(): SVGRectElement {
+    return document.createElementNS(svgns, 'rect') as SVGRectElement
+  }
+
+  private createUseElement(): SVGUseElement {
+    return document.createElementNS(svgns, 'use') as SVGUseElement
+  }
+
+  private setupLinePair(index: number): Node[] {
+    const x = index * this.plotIncrementWidth;
+    const y = index * this.plotIncrementHeight;
+
+    const verticalLine = this.createLineElement();
+    gsap.set(verticalLine, {
+      attr: {
+        stroke: this.lineColor,
+        x1: x,
+        x2: x,
+        y1: this.plotBBox.y - this.outerLineStrokeWidth / 2,
+        y2: this.plotBBox.height + this.outerLineStrokeWidth / 2
+      },
+      strokeWidth: this.outerLineStrokeWidth
+    });
+    const horizontalLine = this.createLineElement();
+    gsap.set(horizontalLine, {
+      attr: { stroke: this.lineColor, x1: this.plotBBox.x, x2: this.plotBBox.width, y1: y, y2: y },
+      strokeWidth: this.outerLineStrokeWidth
+    });
+
+    return [verticalLine, horizontalLine];
+  }
+
+  private setupInnerLines(index: number): void {
+    const x = index * this.plotIncrementWidth;
+    const y = index * this.plotIncrementHeight;
+
+    // draw inner lines
+    for (let j = 1; j < 5; j++) {
+
+      const innerGridIncrementX = (this.plotIncrementWidth - this.outerLineStrokeWidth) / 5;
+      const innerVerticalLine = this.createLineElement();
+      gsap.set(innerVerticalLine, {
+        attr: {
+          stroke: this.lineColor,
+          x1: x + innerGridIncrementX * j + this.outerLineStrokeWidth / 2,
+          x2: x + innerGridIncrementX * j + this.outerLineStrokeWidth / 2,
+          y1: this.plotBBox.y, y2: this.plotBBox.height
+        },
+        strokeWidth: this.innerLineStrokeWidth
+      });
+      this.thousandsPlotLinesGroup.appendChild(innerVerticalLine);
+    }
+    const innerGridIncrementY = this.plotIncrementHeight / 2;
+    const innerHorizontalLine = this.createLineElement();
+    gsap.set(innerHorizontalLine, {
+      attr: {
+        stroke: this.lineColor,
+        x1: this.plotBBox.x,
+        x2: this.plotBBox.width,
+        y1: y + innerGridIncrementY,
+        y2: y + innerGridIncrementY
+      },
+      strokeWidth: this.innerLineStrokeWidth
+    });
+    this.thousandsPlotLinesGroup.appendChild(innerHorizontalLine);
+  }
+
+  private addBorderGroup(lines: Node[]): void {
+    this.borderGroup.append(lines[0]);
+    this.borderGroup.append(lines[1]);
+  }
+
+  // generates lines of the plot
+  private generateLines(): void {
+    this.addBorderGroup(this.setupLinePair(0));
+
+    this.setupInnerLines(0)
+
+    for (let i = 1; i < 10; i++) {
+      const firstLine = this.setupLinePair(i);
+      this.tensPlotLinesGroup.appendChild(firstLine[1]);
+      this.hundredsPlotLinesGroup.appendChild(firstLine[0]);
+
+      this.setupInnerLines(i);
+    }
+
+    this.addBorderGroup(this.setupLinePair(10));
+  }
+
+  // pre-fills plots with crop pngs
+  private fillPlot(): void {
+
+    const innerGridIncrementX = this.plotIncrementWidth / 5;
+    const innerGridIncrementY = this.plotIncrementHeight / 2;
+
+    for (let index = 0; index < 20; index++) {
+      for (let jIndex = 50; jIndex > 0; jIndex--) {
+        const plotArrayI = 19 - index;
+        const plotArrayJ = jIndex - 1;
+
+        const xVal = (50 - jIndex) * (innerGridIncrementX) + (1 - ((50 - jIndex) % 5) * 0.2);
+        const yVal = (index) * (innerGridIncrementY) + (0.8 - (index % 2) * 0.5);
+        const rectID = `${plotArrayI}-${plotArrayJ}`;
+
+        // animate flower
+        const png = this.createUseElement();
+        gsap.set(png, { attr: { href: this.plotHREF, id: rectID }, scaleX: 0, scaleY: 0.24, visibility: 'hidden', x: xVal, y: yVal });
+        this.findElementLower('fill').appendChild(png);
+
+        this.plotArray[plotArrayI][plotArrayJ] = png;
+      }
+    }
+  }
+
+  private handlePointerDown(e: PointerEvent): void {
+    // if user has screen drag enabled
+    if (this.dragEnabled && !this.animationPlaying) {
+      // start screen drag
+      let pt = this.gsvg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse());
+
+      this.dragStart.x = pt.x;
+      this.dragStart.y = pt.y;
+      this.isDragging = true;
+    }
+    // else we pause the animation if playing
+    else if (this.animationPlaying) {
+      if (this.pause) {
+        this.TL.resume();
+        this.pause = false;
+      }
+      else {
+        this.TL.pause();
+        this.pause = true;
+      }
+    }
+  }
+
+  private whileDrag(e: PointerEvent): void {
+    if (this.isDragging && !this.animationPlaying) {
+      // update screen drag
+      const baseViewbox = this.gsvg.viewBox.baseVal;
+      let pt = this.gsvg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse());
+      gsap.set(this.gsvg, {
+        attr: {
+          viewBox: `${baseViewbox.x + (this.dragStart.x - pt.x)} ${baseViewbox.y + (this.dragStart.y - pt.y)} ${baseViewbox.width} ${baseViewbox.height}`
+        }
+      });
+    }
+  }
+
+  private endDrag(): void {
+    this.isDragging = false;
+  }
+
+  private hidePlot(index: number, jIndex: number, timeline: any, delay: string, self: FarmClass): void {
+    timeline.to(this.plotArray[index][jIndex], {
+      duration: 1,
+      onComplete: function () { timeline.set(self.plotArray[index][jIndex], { visibility: 'hidden' }) },
+      scaleX: 0
+    }, delay);
+
+    timeline.to(this.plotArray[index + 1][jIndex], {
+      duration: 1,
+      onComplete: function () { timeline.set(self.plotArray[index + 1][jIndex], { visibility: 'hidden' }) },
+      scaleX: 0
+    }, '<');
+  }
+
+  private showPlot(index: number, jIndex: number, timeline: any, delay: string): void {
+    timeline.set(this.plotArray[index][jIndex], { visibility: 'visible' }, delay);
+    timeline.to(this.plotArray[index][jIndex], { duration: 1, scaleX: 0.22 }, '<');
+
+    timeline.set(this.plotArray[index + 1][jIndex], { visibility: 'visible' }, '<');
+    timeline.to(this.plotArray[index + 1][jIndex], { duration: 1, scaleX: 0.22 }, '<');
+  }
+
+  // eslint-disable-next-line complexity
+  private plantOrRemoveFlower(e: PointerEvent): void {
+    if (this.pointerState === this.plantButton && !this.plantAnimating && !this.animationPlaying) {
+      // Calculate original point
+      let pt = this.gsvg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      pt = pt.matrixTransform(this.farmGroup.getScreenCTM()!.inverse());
+
+      // checks bounds so that rects cannot be placed outside of plot
+      if (pt.x < 0) {
+        pt.x = 0;
+      }
+      else if (pt.x > this.plotHeight) {
+        pt.x = this.plotHeight - 1;
+      }
+      if (pt.y < 0) {
+        pt.y = 0;
+      }
+      else if (pt.y > this.plotWidth) {
+        pt.y = this.plotWidth - 1;
+      }
+
+      const innerGridIncrementX = this.plotIncrementWidth / 5;
+      const innerGridIncrementY = this.plotIncrementHeight / 2;
+
+      // current grid is rotated for plant/harvest animation, (0,0 is actually 19,49)
+      const i = 19 - Math.floor(pt.y / innerGridIncrementY);
+      const j = 49 - Math.floor(pt.x / innerGridIncrementX);
+
+      // if element exists where clicking, remove it
+      if (this.plotArray[i][j]) {
+
+        const timeline = gsap.timeline();
+
+        if (this.gridState === this.bedsButton) { // if working with beds
+          if (this.plotArray[i][j].style.visibility === 'hidden') {// if current bed is hidden, unhide it
+            gsap.set(this.plotArray[i][j], { visibility: 'visible' });
+            gsap.to(this.plotArray[i][j], { duration: 1, scaleX: 0.22 });
+          }
+          else {// else hide it
+            gsap.to(this.plotArray[i][j], { duration: 1, scaleX: 0 });
+            gsap.set(this.plotArray[i][j], { delay: 1, visibility: 'hidden' });
+          }
+        }
+        else if (this.gridState === this.plotsButton) {// if working with plots
+          const index = Math.floor(i / 2) * 2;
+
+          if (this.plotArray[i][j].style.visibility === 'hidden') {// if current bed is hidden, unhide it
+            for (let jIndex = Math.floor(j / 5) * 5 + 4; jIndex >= Math.floor(j / 5) * 5; jIndex--) {
+              this.showPlot(index, jIndex, timeline, '<+=0.05');
+            }
+          }
+          else {// else hide it
+            const self = this
+            for (let jIndex = Math.floor(j / 5) * 5; jIndex < Math.floor(j / 5) * 5 + 5; jIndex++) {
+              this.hidePlot(index, jIndex, timeline, '<+=0.05', self);
+            }
+          }
+        }
+        else {// else (working with rows)
+          const index = Math.floor(i / 2) * 2;
+          if (this.plotArray[i][j].style.visibility === 'hidden') {// if current row is hidden, unhide it
+            for (let jIndex = 49; jIndex >= 0; jIndex--) {
+              this.showPlot(index, jIndex, timeline, '<+=0.02');
+            }
+          }
+          else {// else hide it
+            const self = this
+            for (let jIndex = 0; jIndex < 50; jIndex++) {
+              this.hidePlot(index, jIndex, timeline, '<+=0.02', self);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private handlePlay(): void {
+    if (!this.animationPlaying && this.isCombineSnapped) {
+      let largept = this.gsvg.createSVGPoint();
+
+      // calculating end position
+      largept.x = this.largeCombineDraggable[0].x;
+      largept.y = this.largeCombineDraggable[0].y;
+
+      // current point is transformed 1.farmgroup 2. screenMatrix inverse
+      largept = largept.matrixTransform(this.gsvg.getScreenCTM()!); // undo screenmatrix to get position relative to farm
+      largept = largept.matrixTransform(this.farmGroup.getScreenCTM()!.inverse()); // undo farmgroup to calculate end position
+
+      largept.x -= this.plotWidth + this.largeCombine.getBBox().width / 2 + 5;
+
+      largept = largept.matrixTransform(this.farmGroup.getScreenCTM()!);
+      largept = largept.matrixTransform(this.gsvg.getScreenCTM()!.inverse());
+
+      // prevent combine from being draggable after animation start
+      this.largeCombineDraggable[0].disable();
+
+      // pre calculating the two rows to be harvested
+      let preCount = 0;
+
+      const arr: SVGSVGElement[][] = []; // creating array of crop elements to be harvested
+      for (let j = 0; j < 50; j++) {
+        const el1 = this.plotArray[Math.floor(this.snappedIndex * 2 / 2) * 2][j];
+        const el2 = this.plotArray[Math.floor(this.snappedIndex * 2 / 2) * 2 + 1][j];
+
+        if (el1.style.visibility === 'visible') {
+          preCount += 0.001;
+        }
+        if (el2.style.visibility === 'visible') {
+          preCount += 0.001;
+        }
+        const temp = [el1, el2];
+        arr.push(temp);
+      }
+
+      const postCount = this.cropsHarvested + preCount;
+
+      // animate combine
+      const self = this
+
+      this.TL.to(self.largeCombineText, {
+        duration: self.harvestDuration, ease: 'linear', onComplete: function () {
+          self.animationPlaying = false;
+          self.largeCombineDraggable[0].enable();
+          self.isCombineSnapped = false;
+
+          if (self.cropsHarvested !== postCount) {// update harvest number if off
+            self.cropsHarvested = postCount;
+            self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3));
+            gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 });
+          }
+        }, x: largept.x,
+        y: largept.y
+      });
+
+      // animate entire row of crops that the combine is placed on
+      arr.forEach(e => {
+        this.TL.to(e, {
+          delay: 0.001, duration: (self.harvestDuration - 1) / 50 + 0.002, onComplete: function () { gsap.set(e, { visibility: 'hidden' }); },
+          onStart: function () {
+            // if the trailer crop has reached full size, move onto the next trailer crop png
+            if (self.trailerCropScale >= 0.8 && self.trailerCropID < 10) {
+              self.trailerCropScale = 0;
+              self.trailerCropID++;
+              self.trailerCrop = self.gsvg.getElementById('crop' + self.trailerCropID) as SVGSVGElement;
+            }
+            if (e[0].style.visibility === 'visible') {// if subrow 1 crop element is visible
+              self.cropsHarvested += 0.001; // increment harvest count
+              self.trailerCropScale += 0.008; // increment trailer crop scale
+              if (self.trailerCropID <= 10 && self.trailerCropScale <= 0.8) {
+                // actually update scale of trailer crop
+                gsap.set(self.trailerCrop, { scaleX: self.trailerCropScale, scaleY: self.trailerCropScale });
+              }
+            }
+            if (e[1].style.visibility === 'visible') {// if subrow 2 crop element is visible
+              self.cropsHarvested += 0.001;
+              self.trailerCropScale += 0.008;
+              if (self.trailerCropID <= 10 && self.trailerCropScale <= 0.8) {
+                gsap.set(self.trailerCrop, { scaleX: self.trailerCropScale, scaleY: self.trailerCropScale });
+              }
+            }
+            // update harvested text
+            self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3));
+            gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 });
+          },
+          scaleX: 0
+        }, `<+=${(self.harvestDuration - 1) / 50 + 0.002}`);
+      });
+      this.animationPlaying = true;
+    }
+    else {
+      alert('Move the orange combine into place.');
+    }
+  }
+
+  private handleZoomIn(): void {
+    if (!this.animationPlaying) {
+      let index = this.zoomOutLevels;
+
+      if (this.zoomLevel < 0) {
+        index = Math.abs(this.zoomLevel) - 1; // use the index-1 if we are already zoomed out
+      }
+      else if (this.zoomLevel > 0) {
+        index = this.zoomLevel + this.zoomOutLevels;
+      }
+      if (this.zoomLevel < this.zoomInLevels - 1) {
+        const baseViewbox = this.gsvg.viewBox.baseVal;
+
+        const offsetX = (250 - baseViewbox.width / 2);
+        const offsetY = (250 - baseViewbox.height / 2);
+
+        const width = Math.max((baseViewbox.width - this.zoomIncrementX[index]), 3);
+        const height = Math.max((baseViewbox.height - this.zoomIncrementY[index]), 3);
+
+        const x = (250 - width / 2) + (baseViewbox.x - offsetX);
+        const y = (250 - height / 2) + (baseViewbox.y - offsetY);
+
+        gsap.to(this.gsvg, { attr: { viewBox: `${x} ${y} ${width} ${height}` }, duration: 0 });
+        this.zoomLevel++;
+      }
+    }
+  }
+
+  private handleZoomOut(): void {
+    if (!this.animationPlaying) {
+      let index = 0;
+      if (this.zoomLevel < 0) {
+        index = Math.abs(this.zoomLevel);
+      }
+      else if (this.zoomLevel > 0) {
+        index = this.zoomLevel + this.zoomOutLevels - 1; // use the index-1 if we are already zoomed in
+      }
+      if (this.zoomLevel > -this.zoomOutLevels) {
+        const baseViewbox = this.gsvg.viewBox.baseVal;
+
+        const offsetX = (250 - baseViewbox.width / 2);
+        const offsetY = (250 - baseViewbox.height / 2);
+
+        const width = (baseViewbox.width + this.zoomIncrementX[index]);
+        const height = (baseViewbox.height + this.zoomIncrementY[index]);
+
+        const x = (250 - width / 2) + (baseViewbox.x - offsetX);
+        const y = (250 - height / 2) + (baseViewbox.y - offsetY);
+
+        gsap.to(this.gsvg, { attr: { viewBox: `${x} ${y} ${width} ${height}` }, duration: 0 });
+
+        this.zoomLevel--;
+      }
+    }
+  }
+
+  // sets the new grid lines and sets button as active
+  private gridToggleHelper(gridState: SVGSVGElement, thousandsDisplay: string, hundredsDisplay: string): void {
+    const temp: SVGSVGElement[] = gsap.utils.toArray('rect', gridState);
+    gsap.set(this.thousandsPlotLinesGroup, { display: thousandsDisplay });
+    gsap.set(this.hundredsPlotLinesGroup, { display: hundredsDisplay });
+    temp[0].style.fill = '#c3e7b3';
+  }
+
+  private handleGridToggle(element: SVGSVGElement): void {
+    // gets current button and sets it as inactive
+    const currentGridStateArr: SVGSVGElement[] = gsap.utils.toArray('rect', this.gridState);
+    currentGridStateArr[0].style.fill = '#93c47d';
+    this.gridState = element;
+
+    if (this.gridState === this.bedsButton) {
+      this.gridToggleHelper(this.bedsButton, 'block', 'block');
+    }
+    else if (this.gridState === this.plotsButton) {
+      this.gridToggleHelper(this.plotsButton, 'none', 'block');
+    }
+    else {
+      this.gridToggleHelper(this.rowsButton, 'none', 'none');
+    }
+  }
+
+  private handlePointerChange(element: SVGSVGElement): void {
+    let currentPointerStateArr: SVGSVGElement[] = gsap.utils.toArray('circle', this.pointerState);
+    currentPointerStateArr[0].style.fill = '#93c47d';
+    this.pointerState = element;
+    this.dragEnabled = false;
+    this.gsvg.style.cursor = 'default';
+    this.gsvg.style.touchAction = 'auto';
+
+    if (this.pointerState === this.plantButton) {
+      this.farmGroup.style.cursor = 'pointer';
+    }
+    else if (this.pointerState === this.moveButton) {
+      this.gsvg.style.touchAction = 'pinch-zoom';/* lets pointer events work with mobile. allowing pinch zoom incase user gets locked out */
+      this.dragEnabled = true;
+      this.gsvg.style.cursor = 'move';
+      this.farmGroup.style.cursor = 'move';
+
+    }
+    currentPointerStateArr = gsap.utils.toArray('circle', this.pointerState);
+    currentPointerStateArr[0].style.fill = '#c3e7b3';
+  }
+
+  private handleDeposit(): void {
+    if (!this.animationPlaying && !this.depositAnimating && !this.didUserDrag && this.cropsHarvested > 0) {
+      this.TL.clear(); // clear timeline else the animation would be buggy
+
+      this.largeCombineDraggable[0].disable();
+      this.depositAnimating = true;
+
+      this.barnCounterText.textContent = String(this.cropsDeposited.toFixed(3));
+      gsap.set(this.barnCounterText, {
+        x: 432 - this.barnCounterText.getBBox().width / 2,
+        y: 125 + this.barnCounterText.getBBox().width / 4
+      });
+
+      this.harvestTotalText.textContent = String(this.cropsHarvested.toFixed(3));
+      gsap.set(this.harvestTotalText, { x: - this.harvestTotalText.getBBox().width / 2 });
+
+      // getting position of combine relative to svg
+      let pt = this.gsvg.createSVGPoint();
+      pt.x = this.largeCombineText.getBoundingClientRect().x;
+      pt.y = this.largeCombineText.getBoundingClientRect().y;
+      pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse());
+
+      // creating crop elements for deposit animation
+      for (let i = 0; i < Math.ceil(this.cropsHarvested * 10) - 1; i++) {
+        const crop = this.createUseElement();
+        this.TL.set(crop, { attr: { href: this.singleHREF }, x: pt.x + 22, y: pt.y + 28 }, '<+=0.1');
+        this.gsvg.appendChild(crop);
+        this.TL.to(crop, { duration: 2, onComplete: function () { crop.remove() }, x: 367, y: 86 }, '<');
+      }
+
+      // creating the "last" crop element so that we can expand on OnComplete
+      const crop = this.createUseElement();
+      this.TL.set(crop, { attr: { href: this.singleHREF }, x: pt.x + 22, y: pt.y + 28 }, '<');
+      this.gsvg.appendChild(crop);
+
+      const self = this
+
+      this.TL.to(crop, {
+        duration: 2, onComplete: function () {
+          crop.remove();
+
+          // update combine and barn numbers
+          self.cropsDeposited += self.cropsHarvested;
+          self.cropsHarvested = 0;
+          self.barnCounterText.textContent = String(self.cropsDeposited.toFixed(3));
+          gsap.set(self.barnCounterText, {
+            x: 432 - self.barnCounterText.getBBox().width / 2,
+            y: 125 + self.barnCounterText.getBBox().width / 4
+          });
+          self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3));
+          gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 });
+
+          // reset crop in trailer
+          gsap.utils.toArray('use', self.largeCombineTrailer).forEach((element: any) => {
+            gsap.set(element, { scaleX: 0, scaleY: 0 });
+          });
+          self.depositAnimating = false;
+
+        }, x: 367, y: 86
+      }, '<');
+
+      // reset trailer crop variables
+      this.trailerCropScale = 0;
+      this.trailerCropID = 1;
+      this.largeCombineDraggable[0].enable();
+      this.trailerCrop = this.findElementLower('crop' + this.trailerCropID) as SVGSVGElement;
+    }
+  }
+
+  private calculateZoomIncrements(): void {
+    const baseViewbox = this.gsvg.viewBox.baseVal;
+    let lastWidth = baseViewbox.width;
+    let lastHeight = baseViewbox.height;
+
+    for (let i = 0; i < this.zoomOutLevels; i++) {
+      let temp = lastWidth / 3;
+      this.zoomIncrementX.push(temp);
+      lastWidth += temp;
+
+      temp = lastHeight / 3;
+      this.zoomIncrementY.push(temp);
+      lastHeight += temp;
+    }
+
+    lastWidth = baseViewbox.width;
+    lastHeight = baseViewbox.height;
+
+    for (let i = 0; i < this.zoomInLevels; i++) {
+      let temp = lastWidth / 3;
+      this.zoomIncrementX.push(temp);
+      lastWidth -= temp;
+
+      temp = lastHeight / 3;
+      this.zoomIncrementY.push(temp);
+      lastHeight -= temp;
+    }
+  }
+
+  private init(): void {
+    gsap.registerPlugin(Draggable);
+
+    // farm plot init
+    const farmPlot = this.createRectElement();
+    gsap.set(farmPlot, { attr: { id: 'farmPlot' }, fill: this.plotColor, height: this.plotHeight, width: this.plotWidth });
+    this.findElementLower('plot').appendChild(farmPlot);
+
+    this.plotBBox = (this.findElementLower('farmPlot') as SVGSVGElement).getBBox();
+    this.plotIncrementWidth = this.plotBBox.width / 10;
+    this.plotIncrementHeight = this.plotBBox.height / 10;
+
+    // plant icon init
+    const icon = this.createUseElement();
+
+    const plantBBox = (this.plantButton as unknown as SVGSVGElement).getBBox();
+
+    gsap.set(icon, { attr: { href: this.singleHREF }, scale: 1.5 });
+    const iconBBox = (icon as unknown as SVGSVGElement).getBBox();
+    gsap.set(icon, { x: plantBBox.x + plantBBox.width / 2 - (iconBBox.width * 1.5) / 2, y: plantBBox.y + plantBBox.height / 2 - (iconBBox.height * 1.5) / 2 });
+    this.plantButton.appendChild(icon);
+
+    // generating grid lines
+    this.generateLines();
+    this.fillPlot();
+
+    // zoom calculations
+    this.calculateZoomIncrements();
+
+    // setting active button colors
+    gsap.set(this.gsvg, { backgroundColor: 'rgb(33, 192, 96)' });
+    const plantButtonArr: SVGSVGElement[] = gsap.utils.toArray('circle', this.plantButton);
+    plantButtonArr[0].style.fill = '#c3e7b3';
+
+    const bedsButtonArr: SVGSVGElement[] = gsap.utils.toArray('rect', this.bedsButton);
+    bedsButtonArr[0].style.fill = '#c3e7b3';
+
+    // fill-box allows rotation about center
+    gsap.set(this.farmGroup, { rotate: 45, skewX: 165, skewY: 165, transformBox: 'fill-box', transformOrigin: 'center' });
+    gsap.set(this.farmGroup, { x: 125, y: 100 });
+
+    // combine start pos
+    gsap.set(this.largeCombineText, { x: 60 - this.largeCombineText.getBBox().x, y: 70 - this.largeCombineText.getBBox().y });
+
+    // harvest number init
+    this.harvestTotalText.textContent = '0';
+    gsap.set(this.harvestTotalText, { x: - this.harvestTotalText.getBBox().width / 2 });
+
+    // creating trailer crop elements
+    let cropX = -46; // hardcoded X poisition
+    let cropY = 10; // hardcoded Y position
+    let cropid = 1;
+    for (let i = 0; i < 5; i++) {
+      let crop = this.createUseElement();
+      gsap.set(crop, {
+        attr: { href: this.trailerHREF, id: 'crop' + cropid },
+        rotate: 45,
+        scaleX: 0,
+        scaleY: 0,
+        skewX: 165,
+        skewY: 165,
+        x: cropX,
+        y: cropY
+      });
+      this.largeCombineTrailer.appendChild(crop);
+
+      crop = this.createUseElement();
+      gsap.set(crop, {
+        attr: { href: this.trailerHREF, id: 'crop' + (cropid + 5) },
+        rotate: 45,
+        scaleX: 0,
+        scaleY: 0,
+        skewX: 165,
+        skewY: 165,
+        x: (cropX + 10),
+        y: (cropY - 7)
+      });
+      this.largeCombineTrailer.appendChild(crop);
+      cropX -= 12;
+      cropY -= 7;
+      cropid++;
+    }
+
+    this.trailerCrop = this.findElementLower('crop1') as SVGSVGElement;
+
+    // creating draggable + snapping points
+    let pt = this.gsvg.createSVGPoint();
+
+    const largeCombineSnapPoints: { x: number, y: number }[] = [];
+    for (let i = 1; i < 11; i++) {
+      pt.x = this.plotWidth + this.largeCombineText.getBBox().width + 63; // +63 is hardcoded offset
+      pt.y = (Math.floor((20 - i * 2) / 2) * (this.plotIncrementHeight / 2) * 2) - 74; // -74 is hardcoded offset
+      pt = pt.matrixTransform(this.farmGroup.getScreenCTM()!);
+      pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse());
+      const temp = { x: pt.x, y: pt.y };
+      largeCombineSnapPoints.push(temp);
+    }
+
+    const self = this
+
+    this.largeCombineDraggable = Draggable.create(this.largeCombineText, {
+      liveSnap: {
+        points: largeCombineSnapPoints,
+        radius: 50
+      },
+      onDragStart: function () {
+        self.didUserDrag = true;
+      },
+      onPress: function () {
+        if (self.pointerState === self.moveButton) {
+          self.dragEnabled = false;
+        }
+      },
+      onRelease: function () {
+        for (let index = 0; index < largeCombineSnapPoints.length; index++) {
+          if (Math.round(this.x) === Math.round(largeCombineSnapPoints[index].x)) {
+            self.isCombineSnapped = true;
+            self.snappedIndex = index;
+            break;
+          }
+        }
+        if (self.pointerState === self.moveButton) {
+          self.dragEnabled = true;
+        }
+        self.didUserDrag = false;
+      },
+      type: 'x,y'
+    });
+
+    // barn counter init
+    const temp = document.createElementNS(svgns, 'text') as SVGTextElement;
+    gsap.set(temp, {
+      fill: '#ffffff',
+      fontFamily: 'arial',
+      fontSize: 16,
+      fontWeight: 600,
+      rotate: -30,
+      skewX: -30,
+      textContent: '0',
+      userSelect: 'none'
+    });
+    gsap.set(temp, { x: 432 - temp.getBBox().width / 2, y: 125 + temp.getBBox().width / 4 });
+    this.barnCounterText = temp;
+    this.gsvg.appendChild(temp);
+
+    // event listeners
+    this.farmGroup.addEventListener('pointerdown', (e: PointerEvent) => { this.plantOrRemoveFlower(e) });
+
+    this.findElementUpper('zoomIn').addEventListener('pointerdown', () => this.handleZoomIn());
+    this.findElementUpper('zoomOut').addEventListener('pointerdown', () => this.handleZoomOut());
+
+    this.gsvg.addEventListener('pointerdown', (e: PointerEvent) => this.handlePointerDown(e));
+    this.gsvg.addEventListener('pointermove', (e: PointerEvent) => this.whileDrag(e));
+    this.gsvg.addEventListener('pointerup', () => this.endDrag());
+
+    this.harvestTotalBox.addEventListener('pointerup', () => this.handleDeposit());
+
+    this.findElementUpper('playButton').addEventListener('pointerdown', () => this.handlePlay());
+
+    gsap.utils.toArray('.pointer').forEach((element: any) => element.addEventListener('pointerdown', () => this.handlePointerChange(element)));
+    gsap.utils.toArray('.grid').forEach((element: any) => element.addEventListener('pointerdown', () => this.handleGridToggle(element)));
+  }
 }
