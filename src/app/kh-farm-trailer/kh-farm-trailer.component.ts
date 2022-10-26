@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, AfterViewInit, ViewChild, Output, EventEmitter } from '@angular/core';
-import { farmAPI, farmSetup} from "./khFarmTrailerAPI"
+import { FarmClass, FarmSetup} from "./khFarmTrailerAPI"
 import {MatDialog} from '@angular/material/dialog';
 
 @Component({
@@ -14,42 +14,18 @@ export class KhFarmTrailerComponent implements AfterViewInit {
   constructor(public dialog: MatDialog) { }
 
   @Input()
-  private width: number = 500
-
-  @Input()
-  private height: number = 500
-
-  @Input()
-  private plotWidth: number = 250
-
-  @Input()
-  private plotHeight: number = 250
-
-  @Input()
-  private plotColor: string = "rgb(140, 254, 140)"
-
-  @Input()
-  private lineColor: string = "rgb(52, 128, 104)"
-
-  @Input()
-  private crop: string = "grape"
+  private type: string = "wheat"
 
   public ngAfterViewInit(): void {
 
 
     const setup = {
-      width: this.width,
-      height: this.height,
-      plotWidth: this.plotWidth,
-      plotHeight: this.plotHeight,
-      plotColor: this.plotColor,
-      lineColor: this.lineColor,
-      crop: this.crop
-    } as farmSetup
+      type: this.type
+    } as FarmSetup
 
     const els = [this.lowerRenderEl.nativeElement,this.upperRenderEl.nativeElement]
 
-    const interactive = farmAPI(els, setup)
+    const interactive = new FarmClass(this.lowerRenderEl.nativeElement, this.upperRenderEl.nativeElement, setup)
 
   }
 
