@@ -1,3 +1,4 @@
+import { elementEventFullName } from '@angular/compiler/src/view_compiler/view_compiler';
 import { Draggable, gsap } from 'gsap/all'
 
 const svgns = 'http://www.w3.org/2000/svg'
@@ -27,6 +28,11 @@ export class FarmClass {
   private pointerState: SVGSVGElement;
   private plantButton: SVGSVGElement;
   private moveButton: SVGSVGElement;
+  private compassNorth: SVGSVGElement
+  private compassEast: SVGSVGElement
+  private compassSouth: SVGSVGElement
+  private compassWest: SVGSVGElement
+  private compassActive = true;
   private zoomLevel = 0;
   private plotArray = Array.from(Array(20), () => new Array(50));
   private isDragging = false;
@@ -73,21 +79,25 @@ export class FarmClass {
     this.gsvg = lowerRenderEl;
     this.gsvgu = upperRenderEl;
     this.setup = setup;
-    this.borderGroup = this.findElementLower('border') as SVGSVGElement;
-    this.tensPlotLinesGroup = this.findElementLower('tens') as SVGSVGElement;
-    this.hundredsPlotLinesGroup = this.findElementLower('hundreds') as SVGSVGElement;
-    this.thousandsPlotLinesGroup = this.findElementLower('thousands') as SVGSVGElement;
-    this.farmGroup = this.findElementLower('farmGroup') as SVGSVGElement;
-    this.largeCombine = this.findElementLower('largeCombine') as SVGSVGElement;
-    this.largeCombineText = this.findElementLower('largeCombineText') as SVGSVGElement;
-    this.largeCombineTrailer = this.findElementLower('trailer') as SVGSVGElement
-    this.harvestTotalText = this.findElementLower('harvestTotalText') as SVGSVGElement;
-    this.harvestTotalBox = this.findElementLower('harvestTotalBox') as SVGSVGElement;
-    this.bedsButton = this.findElementUpper('beds') as SVGSVGElement;
-    this.plotsButton = this.findElementUpper('plots') as SVGSVGElement;
-    this.rowsButton = this.findElementUpper('rows') as SVGSVGElement;
-    this.plantButton = this.findElementUpper('plant') as SVGSVGElement;
-    this.moveButton = this.findElementUpper('move') as SVGSVGElement;
+    this.borderGroup = this.findElementLower('border')
+    this.tensPlotLinesGroup = this.findElementLower('tens')
+    this.hundredsPlotLinesGroup = this.findElementLower('hundreds')
+    this.thousandsPlotLinesGroup = this.findElementLower('thousands')
+    this.farmGroup = this.findElementLower('farmGroup')
+    this.largeCombine = this.findElementLower('largeCombine')
+    this.largeCombineText = this.findElementLower('largeCombineText')
+    this.largeCombineTrailer = this.findElementLower('trailer')
+    this.harvestTotalText = this.findElementLower('harvestTotalText')
+    this.harvestTotalBox = this.findElementLower('harvestTotalBox')
+    this.bedsButton = this.findElementUpper('beds')
+    this.plotsButton = this.findElementUpper('plots')
+    this.rowsButton = this.findElementUpper('rows')
+    this.plantButton = this.findElementUpper('plant')
+    this.moveButton = this.findElementUpper('move')
+    this.compassNorth = this.findElementUpper('north')
+    this.compassEast = this.findElementUpper('east')
+    this.compassSouth = this.findElementUpper('south')
+    this.compassWest = this.findElementUpper('west')
     this.pointerState = this.plantButton;
     this.gridState = this.bedsButton;
 
@@ -579,6 +589,58 @@ export class FarmClass {
     currentPointerStateArr[0].style.fill = '#c3e7b3';
   }
 
+  private handleCompassMove(element: SVGSVGElement): void {
+    const baseViewbox = this.gsvg.viewBox.baseVal;
+
+    if (element === this.compassNorth){
+      const increment = baseViewbox.height/10
+      gsap.set(this.gsvg, {
+        attr: {
+          viewBox: `${baseViewbox.x} ${baseViewbox.y - increment} ${baseViewbox.width} ${baseViewbox.height}`
+        }
+      });
+    }
+    else if (element === this.compassEast) {
+      const increment = baseViewbox.width/10
+      gsap.set(this.gsvg, {
+        attr: {
+          viewBox: `${baseViewbox.x + increment} ${baseViewbox.y} ${baseViewbox.width} ${baseViewbox.height}`
+        }
+      });
+    }
+    else if (element === this.compassSouth) {
+      const increment = baseViewbox.height/10
+      gsap.set(this.gsvg, {
+        attr: {
+          viewBox: `${baseViewbox.x} ${baseViewbox.y + increment} ${baseViewbox.width} ${baseViewbox.height}`
+        }
+      });
+    }
+    else if (element === this.compassWest) {
+      const increment = baseViewbox.width/10
+      gsap.set(this.gsvg, {
+        attr: {
+          viewBox: `${baseViewbox.x - increment} ${baseViewbox.y} ${baseViewbox.width} ${baseViewbox.height}`
+        }
+      });
+    }
+  }
+
+  private toggleCompass(): void {
+    console.log("hey")
+    const moveButtonArr: SVGSVGElement[] = gsap.utils.toArray('circle', this.moveButton);
+    if (this.compassActive) {
+      moveButtonArr[0].style.fill = '#93c47d'
+      gsap.set(this.findElementUpper('compass'), {visibility: 'hidden'})
+      this.compassActive = false
+    }
+    else {
+      moveButtonArr[0].style.fill = '#c3e7b3'
+      gsap.set(this.findElementUpper('compass'), {visibility: 'visible'})
+      this.compassActive = true
+    }
+  }
+
   private handleDeposit(): void {
     if (!this.animationPlaying && !this.depositAnimating && !this.didUserDrag && this.cropsHarvested > 0) {
       this.TL.clear(); // clear timeline else the animation would be buggy
@@ -711,6 +773,9 @@ export class FarmClass {
     const plantButtonArr: SVGSVGElement[] = gsap.utils.toArray('circle', this.plantButton);
     plantButtonArr[0].style.fill = '#c3e7b3';
 
+    const moveButtonArr: SVGSVGElement[] = gsap.utils.toArray('circle', this.moveButton);
+    moveButtonArr[0].style.fill = '#c3e7b3';
+
     const bedsButtonArr: SVGSVGElement[] = gsap.utils.toArray('rect', this.bedsButton);
     bedsButtonArr[0].style.fill = '#c3e7b3';
 
@@ -836,7 +901,9 @@ export class FarmClass {
 
     this.findElementUpper('playButton').addEventListener('pointerdown', () => this.handlePlay());
 
-    gsap.utils.toArray('.pointer').forEach((element: any) => element.addEventListener('pointerdown', () => this.handlePointerChange(element)));
+    this.moveButton.addEventListener('pointerdown', () => this.toggleCompass())
+    //gsap.utils.toArray('.pointer').forEach((element: any) => element.addEventListener('pointerdown', () => this.handlePointerChange(element)));
     gsap.utils.toArray('.grid').forEach((element: any) => element.addEventListener('pointerdown', () => this.handleGridToggle(element)));
+    gsap.utils.toArray('.compass').forEach((element: any) => element.addEventListener('pointerdown', () => this.handleCompassMove(element)));
   }
 }

@@ -20,7 +20,7 @@ svg {
     pointer-events: none;
 }
 
-.pointer, .grid, #zoomIn, #zoomOut, #playButton {
+.pointer, .grid, #zoomIn, #zoomOut, #playButton, .compass {
     cursor:pointer;
     pointer-events: all;
 }
