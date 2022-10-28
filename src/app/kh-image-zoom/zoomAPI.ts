@@ -198,9 +198,9 @@ export function zoomAPI(_els, _setup) {
             this.fetchedSVG.addEventListener("pointermove", e => this.whileDrag(e))
             this.fetchedSVG.addEventListener("pointerup", e => this.endDrag(e))
 
-            this.gsvgu.getElementById("zoomIn").addEventListener("pointerdown", e => this.handleZoomIn())
-            this.gsvgu.getElementById("zoomOut").addEventListener("pointerdown", e => this.handleZoomOut())
-            this.gsvgu.getElementById("center").addEventListener("pointerdown", e => this.handleCenter())
+            this.zoomIn.addEventListener("pointerdown", () => this.handleZoomIn())
+            this.zoomOut.addEventListener("pointerdown", () => this.handleZoomOut())
+            this.center.addEventListener("pointerdown", () => this.handleCenter())
         }
 
     } 

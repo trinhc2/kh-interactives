@@ -18,7 +18,7 @@ export function decomposeNumber(_els, _setup) {
         textSize = 14;
         svgns = "http://www.w3.org/2000/svg";
         color = "#ff7f50";
-        T: gsap.timeline;
+        T: any;
         animationFinished = false;
         animationStarted = false;
         drawnElements: SVGSVGElement
