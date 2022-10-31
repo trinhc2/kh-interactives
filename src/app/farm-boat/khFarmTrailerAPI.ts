@@ -641,6 +641,7 @@ export class FarmClass {
     }
   }
 
+  /*
   private handleDeposit(): void {
     if (!this.animationPlaying && !this.depositAnimating && !this.didUserDrag && this.cropsHarvested > 0) {
       this.TL.clear(); // clear timeline else the animation would be buggy
@@ -663,12 +664,15 @@ export class FarmClass {
       pt.y = this.largeCombineText.getBoundingClientRect().y;
       pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse());
 
+      const xEndLocation = 367
+      const yEndLocation = 86
+
       // creating crop elements for deposit animation
       for (let i = 0; i < Math.ceil(this.cropsHarvested * 10) - 1; i++) {
         const crop = this.createUseElement();
         this.TL.set(crop, { attr: { href: this.singleHREF }, x: pt.x + 22, y: pt.y + 28 }, '<+=0.1');
         this.gsvg.appendChild(crop);
-        this.TL.to(crop, { duration: 2, onComplete: function () { crop.remove() }, x: 367, y: 86 }, '<');
+        this.TL.to(crop, { duration: 2, onComplete: function () { crop.remove() }, x: xEndLocation, y: yEndLocation }, '<');
       }
 
       // creating the "last" crop element so that we can expand on OnComplete
@@ -699,7 +703,106 @@ export class FarmClass {
           });
           self.depositAnimating = false;
 
-        }, x: 367, y: 86
+        }, x: xEndLocation, y: yEndLocation
+      }, '<');
+
+      // reset trailer crop variables
+      this.trailerCropScale = 0;
+      this.trailerCropID = 1;
+      this.largeCombineDraggable[0].enable();
+      this.trailerCrop = this.findElementLower('crop' + this.trailerCropID) as SVGSVGElement;
+    }
+  }
+
+  */
+  private handleDeposit(): void {
+    if (!this.animationPlaying && !this.depositAnimating && !this.didUserDrag && this.cropsHarvested > 0) {
+      this.TL.clear(); // clear timeline else the animation would be buggy
+
+      this.largeCombineDraggable[0].disable();
+      this.depositAnimating = true;
+
+      this.barnCounterText.textContent = String(this.cropsDeposited.toFixed(3));
+      gsap.set(this.barnCounterText, {
+        x: 432 - this.barnCounterText.getBBox().width / 2,
+        y: 125 + this.barnCounterText.getBBox().width / 4
+      });
+
+      this.harvestTotalText.textContent = String(this.cropsHarvested.toFixed(3));
+      gsap.set(this.harvestTotalText, { x: - this.harvestTotalText.getBBox().width / 2 });
+
+      // getting position of combine relative to svg
+      let pt = this.gsvg.createSVGPoint();
+      pt.x = this.largeCombineText.getBoundingClientRect().x;
+      pt.y = this.largeCombineText.getBoundingClientRect().y;
+      pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse());
+
+      const xEndLocation = 0 + 20
+      const yEndLocation = 250
+
+      // creating crop elements for deposit animation
+      for (let i = 0; i < Math.ceil(this.cropsHarvested * 100) - 1; i++) {
+        const crop = this.createUseElement();
+        this.TL.set(crop, { attr: { href: this.singleHREF }, x: pt.x + 22, y: pt.y + 28 }, '<+=0.1');
+        this.gsvg.appendChild(crop);
+        this.TL.to(crop, { duration: 2, onComplete: function () { crop.remove() }, x: xEndLocation, y: yEndLocation }, '<');
+      }
+
+      // creating the "last" crop element so that we can expand on OnComplete
+      const crop = this.createUseElement();
+      this.TL.set(crop, { attr: { href: this.singleHREF }, x: pt.x + 22, y: pt.y + 28 }, '<');
+      this.gsvg.appendChild(crop);
+
+      const self = this
+
+      this.TL.to(crop, {
+        duration: 2, onComplete: function () {
+          crop.remove();
+          // update combine and barn numbers
+          let filledBarrels = Math.floor(self.cropsHarvested * 100)
+          console.log(filledBarrels)
+          self.cropsDeposited += self.cropsHarvested;
+          self.cropsHarvested = 0;
+          self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3));
+          gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 });
+
+          let els = gsap.utils.toArray(".barrel", self.findElementLower('barrels')).reverse()
+          console.log(els)
+          for (let i = 0; i < els.length; i++) {
+            console.log(i, filledBarrels)
+            if (filledBarrels > 0) {
+              gsap.set(els[i], { visibility: 'visible' });
+              filledBarrels--;
+            }
+            else {
+              break
+            }
+          }
+
+          let pt = self.gsvg.createSVGPoint();
+
+          // calculating end position
+          pt.x = -self.findElementLower('truck').getBBox().x
+          pt.y = -self.findElementLower('truck').getBBox().y + 250
+    
+          // current point is transformed 1.farmgroup 2. screenMatrix inverse
+          pt = pt.matrixTransform(self.gsvg.getScreenCTM()!); // undo screenmatrix to get position relative to farm
+          pt = pt.matrixTransform(self.farmGroup.getScreenCTM()!.inverse()); // undo farmgroup to calculate end position
+    
+          pt.y -= 200
+    
+          pt = pt.matrixTransform(self.farmGroup.getScreenCTM()!);
+          pt = pt.matrixTransform(self.gsvg.getScreenCTM()!.inverse());
+
+          gsap.to(self.findElementLower('truck'), {x:pt.x, y:pt.y, ease: 'linear', duration: 2})
+
+          // reset crop in trailer
+          gsap.utils.toArray('use', self.largeCombineTrailer).forEach((element: any) => {
+            gsap.set(element, { scaleX: 0, scaleY: 0 });
+          });
+          self.depositAnimating = false;
+
+        }, x: xEndLocation, y: yEndLocation
       }, '<');
 
       // reset trailer crop variables
@@ -741,6 +844,13 @@ export class FarmClass {
 
   private init(): void {
     gsap.registerPlugin(Draggable);
+
+    gsap.set(this.findElementLower('truck'), {x: -this.findElementLower('truck').getBBox().x, y:-this.findElementLower('truck').getBBox().y + 250})
+
+    console.log(gsap.utils.toArray(".barrel", this.findElementLower('barrels')))
+    gsap.utils.toArray(".barrel", this.findElementLower('barrels')).forEach((element: any) => {
+      gsap.set(element, { visibility: 'hidden' });
+    });
 
     // farm plot init
     const farmPlot = this.createRectElement();
@@ -870,6 +980,8 @@ export class FarmClass {
       },
       type: 'x,y'
     });
+
+    Draggable.create(this.findElementLower('truck'), {type:'x,y'})
 
     // barn counter init
     const temp = document.createElementNS(svgns, 'text') as SVGTextElement;

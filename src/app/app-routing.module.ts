@@ -30,6 +30,7 @@ import { IntegerTilesComponent } from './integer-tiles/integer-tiles.component';
 import { WindowTestComponent } from './window-test/window-test.component';
 import { FarmTargetComponent } from './farm-target/farm-target.component';
 import { DecomposeBoatComponent } from './decompose-boat/decompose-boat.component';
+import { FarmBoatComponent } from './farm-boat/farm-boat.component';
 
 
 
@@ -65,7 +66,8 @@ const routes: Routes = [
   { path: 'integerTiles', component: IntegerTilesComponent},
   { path: 'window', component: WindowTestComponent},
   { path: 'farmTarget', component: FarmTargetComponent},
-  { path: 'decomposeBoat', component: DecomposeBoatComponent}
+  { path: 'decomposeBoat', component: DecomposeBoatComponent},
+  { path: 'farmBoat', component: FarmBoatComponent}
 ]
 
 @NgModule({

@@ -42,6 +42,7 @@ import { IntegerTilesComponent } from './integer-tiles/integer-tiles.component';
 import { WindowTestComponent } from './window-test/window-test.component';
 import { FarmTargetComponent } from './farm-target/farm-target.component';
 import { DecomposeBoatComponent } from './decompose-boat/decompose-boat.component';
+import { FarmBoatComponent } from './farm-boat/farm-boat.component';
 
 @NgModule({
   declarations: [
@@ -81,7 +82,8 @@ import { DecomposeBoatComponent } from './decompose-boat/decompose-boat.componen
     IntegerTilesComponent,
     WindowTestComponent,
     FarmTargetComponent,
-    DecomposeBoatComponent
+    DecomposeBoatComponent,
+    FarmBoatComponent
   ],
   imports: [
     BrowserModule,
