@@ -591,8 +591,9 @@ export class FarmClass {
 
   private handleCompassMove(element: SVGSVGElement): void {
     const baseViewbox = this.gsvg.viewBox.baseVal;
+    console.log(element)
 
-    if (element === this.compassNorth){
+    if (element.id === "up"){
       const increment = baseViewbox.height/10
       gsap.set(this.gsvg, {
         attr: {
@@ -600,7 +601,7 @@ export class FarmClass {
         }
       });
     }
-    else if (element === this.compassEast) {
+    else if (element.id === "right") {
       const increment = baseViewbox.width/10
       gsap.set(this.gsvg, {
         attr: {
@@ -608,7 +609,7 @@ export class FarmClass {
         }
       });
     }
-    else if (element === this.compassSouth) {
+    else if (element.id === "down") {
       const increment = baseViewbox.height/10
       gsap.set(this.gsvg, {
         attr: {
@@ -616,28 +617,13 @@ export class FarmClass {
         }
       });
     }
-    else if (element === this.compassWest) {
+    else if (element.id === "left") {
       const increment = baseViewbox.width/10
       gsap.set(this.gsvg, {
         attr: {
           viewBox: `${baseViewbox.x - increment} ${baseViewbox.y} ${baseViewbox.width} ${baseViewbox.height}`
         }
       });
-    }
-  }
-
-  private toggleCompass(): void {
-    console.log("hey")
-    const moveButtonArr: SVGSVGElement[] = gsap.utils.toArray('circle', this.moveButton);
-    if (this.compassActive) {
-      moveButtonArr[0].style.fill = '#93c47d'
-      gsap.set(this.findElementUpper('compass'), {visibility: 'hidden'})
-      this.compassActive = false
-    }
-    else {
-      moveButtonArr[0].style.fill = '#c3e7b3'
-      gsap.set(this.findElementUpper('compass'), {visibility: 'visible'})
-      this.compassActive = true
     }
   }
 
@@ -901,9 +887,8 @@ export class FarmClass {
 
     this.findElementUpper('playButton').addEventListener('pointerdown', () => this.handlePlay());
 
-    this.moveButton.addEventListener('pointerdown', () => this.toggleCompass())
     //gsap.utils.toArray('.pointer').forEach((element: any) => element.addEventListener('pointerdown', () => this.handlePointerChange(element)));
     gsap.utils.toArray('.grid').forEach((element: any) => element.addEventListener('pointerdown', () => this.handleGridToggle(element)));
-    gsap.utils.toArray('.compass').forEach((element: any) => element.addEventListener('pointerdown', () => this.handleCompassMove(element)));
+    gsap.utils.toArray('g', this.findElementUpper('pan')).forEach((element: any) => element.addEventListener('pointerdown', () => this.handleCompassMove(element)));
   }
 }

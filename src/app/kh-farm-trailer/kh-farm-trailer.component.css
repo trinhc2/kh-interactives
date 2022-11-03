@@ -20,7 +20,7 @@ svg {
     pointer-events: none;
 }
 
-.pointer, .grid, #zoomIn, #zoomOut, #playButton, .compass {
+.pointer, .grid, #zoomIn, #zoomOut, #playButton, #pan {
     cursor:pointer;
     pointer-events: all;
 }
@@ -29,15 +29,15 @@ svg {
     user-select: none;
 }
 
-.grid rect, .pointer circle, #playButton circle, #zoomControls{
+.grid rect, .pointer circle, #playButton circle, .circleFilter {
     filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.4));
 }
 
-.grid:hover rect, .pointer:hover circle, #playButton:hover circle{
+.grid:hover rect, .pointer:hover circle, #playButton:hover circle, #up:hover .direction,  #left:hover .direction,  #right:hover .direction,  #down:hover .direction{
     fill: #c3e7b3 !important;
 }
 
-#zoomOut:hover path, #zoomIn:hover path, #zoomOut:hover circle, #zoomIn:hover circle {
+#zoomOut:hover path, #zoomIn:hover path, #zoomOut:hover circle, #zoomIn:hover circle, #up:hover .direction,  #left:hover .direction,  #right:hover .direction,  #down:hover .direction {
     stroke: #c3e7b3 !important;
 }
 
