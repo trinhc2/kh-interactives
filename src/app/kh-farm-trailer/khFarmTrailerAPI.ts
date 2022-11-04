@@ -26,13 +26,7 @@ export class FarmClass {
   private largeCombineTrailer: SVGSVGElement;
   private gridState: SVGSVGElement;
   private pointerState: SVGSVGElement;
-  private plantButton: SVGSVGElement;
   private moveButton: SVGSVGElement;
-  private compassNorth: SVGSVGElement
-  private compassEast: SVGSVGElement
-  private compassSouth: SVGSVGElement
-  private compassWest: SVGSVGElement
-  private compassActive = true;
   private zoomLevel = 0;
   private plotArray = Array.from(Array(20), () => new Array(50));
   private isDragging = false;
@@ -92,13 +86,7 @@ export class FarmClass {
     this.bedsButton = this.findElementUpper('beds')
     this.plotsButton = this.findElementUpper('plots')
     this.rowsButton = this.findElementUpper('rows')
-    this.plantButton = this.findElementUpper('plant')
     this.moveButton = this.findElementUpper('move')
-    this.compassNorth = this.findElementUpper('north')
-    this.compassEast = this.findElementUpper('east')
-    this.compassSouth = this.findElementUpper('south')
-    this.compassWest = this.findElementUpper('west')
-    this.pointerState = this.plantButton;
     this.gridState = this.bedsButton;
 
     // determine crop
@@ -312,7 +300,7 @@ export class FarmClass {
 
   // eslint-disable-next-line complexity
   private plantOrRemoveFlower(e: PointerEvent): void {
-    if (this.pointerState === this.plantButton && !this.plantAnimating && !this.animationPlaying) {
+    if (!this.plantAnimating && !this.animationPlaying) {
       // Calculate original point
       let pt = this.gsvg.createSVGPoint();
       pt.x = e.clientX;
@@ -567,27 +555,6 @@ export class FarmClass {
     }
   }
 
-  private handlePointerChange(element: SVGSVGElement): void {
-    let currentPointerStateArr: SVGSVGElement[] = gsap.utils.toArray('circle', this.pointerState);
-    currentPointerStateArr[0].style.fill = '#93c47d';
-    this.pointerState = element;
-    this.dragEnabled = false;
-    this.gsvg.style.cursor = 'default';
-    this.gsvg.style.touchAction = 'auto';
-
-    if (this.pointerState === this.plantButton) {
-      this.farmGroup.style.cursor = 'pointer';
-    }
-    else if (this.pointerState === this.moveButton) {
-      this.gsvg.style.touchAction = 'pinch-zoom';/* lets pointer events work with mobile. allowing pinch zoom incase user gets locked out */
-      this.dragEnabled = true;
-      this.gsvg.style.cursor = 'move';
-      this.farmGroup.style.cursor = 'move';
-
-    }
-    currentPointerStateArr = gsap.utils.toArray('circle', this.pointerState);
-    currentPointerStateArr[0].style.fill = '#c3e7b3';
-  }
 
   private handleCompassMove(element: SVGSVGElement): void {
     const baseViewbox = this.gsvg.viewBox.baseVal;
@@ -625,6 +592,51 @@ export class FarmClass {
         }
       });
     }
+  }
+
+  private handleCompassMoveAlt(e: PointerEvent): void {
+    //console.log(e.clientX, e.clientY)
+    let pt = this.gsvgu.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    pt = pt.matrixTransform(this.gsvgu.getScreenCTM()!.inverse());
+
+    let pt2 = this.gsvgu.createSVGPoint();
+    pt2.x = this.findElementUpper('panCircle').getBoundingClientRect().x
+    pt2.y = this.findElementUpper('panCircle').getBoundingClientRect().y
+    pt2 = pt2.matrixTransform(this.gsvgu.getScreenCTM()!.inverse());
+
+    let centerX = pt2.x + this.findElementUpper('panCircle').getBBox().width/2
+    let centerY = pt2.y + this.findElementUpper('panCircle').getBBox().height/2
+
+    let dx = pt.x - centerX
+    let dy = (pt.y - centerY) * -1
+
+    //https://stackoverflow.com/questions/9614109/how-to-calculate-an-angle-from-points
+    var a = Math.atan2(dy, dx); // range (-PI, PI]
+    if (a < 0) a += 2*Math.PI; //angle is now in radians
+
+    a -= (Math.PI/2); //shift by 90deg
+    //restore value in range 0-2pi instead of -pi/2-3pi/2
+    if (a < 0) a += 2*Math.PI;
+    if (a < 0) a += 2*Math.PI;
+    a = Math.abs((Math.PI*2) - a); //invert rotation
+    a = a*180/Math.PI; //convert to deg
+
+    const directionX = Math.sin(a*Math.PI/180)
+    const directionY = Math.cos(a*Math.PI/180)
+
+    const baseViewbox = this.gsvg.viewBox.baseVal;
+
+    const incrementX = directionX * baseViewbox.width/10
+    const incrementY = directionY * baseViewbox.height/10
+
+
+    gsap.set(this.gsvg, {
+      attr: {
+        viewBox: `${baseViewbox.x + incrementX} ${baseViewbox.y - incrementY} ${baseViewbox.width} ${baseViewbox.height}`
+      }
+    });
   }
 
   private handleDeposit(): void {
@@ -737,16 +749,6 @@ export class FarmClass {
     this.plotIncrementWidth = this.plotBBox.width / 10;
     this.plotIncrementHeight = this.plotBBox.height / 10;
 
-    // plant icon init
-    const icon = this.createUseElement();
-
-    const plantBBox = (this.plantButton as unknown as SVGSVGElement).getBBox();
-
-    gsap.set(icon, { attr: { href: this.singleHREF }, scale: 1.5 });
-    const iconBBox = (icon as unknown as SVGSVGElement).getBBox();
-    gsap.set(icon, { x: plantBBox.x + plantBBox.width / 2 - (iconBBox.width * 1.5) / 2, y: plantBBox.y + plantBBox.height / 2 - (iconBBox.height * 1.5) / 2 });
-    //this.plantButton.appendChild(icon);
-
     // generating grid lines
     this.generateLines();
     this.fillPlot();
@@ -756,11 +758,6 @@ export class FarmClass {
 
     // setting active button colors
     gsap.set(this.gsvg, { backgroundColor: 'rgb(33, 192, 96)' });
-    const plantButtonArr: SVGSVGElement[] = gsap.utils.toArray('circle', this.plantButton);
-    plantButtonArr[0].style.fill = '#c3e7b3';
-
-    const moveButtonArr: SVGSVGElement[] = gsap.utils.toArray('circle', this.moveButton);
-    moveButtonArr[0].style.fill = '#c3e7b3';
 
     const bedsButtonArr: SVGSVGElement[] = gsap.utils.toArray('rect', this.bedsButton);
     bedsButtonArr[0].style.fill = '#c3e7b3';
@@ -889,6 +886,7 @@ export class FarmClass {
 
     //gsap.utils.toArray('.pointer').forEach((element: any) => element.addEventListener('pointerdown', () => this.handlePointerChange(element)));
     gsap.utils.toArray('.grid').forEach((element: any) => element.addEventListener('pointerdown', () => this.handleGridToggle(element)));
-    gsap.utils.toArray('g', this.findElementUpper('pan')).forEach((element: any) => element.addEventListener('pointerdown', () => this.handleCompassMove(element)));
+    //gsap.utils.toArray('g', this.findElementUpper('pan')).forEach((element: any) => element.addEventListener('pointerdown', () => this.handleCompassMove(element)));
+    this.findElementUpper('pan').addEventListener('pointerdown', (e: PointerEvent) => this.handleCompassMoveAlt(e))
   }
 }
