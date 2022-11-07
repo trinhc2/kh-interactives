@@ -722,12 +722,6 @@ export class FarmClass {
       this.largeCombineDraggable[0].disable();
       this.depositAnimating = true;
 
-      this.barnCounterText.textContent = String(this.cropsDeposited.toFixed(3));
-      gsap.set(this.barnCounterText, {
-        x: 432 - this.barnCounterText.getBBox().width / 2,
-        y: 125 + this.barnCounterText.getBBox().width / 4
-      });
-
       this.harvestTotalText.textContent = String(this.cropsHarvested.toFixed(3));
       gsap.set(this.harvestTotalText, { x: - this.harvestTotalText.getBBox().width / 2 });
 
@@ -740,12 +734,28 @@ export class FarmClass {
       const xEndLocation = 0 + 20
       const yEndLocation = 250
 
+      let truckIncrementX = 0;
+      let truckIncrementY = 0;
+
+      let cropIncrementX = 0
+      let cropIncrementY = 0
+
       // creating crop elements for deposit animation
-      for (let i = 0; i < Math.ceil(this.cropsHarvested * 100) - 1; i++) {
+      for (let i = 0; i < Math.round(this.cropsHarvested * 100) - 1; i++) {
+    
+        let use = document.createElementNS(svgns, 'use')
+        gsap.set(use, {attr: {href: "#truck", x: `+=${truckIncrementX}`, y:`+=${truckIncrementY}`}})
+        this.gsvg.appendChild(use)
+
         const crop = this.createUseElement();
-        this.TL.set(crop, { attr: { href: this.singleHREF }, x: pt.x + 22, y: pt.y + 28 }, '<+=0.1');
+        this.TL.set(crop, { attr: { href: this.singleHREF }, x: pt.x, y: pt.y }, '<+=0.1');
         this.gsvg.appendChild(crop);
-        this.TL.to(crop, { duration: 2, onComplete: function () { crop.remove() }, x: xEndLocation, y: yEndLocation }, '<');
+        this.TL.to(crop, { duration: 2, onComplete: function () { crop.remove() }, x: xEndLocation + cropIncrementX, y: yEndLocation + cropIncrementY }, '<');
+
+        truckIncrementX += 25
+        truckIncrementY +=15
+        cropIncrementX += 25
+        cropIncrementY += 15
       }
 
       // creating the "last" crop element so that we can expand on OnComplete
@@ -755,29 +765,19 @@ export class FarmClass {
 
       const self = this
 
+      let use = document.createElementNS(svgns, 'use')
+      gsap.set(use, {attr: {href: "#truck", x: `+=${truckIncrementX}`, y:`+=${truckIncrementY}`}})
+      this.gsvg.appendChild(use)
+
       this.TL.to(crop, {
         duration: 2, onComplete: function () {
           crop.remove();
           // update combine and barn numbers
-          let filledBarrels = Math.floor(self.cropsHarvested * 100)
-          console.log(filledBarrels)
           self.cropsDeposited += self.cropsHarvested;
           self.cropsHarvested = 0;
           self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3));
           gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 });
-
-          let els = gsap.utils.toArray(".barrel", self.findElementLower('barrels')).reverse()
-          console.log(els)
-          for (let i = 0; i < els.length; i++) {
-            console.log(i, filledBarrels)
-            if (filledBarrels > 0) {
-              gsap.set(els[i], { visibility: 'visible' });
-              filledBarrels--;
-            }
-            else {
-              break
-            }
-          }
+          
 
           let pt = self.gsvg.createSVGPoint();
 
@@ -802,7 +802,7 @@ export class FarmClass {
           });
           self.depositAnimating = false;
 
-        }, x: xEndLocation, y: yEndLocation
+        }, x: xEndLocation + cropIncrementX, y: yEndLocation + cropIncrementY
       }, '<');
 
       // reset trailer crop variables
@@ -849,7 +849,7 @@ export class FarmClass {
 
     console.log(gsap.utils.toArray(".barrel", this.findElementLower('barrels')))
     gsap.utils.toArray(".barrel", this.findElementLower('barrels')).forEach((element: any) => {
-      gsap.set(element, { visibility: 'hidden' });
+      //gsap.set(element, { visibility: 'hidden' });
     });
 
     // farm plot init
@@ -980,8 +980,6 @@ export class FarmClass {
       },
       type: 'x,y'
     });
-
-    Draggable.create(this.findElementLower('truck'), {type:'x,y'})
 
     // barn counter init
     const temp = document.createElementNS(svgns, 'text') as SVGTextElement;

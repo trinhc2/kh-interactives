@@ -1,4 +1,3 @@
-import { elementEventFullName } from '@angular/compiler/src/view_compiler/view_compiler';
 import { Draggable, gsap } from 'gsap/all'
 
 const svgns = 'http://www.w3.org/2000/svg'
@@ -25,13 +24,8 @@ export class FarmClass {
   private largeCombineText: SVGSVGElement;
   private largeCombineTrailer: SVGSVGElement;
   private gridState: SVGSVGElement;
-  private pointerState: SVGSVGElement;
-  private moveButton: SVGSVGElement;
   private zoomLevel = 0;
   private plotArray = Array.from(Array(20), () => new Array(50));
-  private isDragging = false;
-  private dragEnabled = false;
-  private dragStart = { x: 0, y: 0 };
   private TL = gsap.timeline();
   private cropsHarvested = 0;
   private harvestDuration = 5;
@@ -67,7 +61,10 @@ export class FarmClass {
   private plotColor = 'rgb(140, 254, 140)';
   private plotHeight = 250;
   private plotWidth = 250;
-  private combine = false;
+
+  private panEnabled = false;
+  private directionVectorX = 0;
+  private directionVectorY = 0;
 
   public constructor(lowerRenderEl: SVGSVGElement, upperRenderEl: SVGSVGElement, setup: FarmSetup) {
     this.gsvg = lowerRenderEl;
@@ -86,7 +83,6 @@ export class FarmClass {
     this.bedsButton = this.findElementUpper('beds')
     this.plotsButton = this.findElementUpper('plots')
     this.rowsButton = this.findElementUpper('rows')
-    this.moveButton = this.findElementUpper('move')
     this.gridState = this.bedsButton;
 
     // determine crop
@@ -230,21 +226,8 @@ export class FarmClass {
     }
   }
 
-  private handlePointerDown(e: PointerEvent): void {
-    // if user has screen drag enabled
-    if (this.dragEnabled && !this.animationPlaying) {
-      // start screen drag
-      let pt = this.gsvg.createSVGPoint();
-      pt.x = e.clientX;
-      pt.y = e.clientY;
-      pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse());
-
-      this.dragStart.x = pt.x;
-      this.dragStart.y = pt.y;
-      this.isDragging = true;
-    }
-    // else we pause the animation if playing
-    else if (this.animationPlaying) {
+  private handlePointerDown(): void {
+    if (this.animationPlaying) {
       if (this.pause) {
         this.TL.resume();
         this.pause = false;
@@ -254,26 +237,6 @@ export class FarmClass {
         this.pause = true;
       }
     }
-  }
-
-  private whileDrag(e: PointerEvent): void {
-    if (this.isDragging && !this.animationPlaying) {
-      // update screen drag
-      const baseViewbox = this.gsvg.viewBox.baseVal;
-      let pt = this.gsvg.createSVGPoint();
-      pt.x = e.clientX;
-      pt.y = e.clientY;
-      pt = pt.matrixTransform(this.gsvg.getScreenCTM()!.inverse());
-      gsap.set(this.gsvg, {
-        attr: {
-          viewBox: `${baseViewbox.x + (this.dragStart.x - pt.x)} ${baseViewbox.y + (this.dragStart.y - pt.y)} ${baseViewbox.width} ${baseViewbox.height}`
-        }
-      });
-    }
-  }
-
-  private endDrag(): void {
-    this.isDragging = false;
   }
 
   private hidePlot(index: number, jIndex: number, timeline: any, delay: string, self: FarmClass): void {
@@ -555,46 +518,67 @@ export class FarmClass {
     }
   }
 
+  private startPan(e:PointerEvent): void {
+    this.panEnabled = true;
+    const self = this
+    let pt = this.gsvgu.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    pt = pt.matrixTransform(this.gsvgu.getScreenCTM()!.inverse());
 
-  private handleCompassMove(element: SVGSVGElement): void {
-    const baseViewbox = this.gsvg.viewBox.baseVal;
-    console.log(element)
+    let pt2 = this.gsvgu.createSVGPoint();
+    pt2.x = this.findElementUpper('panCircle').getBoundingClientRect().x
+    pt2.y = this.findElementUpper('panCircle').getBoundingClientRect().y
+    pt2 = pt2.matrixTransform(this.gsvgu.getScreenCTM()!.inverse());
 
-    if (element.id === "up"){
-      const increment = baseViewbox.height/10
-      gsap.set(this.gsvg, {
-        attr: {
-          viewBox: `${baseViewbox.x} ${baseViewbox.y - increment} ${baseViewbox.width} ${baseViewbox.height}`
-        }
-      });
-    }
-    else if (element.id === "right") {
-      const increment = baseViewbox.width/10
-      gsap.set(this.gsvg, {
-        attr: {
-          viewBox: `${baseViewbox.x + increment} ${baseViewbox.y} ${baseViewbox.width} ${baseViewbox.height}`
-        }
-      });
-    }
-    else if (element.id === "down") {
-      const increment = baseViewbox.height/10
-      gsap.set(this.gsvg, {
-        attr: {
-          viewBox: `${baseViewbox.x} ${baseViewbox.y + increment} ${baseViewbox.width} ${baseViewbox.height}`
-        }
-      });
-    }
-    else if (element.id === "left") {
-      const increment = baseViewbox.width/10
-      gsap.set(this.gsvg, {
-        attr: {
-          viewBox: `${baseViewbox.x - increment} ${baseViewbox.y} ${baseViewbox.width} ${baseViewbox.height}`
-        }
-      });
+    let centerX = pt2.x + this.findElementUpper('panCircle').getBBox().width/2
+    let centerY = pt2.y + this.findElementUpper('panCircle').getBBox().height/2
+
+    this.directionVectorX = pt.x - centerX
+    this.directionVectorY = (pt.y - centerY) * -1
+    
+    window.requestAnimationFrame(() => {this.gameloop(self)})
+  }
+
+  private endPan(): void {
+    this.panEnabled = false;
+    console.log("endpan")
+  }
+
+  private gameloop(self) {
+    if (self.panEnabled) {
+
+          //https://stackoverflow.com/questions/9614109/how-to-calculate-an-angle-from-points
+    var angle = Math.atan2(self.directionVectorY, self.directionVectorX); // range (-PI, PI]
+    if (angle < 0) angle += 2*Math.PI; //angle is now in radians
+
+    angle -= (Math.PI/2); //shift by 90deg
+    //restore value in range 0-2pi instead of -pi/2-3pi/2
+    if (angle < 0) angle += 2*Math.PI;
+    if (angle < 0) angle += 2*Math.PI;
+    angle = Math.abs((Math.PI*2) - angle); //invert rotation
+
+    const directionX = Math.sin(angle)
+    const directionY = Math.cos(angle)
+
+    const baseViewbox = self.gsvg.viewBox.baseVal;
+
+    const incrementX = directionX * baseViewbox.width/100
+    const incrementY = directionY * baseViewbox.height/100
+
+
+    gsap.set(this.gsvg, {
+      attr: {
+        viewBox: `${baseViewbox.x + incrementX} ${baseViewbox.y - incrementY} ${baseViewbox.width} ${baseViewbox.height}`
+      }
+    });
+
+    window.requestAnimationFrame(() => {self.gameloop(self)})
     }
   }
 
-  private handleCompassMoveAlt(e: PointerEvent): void {
+  private handleCompassMove(e: PointerEvent): void {
+    if (this.panEnabled) {
     //console.log(e.clientX, e.clientY)
     let pt = this.gsvgu.createSVGPoint();
     pt.x = e.clientX;
@@ -609,34 +593,9 @@ export class FarmClass {
     let centerX = pt2.x + this.findElementUpper('panCircle').getBBox().width/2
     let centerY = pt2.y + this.findElementUpper('panCircle').getBBox().height/2
 
-    let dx = pt.x - centerX
-    let dy = (pt.y - centerY) * -1
-
-    //https://stackoverflow.com/questions/9614109/how-to-calculate-an-angle-from-points
-    var a = Math.atan2(dy, dx); // range (-PI, PI]
-    if (a < 0) a += 2*Math.PI; //angle is now in radians
-
-    a -= (Math.PI/2); //shift by 90deg
-    //restore value in range 0-2pi instead of -pi/2-3pi/2
-    if (a < 0) a += 2*Math.PI;
-    if (a < 0) a += 2*Math.PI;
-    a = Math.abs((Math.PI*2) - a); //invert rotation
-    a = a*180/Math.PI; //convert to deg
-
-    const directionX = Math.sin(a*Math.PI/180)
-    const directionY = Math.cos(a*Math.PI/180)
-
-    const baseViewbox = this.gsvg.viewBox.baseVal;
-
-    const incrementX = directionX * baseViewbox.width/10
-    const incrementY = directionY * baseViewbox.height/10
-
-
-    gsap.set(this.gsvg, {
-      attr: {
-        viewBox: `${baseViewbox.x + incrementX} ${baseViewbox.y - incrementY} ${baseViewbox.width} ${baseViewbox.height}`
-      }
-    });
+    this.directionVectorX = pt.x - centerX
+    this.directionVectorY = (pt.y - centerY) * -1
+    }
   }
 
   private handleDeposit(): void {
@@ -833,11 +792,6 @@ export class FarmClass {
       onDragStart: function () {
         self.didUserDrag = true;
       },
-      onPress: function () {
-        if (self.pointerState === self.moveButton) {
-          self.dragEnabled = false;
-        }
-      },
       onRelease: function () {
         for (let index = 0; index < largeCombineSnapPoints.length; index++) {
           if (Math.round(this.x) === Math.round(largeCombineSnapPoints[index].x)) {
@@ -845,9 +799,6 @@ export class FarmClass {
             self.snappedIndex = index;
             break;
           }
-        }
-        if (self.pointerState === self.moveButton) {
-          self.dragEnabled = true;
         }
         self.didUserDrag = false;
       },
@@ -876,9 +827,7 @@ export class FarmClass {
     this.findElementUpper('zoomIn').addEventListener('pointerdown', () => this.handleZoomIn());
     this.findElementUpper('zoomOut').addEventListener('pointerdown', () => this.handleZoomOut());
 
-    this.gsvg.addEventListener('pointerdown', (e: PointerEvent) => this.handlePointerDown(e));
-    this.gsvg.addEventListener('pointermove', (e: PointerEvent) => this.whileDrag(e));
-    this.gsvg.addEventListener('pointerup', () => this.endDrag());
+    this.gsvg.addEventListener('pointerdown', () => this.handlePointerDown());
 
     this.harvestTotalBox.addEventListener('pointerup', () => this.handleDeposit());
 
@@ -887,6 +836,9 @@ export class FarmClass {
     //gsap.utils.toArray('.pointer').forEach((element: any) => element.addEventListener('pointerdown', () => this.handlePointerChange(element)));
     gsap.utils.toArray('.grid').forEach((element: any) => element.addEventListener('pointerdown', () => this.handleGridToggle(element)));
     //gsap.utils.toArray('g', this.findElementUpper('pan')).forEach((element: any) => element.addEventListener('pointerdown', () => this.handleCompassMove(element)));
-    this.findElementUpper('pan').addEventListener('pointerdown', (e: PointerEvent) => this.handleCompassMoveAlt(e))
+    this.findElementUpper('pan').addEventListener('pointerdown', (e: PointerEvent) => this.startPan(e))
+    this.findElementUpper('pan').addEventListener('pointermove', (e: PointerEvent) => this.handleCompassMove(e))
+    this.findElementUpper('pan').addEventListener('pointerup', () => this.endPan())
+    this.findElementUpper('pan').addEventListener('pointerleave', () => this.endPan())
   }
 }

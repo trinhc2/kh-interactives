@@ -33,13 +33,10 @@ svg {
     filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.4));
 }
 
-.grid:hover rect, .pointer:hover circle, #playButton:hover circle, #up:hover .direction,  #left:hover .direction,  #right:hover .direction,  #down:hover .direction{
+.grid:hover rect, .pointer:hover circle, #playButton:hover circle, #pan:hover .direction, #zoomIn:hover .circleFilter, #zoomOut:hover .circleFilter{
     fill: #c3e7b3 !important;
 }
 
-#zoomOut:hover path, #zoomIn:hover path, #zoomOut:hover circle, #zoomIn:hover circle, #up:hover .direction,  #left:hover .direction,  #right:hover .direction,  #down:hover .direction {
-    stroke: #c3e7b3 !important;
-}
 
 button {
     position: fixed;
