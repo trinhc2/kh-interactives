@@ -43,6 +43,7 @@ import { WindowTestComponent } from './window-test/window-test.component';
 import { FarmTargetComponent } from './farm-target/farm-target.component';
 import { DecomposeBoatComponent } from './decompose-boat/decompose-boat.component';
 import { FarmBoatComponent } from './farm-boat/farm-boat.component';
+import { KhFarmVarietyComponent } from './kh-farm-variety/kh-farm-variety.component';
 
 @NgModule({
   declarations: [
@@ -83,7 +84,8 @@ import { FarmBoatComponent } from './farm-boat/farm-boat.component';
     WindowTestComponent,
     FarmTargetComponent,
     DecomposeBoatComponent,
-    FarmBoatComponent
+    FarmBoatComponent,
+    KhFarmVarietyComponent
   ],
   imports: [
     BrowserModule,

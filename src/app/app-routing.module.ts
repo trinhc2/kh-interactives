@@ -31,6 +31,7 @@ import { WindowTestComponent } from './window-test/window-test.component';
 import { FarmTargetComponent } from './farm-target/farm-target.component';
 import { DecomposeBoatComponent } from './decompose-boat/decompose-boat.component';
 import { FarmBoatComponent } from './farm-boat/farm-boat.component';
+import { KhFarmVarietyComponent } from './kh-farm-variety/kh-farm-variety.component';
 
 
 
@@ -67,7 +68,8 @@ const routes: Routes = [
   { path: 'window', component: WindowTestComponent},
   { path: 'farmTarget', component: FarmTargetComponent},
   { path: 'decomposeBoat', component: DecomposeBoatComponent},
-  { path: 'farmBoat', component: FarmBoatComponent}
+  { path: 'farmBoat', component: FarmBoatComponent},
+  { path: 'farmVariety', component: KhFarmVarietyComponent}
 ]
 
 @NgModule({
