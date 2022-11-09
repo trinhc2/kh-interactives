@@ -542,7 +542,14 @@ export class FarmClass {
 
   private endPan(): void {
     this.panEnabled = false;
-    console.log("endpan")
+  }
+  
+  private endPanLeave(e: PointerEvent): void {
+    console.log("leave", e.target)
+    if (e.target.hasPointerCapture(e.pointerId)) {//if touch detected do nothing
+      return;
+    }
+    this.panEnabled = false;
   }
 
   private gameloop(self) {
@@ -839,6 +846,6 @@ export class FarmClass {
     this.findElementUpper('pan').addEventListener('pointerdown', (e: PointerEvent) => this.startPan(e))
     this.findElementUpper('pan').addEventListener('pointermove', (e: PointerEvent) => this.handleCompassMove(e))
     this.findElementUpper('pan').addEventListener('pointerup', () => this.endPan())
-    this.findElementUpper('pan').addEventListener('pointerleave', () => this.endPan())
+    this.findElementUpper('pan').addEventListener('pointerleave', (e: PointerEvent) => this.endPanLeave(e))
   }
 }

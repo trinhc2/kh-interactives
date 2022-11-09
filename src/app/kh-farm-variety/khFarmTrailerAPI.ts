@@ -395,11 +395,13 @@ export class FarmClass {
         }, x: largept.x,
         y: largept.y
       });
+      console.log(arr[0][0].getAttribute("href"))
 
       // animate entire row of crops that the combine is placed on
       arr.forEach(e => {
         this.TL.to(e, {
           delay: 0.001, duration: (self.harvestDuration - 1) / 50 + 0.002, onComplete: function () { gsap.set(e, { visibility: 'hidden' }); },
+          
           onStart: function () {
             // if the trailer crop has reached full size, move onto the next trailer crop png
             if (self.trailerCropScale >= 0.8 && self.trailerCropID < 10) {
@@ -412,14 +414,14 @@ export class FarmClass {
               self.trailerCropScale += 0.008; // increment trailer crop scale
               if (self.trailerCropID <= 10 && self.trailerCropScale <= 0.8) {
                 // actually update scale of trailer crop
-                gsap.set(self.trailerCrop, {attr:{href: self.trailerHREF}, scaleX: self.trailerCropScale, scaleY: self.trailerCropScale });
+                //gsap.set(self.trailerCrop, {attr:{href: self.trailerHREF}, scaleX: self.trailerCropScale, scaleY: self.trailerCropScale });
               }
             }
             if (e[1].style.visibility === 'visible') {// if subrow 2 crop element is visible
               self.cropsHarvested += 0.001;
               self.trailerCropScale += 0.008;
               if (self.trailerCropID <= 10 && self.trailerCropScale <= 0.8) {
-                gsap.set(self.trailerCrop, { attr:{href: self.trailerHREF}, scaleX: self.trailerCropScale, scaleY: self.trailerCropScale });
+                //gsap.set(self.trailerCrop, { attr:{href: self.trailerHREF}, scaleX: self.trailerCropScale, scaleY: self.trailerCropScale });
               }
             }
             // update harvested text
@@ -518,6 +520,7 @@ export class FarmClass {
   }
 
   private startPan(e:PointerEvent): void {
+    e.preventDefault()
     this.panEnabled = true;
     let pt = this.gsvgu.createSVGPoint();
     pt.x = e.clientX;
@@ -541,6 +544,14 @@ export class FarmClass {
   }
 
   private endPan(): void {
+    this.panEnabled = false;
+  }
+
+  private endPanLeave(e: PointerEvent): void {
+    console.log("leave", e.target)
+    if (e.target.hasPointerCapture(e.pointerId)) {//if touch detected do nothing
+      return;
+    }
     this.panEnabled = false;
   }
 
@@ -728,6 +739,8 @@ export class FarmClass {
   private init(): void {
     gsap.registerPlugin(Draggable);
 
+    gsap.set(this.findElementUpper('playButton'), {visibility: "hidden"})
+
     // farm plot init
     const farmPlot = this.createRectElement();
     gsap.set(farmPlot, { attr: { id: 'farmPlot' }, fill: this.plotColor, height: this.plotHeight, width: this.plotWidth });
@@ -872,6 +885,6 @@ export class FarmClass {
     this.findElementUpper('pan').addEventListener('pointerdown', (e: PointerEvent) => this.startPan(e))
     this.findElementUpper('pan').addEventListener('pointermove', (e: PointerEvent) => this.handleCompassMove(e))
     this.findElementUpper('pan').addEventListener('pointerup', () => this.endPan())
-    this.findElementUpper('pan').addEventListener('pointerleave', () => this.endPan())
+    this.findElementUpper('pan').addEventListener('pointerleave', (e: PointerEvent) => this.endPanLeave(e))
   }
 }

@@ -59,16 +59,18 @@ export function zoomAPI(_els, _setup) {
             }
             if (this.zoomLevel < 10) {
                 //get current basebox - what center should be to get offset
-                let offsetX = (this.centerWidth - baseViewbox["width"] / 2)
-                let offsetY = (this.centerHeight - baseViewbox["height"] / 2)
+                let offsetX = baseViewbox["x"] - (this.centerWidth - baseViewbox["width"] / 2)
+                let offsetY = baseViewbox["y"] - (this.centerHeight - baseViewbox["height"] / 2)
+
+                console.log(offsetX, offsetY)
 
                 //set new width and height
                 let width = Math.max((baseViewbox["width"] - this.zoomIncrementX[index]), 5)
                 let height = Math.max((baseViewbox["height"] - this.zoomIncrementY[index]), 5)
 
                 //set new x and y
-                let x = (this.centerWidth - width / 2) + (baseViewbox["x"] - offsetX)
-                let y = (this.centerHeight - height / 2) + (baseViewbox["y"] - offsetY)
+                let x = (this.centerWidth - width / 2) + (offsetX) //second bracket calculates how far the user has panned in x direciton
+                let y = (this.centerHeight - height / 2) + (offsetY)
 
                 let temp = `${x} ${y} ${width} ${height}`
                 gsap.set(this.fetchedSVG, { attr: { viewBox: temp } });
@@ -89,6 +91,8 @@ export function zoomAPI(_els, _setup) {
                 //get (current basebox - what center should be) to get offset
                 let offsetX = baseViewbox["x"] - (this.centerWidth - baseViewbox["width"] / 2)
                 let offsetY = baseViewbox["y"] - (this.centerHeight - baseViewbox["height"] / 2)
+
+                console.log(offsetX, offsetY)
 
                 //set new width and height
                 let width = Math.max((baseViewbox["width"] + this.zoomIncrementX[index]), 5)

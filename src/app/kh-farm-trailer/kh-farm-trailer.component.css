@@ -18,6 +18,7 @@ svg {
 
 .upperRenderEl {
     pointer-events: none;
+    touch-action: none;
 }
 
 .pointer, .grid, #zoomIn, #zoomOut, #playButton, #pan {

@@ -18,11 +18,12 @@ svg {
 
 .upperRenderEl {
   pointer-events: none;
+  touch-action: none;
 }
 
 .pointer, .grid, #zoomIn, #zoomOut, #playButton, #pan {
   cursor:pointer;
-  pointer-events: all;
+  pointer-events: auto;
 }
 
 #harvestTotalText{
