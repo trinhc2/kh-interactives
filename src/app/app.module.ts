@@ -44,6 +44,8 @@ import { FarmTargetComponent } from './farm-target/farm-target.component';
 import { DecomposeBoatComponent } from './decompose-boat/decompose-boat.component';
 import { FarmBoatComponent } from './farm-boat/farm-boat.component';
 import { KhFarmVarietyComponent } from './kh-farm-variety/kh-farm-variety.component';
+import { BoatDockComponent } from './boat-dock/boat-dock.component';
+import { GrapeZoomComponent } from './grape-zoom/grape-zoom.component';
 
 @NgModule({
   declarations: [
@@ -85,7 +87,9 @@ import { KhFarmVarietyComponent } from './kh-farm-variety/kh-farm-variety.compon
     FarmTargetComponent,
     DecomposeBoatComponent,
     FarmBoatComponent,
-    KhFarmVarietyComponent
+    KhFarmVarietyComponent,
+    BoatDockComponent,
+    GrapeZoomComponent
   ],
   imports: [
     BrowserModule,

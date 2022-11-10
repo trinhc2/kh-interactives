@@ -178,7 +178,7 @@ export function zoomAPI(_els, _setup) {
 
             //add image to defs
             const image = document.createElementNS(svgns, 'image')
-            gsap.set(image, {attr: {id: "fetchedImage", href: this.setup.image }})
+            gsap.set(image, {attr: {id: "fetchedImage", href: this.setup.image }, width: this.setup.width, height: this.setup.height})
             this.fetchedSVG.querySelector('defs').append(image)
             console.log("svg", this.fetchedSVG)
 
