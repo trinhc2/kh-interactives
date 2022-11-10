@@ -756,9 +756,11 @@ export class FarmClass {
 
     //gsap.set(this.findElementUpper('playButton'), {visibility: "hidden"})
 
+    gsap.set(this.largeCombineText, {visibility: "hidden"})
+
     // farm plot init
     const farmPlot = this.createRectElement();
-    gsap.set(farmPlot, { attr: { id: 'farmPlot' }, fill: this.plotColor, height: this.plotHeight, width: this.plotWidth });
+    gsap.set(farmPlot, { attr: { id: 'farmPlot' }, height: this.plotHeight, width: this.plotWidth });
     this.findElementLower('plot').appendChild(farmPlot);
 
     this.plotBBox = (this.findElementLower('farmPlot') as SVGSVGElement).getBBox();
@@ -773,7 +775,7 @@ export class FarmClass {
     this.calculateZoomIncrements();
 
     // setting active button colors
-    gsap.set(this.gsvg, { backgroundColor: 'rgb(33, 192, 96)' });
+    //gsap.set(this.gsvg, { backgroundColor: 'rgb(33, 192, 96)' });
 
     const bedsButtonArr: SVGSVGElement[] = gsap.utils.toArray('rect', this.bedsButton);
     bedsButtonArr[0].style.fill = '#c3e7b3';
@@ -880,7 +882,7 @@ export class FarmClass {
     });
     gsap.set(temp, { x: 432 - temp.getBBox().width / 2, y: 125 + temp.getBBox().width / 4 });
     this.barnCounterText = temp;
-    this.gsvg.appendChild(temp);
+    //this.gsvg.appendChild(temp);
 
     // event listeners
     this.farmGroup.addEventListener('pointerdown', (e: PointerEvent) => { this.plantOrRemoveFlower(e) });
