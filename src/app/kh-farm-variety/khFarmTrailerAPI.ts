@@ -549,7 +549,7 @@ export class FarmClass {
 
   private endPanLeave(e: PointerEvent): void {
     console.log("leave", e.target)
-    if (e.target.hasPointerCapture(e.pointerId)) {//if touch detected do nothing
+    if ((e.target as HTMLElement).hasPointerCapture(e.pointerId)) {//if touch detected do nothing
       return;
     }
     this.panEnabled = false;
@@ -736,10 +736,25 @@ export class FarmClass {
     }
   }
 
+  //https://stackoverflow.com/questions/23218174/how-do-i-save-export-an-svg-file-after-creating-an-svg-with-d3-js-ie-safari-an
+  saveSvg(svgEl, name) {
+    svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    var svgData = svgEl.outerHTML;
+    var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+    var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+    var svgUrl = URL.createObjectURL(svgBlob);
+    var downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = name;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+
   private init(): void {
     gsap.registerPlugin(Draggable);
 
-    gsap.set(this.findElementUpper('playButton'), {visibility: "hidden"})
+    //gsap.set(this.findElementUpper('playButton'), {visibility: "hidden"})
 
     // farm plot init
     const farmPlot = this.createRectElement();
@@ -877,7 +892,7 @@ export class FarmClass {
 
     this.harvestTotalBox.addEventListener('pointerup', () => this.handleDeposit());
 
-    this.findElementUpper('playButton').addEventListener('pointerdown', () => this.handlePlay());
+    this.findElementUpper('playButton').addEventListener('pointerdown', () => this.saveSvg(this.gsvg, "test"));
 
     gsap.utils.toArray('.pointer').forEach((element: any) => element.addEventListener('pointerdown', () => this.handleCropChange(element)));
     gsap.utils.toArray('.grid').forEach((element: any) => element.addEventListener('pointerdown', () => this.handleGridToggle(element)));
