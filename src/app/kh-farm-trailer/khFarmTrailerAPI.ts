@@ -393,6 +393,9 @@ export class FarmClass {
             self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3));
             gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 });
           }
+          if (self.cropsHarvested > 0) {
+            gsap.to(self.findElementLower('harvestTotalBox'), {scale: '+=0.2', yoyo: true, repeat: 5})
+          }
         }, x: largept.x,
         y: largept.y
       });
@@ -545,7 +548,6 @@ export class FarmClass {
   }
   
   private endPanLeave(e: PointerEvent): void {
-    console.log("leave", e.target)
     if ((e.target as HTMLElement).hasPointerCapture(e.pointerId)) {//if touch detected do nothing
       return;
     }
@@ -554,7 +556,6 @@ export class FarmClass {
 
   private gameloop(self) {
     if (self.panEnabled) {
-
           //https://stackoverflow.com/questions/9614109/how-to-calculate-an-angle-from-points
     var angle = Math.atan2(self.directionVectorY, self.directionVectorX); // range (-PI, PI]
     if (angle < 0) angle += 2*Math.PI; //angle is now in radians
@@ -671,6 +672,9 @@ export class FarmClass {
       this.trailerCropID = 1;
       this.largeCombineDraggable[0].enable();
       this.trailerCrop = this.findElementLower('crop' + this.trailerCropID) as SVGSVGElement;
+    }
+    else if (!this.didUserDrag && this.cropsHarvested == 0){
+      alert("No crops to deposit.")
     }
   }
 
