@@ -548,7 +548,6 @@ export class FarmClass {
   }
 
   private endPanLeave(e: PointerEvent): void {
-    console.log("leave", e.target)
     if ((e.target as HTMLElement).hasPointerCapture(e.pointerId)) {//if touch detected do nothing
       return;
     }
