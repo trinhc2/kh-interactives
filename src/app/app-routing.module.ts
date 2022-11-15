@@ -34,6 +34,8 @@ import { FarmBoatComponent } from './farm-boat/farm-boat.component';
 import { KhFarmVarietyComponent } from './kh-farm-variety/kh-farm-variety.component';
 import { BoatDockComponent } from './boat-dock/boat-dock.component';
 import { GrapeZoomComponent } from './grape-zoom/grape-zoom.component';
+import { GrapeRegroupComponent } from './grape-regroup/grape-regroup.component';
+import { GrapeZoomAndrewComponent } from './grape-zoom-andrew/grape-zoom-andrew.component';
 
 
 
@@ -73,7 +75,9 @@ const routes: Routes = [
   { path: 'farmBoat', component: FarmBoatComponent},
   { path: 'farmVariety', component: KhFarmVarietyComponent},
   { path: 'boatdock', component: BoatDockComponent},
-  { path: 'grapezoom', component: GrapeZoomComponent}
+  { path: 'grapeZoom', component: GrapeZoomComponent},
+  { path: 'grapeRegroup', component: GrapeRegroupComponent},
+  { path: 'grapeZoom2', component: GrapeZoomAndrewComponent}
 ]
 
 @NgModule({

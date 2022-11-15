@@ -62,8 +62,6 @@ export function zoomAPI(_els, _setup) {
                 let offsetX = baseViewbox["x"] - (this.centerWidth - baseViewbox["width"] / 2)
                 let offsetY = baseViewbox["y"] - (this.centerHeight - baseViewbox["height"] / 2)
 
-                console.log(offsetX, offsetY)
-
                 //set new width and height
                 let width = Math.max((baseViewbox["width"] - this.zoomIncrementX[index]), 5)
                 let height = Math.max((baseViewbox["height"] - this.zoomIncrementY[index]), 5)
@@ -92,8 +90,6 @@ export function zoomAPI(_els, _setup) {
                 let offsetX = baseViewbox["x"] - (this.centerWidth - baseViewbox["width"] / 2)
                 let offsetY = baseViewbox["y"] - (this.centerHeight - baseViewbox["height"] / 2)
 
-                console.log(offsetX, offsetY)
-
                 //set new width and height
                 let width = Math.max((baseViewbox["width"] + this.zoomIncrementX[index]), 5)
                 let height = Math.max((baseViewbox["height"] + this.zoomIncrementY[index]), 5)
@@ -117,9 +113,7 @@ export function zoomAPI(_els, _setup) {
             var pt = this.fetchedSVG.createSVGPoint()
             pt.x = e.clientX
             pt.y = e.clientY
-            console.log(pt)
             pt = pt.matrixTransform(this.fetchedSVG.getScreenCTM().inverse())
-            console.log(pt)
 
             this.dragStart.x = pt.x
             this.dragStart.y = pt.y
@@ -180,7 +174,6 @@ export function zoomAPI(_els, _setup) {
             const image = document.createElementNS(svgns, 'image')
             gsap.set(image, {attr: {id: "fetchedImage", href: this.setup.image }, width: this.setup.width, height: this.setup.height})
             this.fetchedSVG.querySelector('defs').append(image)
-            console.log("svg", this.fetchedSVG)
 
             //render element to screen
             let use = document.createElementNS(svgns, 'use')
