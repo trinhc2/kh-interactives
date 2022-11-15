@@ -48,6 +48,7 @@ import { BoatDockComponent } from './boat-dock/boat-dock.component';
 import { GrapeZoomComponent } from './grape-zoom/grape-zoom.component';
 import { GrapeRegroupComponent } from './grape-regroup/grape-regroup.component';
 import { GrapeZoomAndrewComponent } from './grape-zoom-andrew/grape-zoom-andrew.component';
+import { ToTheNearestGrapeComponent } from './to-the-nearest-grape/to-the-nearest-grape.component';
 
 @NgModule({
   declarations: [
@@ -93,7 +94,8 @@ import { GrapeZoomAndrewComponent } from './grape-zoom-andrew/grape-zoom-andrew.
     BoatDockComponent,
     GrapeZoomComponent,
     GrapeRegroupComponent,
-    GrapeZoomAndrewComponent
+    GrapeZoomAndrewComponent,
+    ToTheNearestGrapeComponent
   ],
   imports: [
     BrowserModule,
