@@ -45,7 +45,7 @@ export function farmAPI(_els, _setup) {
         dragStart = { x: 0, y: 0 }
         svgDefaultWidthHeight = 500
         TL = gsap.timeline()
-        harvested = 0
+        cropsHarvested = 0
         harvestDuration = 5
         lastHarvestedIndex: number
         harvestTotalText: SVGSVGElement
@@ -63,7 +63,7 @@ export function farmAPI(_els, _setup) {
         depositAnimating = false
         plantAnimating = false
         pause = false
-        dragged = false //for deposit, event is on pointer up so checks if the user dragged before firing event, to differentiate between drag and click.
+        didUserDrag = false //for deposit, event is on pointer up so checks if the user dragged before firing event, to differentiate between drag and click.
         isCombineSnapped = false
         snappedIndex = 0
 
@@ -100,6 +100,10 @@ export function farmAPI(_els, _setup) {
 
             this.init()
         }
+        private findElementLower(id: string): SVGSVGElement {
+            return this.gsvg.getElementById(id) as SVGSVGElement
+        }
+
 
         //generates lines of the plot
         generateLines() {
@@ -351,7 +355,7 @@ export function farmAPI(_els, _setup) {
                     arr.push(temp)
                 }
 
-                let postCount = self.harvested + preCount
+                let postCount = self.cropsHarvested + preCount
 
                 //animate combine
                 self.TL.to(self.largeCombineText, {
@@ -361,10 +365,13 @@ export function farmAPI(_els, _setup) {
                         self.largeCombineDraggable[0].enable()
                         self.isCombineSnapped = false
 
-                        if (self.harvested != postCount) {//update harvest number if off
-                            self.harvested = postCount
-                            self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
+                        if (self.cropsHarvested != postCount) {//update harvest number if off
+                            self.cropsHarvested = postCount
+                            self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3))
                             gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
+                        }
+                        if (self.cropsHarvested > 0) {
+                            gsap.to(self.findElementLower('harvestTotalBox'), {scale: '+=0.2', yoyo: true, repeat: 5})
                         }
                     }
                 })
@@ -380,21 +387,21 @@ export function farmAPI(_els, _setup) {
                                 self.wheat = self.gsvg.getElementById("wheat" + self.wheatNumber) as SVGSVGElement
                             }
                             if (e[0].style.visibility == "visible") {//if subrow 1 wheat element is visible
-                                self.harvested += 0.001 //increment harvest count
+                                self.cropsHarvested += 0.001 //increment harvest count
                                 self.wheatScale += 0.008 //increment trailer wheatscale
                                 if (self.wheatNumber <= 10 && self.wheatScale <= 0.8) {
                                     gsap.set(self.wheat, { scaleX: self.wheatScale, scaleY: self.wheatScale })//actually update scale of trailer wheat
                                 }
                             }
                             if (e[1].style.visibility == "visible") {//if subrow 2 wheat element is visible
-                                self.harvested += 0.001
+                                self.cropsHarvested += 0.001
                                 self.wheatScale += 0.008
                                 if (self.wheatNumber <= 10 && self.wheatScale <= 0.8) {
                                     gsap.set(self.wheat, { scaleX: self.wheatScale, scaleY: self.wheatScale })
                                 }
                             }
                             //update harvested text
-                            self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
+                            self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3))
                             gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
                         },
                         onComplete: function () { gsap.set(e, { visibility: "hidden" }) }
@@ -506,7 +513,7 @@ export function farmAPI(_els, _setup) {
         }
 
         handleDeposit(e) {
-            if (!self.animationPlaying && !self.depositAnimating && !self.dragged && self.harvested > 0) {
+            if (!self.animationPlaying && !self.depositAnimating && !self.didUserDrag && self.cropsHarvested > 0) {
                 self.TL.clear() //clear timeline else the animation would be buggy
 
                 self.largeCombineDraggable[0].disable()
@@ -515,7 +522,7 @@ export function farmAPI(_els, _setup) {
                 this.barnCounterText.textContent = String(this.deposited.toFixed(3))
                 gsap.set(this.barnCounterText, { x: 432 - this.barnCounterText.getBBox().width / 2, y: 125 + this.barnCounterText.getBBox().width / 4 })
 
-                this.harvestTotalText.textContent = String(self.harvested.toFixed(3))
+                this.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3))
                 gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
 
                 //getting position of combine relative to svg
@@ -524,10 +531,8 @@ export function farmAPI(_els, _setup) {
                 pt.y = this.largeCombineText.getBoundingClientRect().y
                 pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
 
-                let bbox = self.harvestTotalText.getBoundingClientRect()
-
                 //creating wheat elements for deposit animation
-                for (let i = 0; i < Math.ceil(self.harvested * 10) - 1; i++) {
+                for (let i = 0; i < Math.ceil(self.cropsHarvested * 10) - 1; i++) {
                     let wheat = document.createElementNS(this.svgns, "use")
                     self.TL.set(wheat, { attr: { href: "#single" }, x: pt.x + 22, y: pt.y + 28 }, "<+=0.1")
                     this.gsvg.appendChild(wheat)
@@ -543,11 +548,11 @@ export function farmAPI(_els, _setup) {
                         wheat.remove()
 
                         //update combine and barn numbers
-                        self.deposited += self.harvested
-                        self.harvested = 0;
+                        self.deposited += self.cropsHarvested
+                        self.cropsHarvested = 0;
                         self.barnCounterText.textContent = String(self.deposited.toFixed(3))
                         gsap.set(self.barnCounterText, { x: 432 - self.barnCounterText.getBBox().width / 2, y: 125 + self.barnCounterText.getBBox().width / 4 })
-                        self.harvestTotalText.textContent = String(self.harvested.toFixed(3))
+                        self.harvestTotalText.textContent = String(self.cropsHarvested.toFixed(3))
                         gsap.set(self.harvestTotalText, { x: - self.harvestTotalText.getBBox().width / 2 })
 
                         //reset wheat in trailer
@@ -565,6 +570,9 @@ export function farmAPI(_els, _setup) {
                 self.largeCombineDraggable[0].enable()
                 self.wheat = self.gsvg.getElementById("wheat" + self.wheatNumber) as SVGSVGElement
             }
+            else if (!this.didUserDrag && this.cropsHarvested == 0){
+                alert("No crops to deposit.")
+              }
         }
 
         calculateZoomIncrements() {
@@ -674,7 +682,7 @@ export function farmAPI(_els, _setup) {
                     }
                 },
                 onDragStart: function () {
-                    self.dragged = true
+                    self.didUserDrag = true
                 },
                 onRelease: function () {
                     for (let index = 0; index < largeCombineSnapPoints.length; index++) {
@@ -687,7 +695,7 @@ export function farmAPI(_els, _setup) {
                     if (self.pointerState == self.move) {
                         self.dragEnabled = true
                     }
-                    self.dragged = false
+                    self.didUserDrag = false
                 }
             })
 

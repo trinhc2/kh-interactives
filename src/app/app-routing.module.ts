@@ -37,6 +37,7 @@ import { GrapeZoomComponent } from './grape-zoom/grape-zoom.component';
 import { GrapeRegroupComponent } from './grape-regroup/grape-regroup.component';
 import { GrapeZoomAndrewComponent } from './grape-zoom-andrew/grape-zoom-andrew.component';
 import { ToTheNearestGrapeComponent } from './to-the-nearest-grape/to-the-nearest-grape.component';
+import { KhFarmGrapeTwoComponent } from './kh-farm-grape-two/kh-farm-grape-two.component';
 
 
 
@@ -79,7 +80,8 @@ const routes: Routes = [
   { path: 'grapeZoom', component: GrapeZoomComponent},
   { path: 'grapeRegroup', component: GrapeRegroupComponent},
   { path: 'grapeZoom2', component: GrapeZoomAndrewComponent},
-  { path: 'toTheNearestGrape', component: ToTheNearestGrapeComponent}
+  { path: 'toTheNearestGrape', component: ToTheNearestGrapeComponent},
+  { path: 'farmgrape2', component: KhFarmGrapeTwoComponent}
 ]
 
 @NgModule({

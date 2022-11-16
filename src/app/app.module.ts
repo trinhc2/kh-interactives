@@ -49,6 +49,7 @@ import { GrapeZoomComponent } from './grape-zoom/grape-zoom.component';
 import { GrapeRegroupComponent } from './grape-regroup/grape-regroup.component';
 import { GrapeZoomAndrewComponent } from './grape-zoom-andrew/grape-zoom-andrew.component';
 import { ToTheNearestGrapeComponent } from './to-the-nearest-grape/to-the-nearest-grape.component';
+import { KhFarmGrapeTwoComponent } from './kh-farm-grape-two/kh-farm-grape-two.component';
 
 @NgModule({
   declarations: [
@@ -95,7 +96,8 @@ import { ToTheNearestGrapeComponent } from './to-the-nearest-grape/to-the-neares
     GrapeZoomComponent,
     GrapeRegroupComponent,
     GrapeZoomAndrewComponent,
-    ToTheNearestGrapeComponent
+    ToTheNearestGrapeComponent,
+    KhFarmGrapeTwoComponent
   ],
   imports: [
     BrowserModule,
