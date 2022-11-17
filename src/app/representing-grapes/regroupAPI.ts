@@ -282,6 +282,7 @@ export class RegroupClass {
     let yPos = 100
 
     this.sliderControls.style.display = "none";
+    this.sliderOpen = false
 
     for (let i = 0; i < Math.floor(grapes.children.length / 10); i++) {
 
@@ -459,6 +460,7 @@ export class RegroupClass {
     this.increment = barWidth / (this.max - this.min);
 
     gsap.set(this.sliderControls, { display: "none" })
+    this.sliderOpen = false;
     gsap.set(this.num, { x: -(this.num.getBBox().width / 2) })
     //gsap.set(this.num, { display: "none" })
 
@@ -488,6 +490,14 @@ export class RegroupClass {
 
     this.goButton.addEventListener("pointerdown", e => this.playRegroup(grapes));
     this.findElement('restart').addEventListener("pointerdown", () => this.restart())
+
+    const self = this
+    this.gsvg.addEventListener("pointerdown", (event) => {
+      if (self.sliderOpen && event.target == this.gsvg) {
+        self.sliderControls.style.display = "none";
+        self.sliderOpen = false;
+      }
+    })
 
     this.addEventListenersAndInteractivity()
 
