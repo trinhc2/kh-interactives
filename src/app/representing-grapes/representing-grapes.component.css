@@ -1,0 +1,16 @@
+svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+#numberDisplay, #num, #buttons, #slider, #goButton, #restart {
+  cursor: pointer;
+  pointer-events: all;
+}
+
+#num, #minText, #maxText {
+  user-select:none
+}
