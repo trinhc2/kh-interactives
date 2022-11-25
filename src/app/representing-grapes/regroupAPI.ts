@@ -19,7 +19,7 @@ export class RegroupClass {
 
   private startingNumber;
   private startingGrapes = 66
-  private startingBundles = 46
+  private startingBundles = 36
 
   private globalScale = 0.5
 
@@ -35,11 +35,12 @@ export class RegroupClass {
   goButton: SVGSVGElement
   sliderOpen = false;
   increment: number
-  max = 50;
+  max = 500;
   min = 0
   //#endregion
 
   animationFinished = false;
+  firstTimeOpen = true;
 
   public constructor(gsvg: SVGSVGElement) {
     this.gsvg = gsvg
@@ -99,7 +100,6 @@ export class RegroupClass {
     gsap.set(bundle, { scale: scale })
 
     this.redrawElements(Array.from(bundle.children))
-    //console.log(group.getBBox())
     return bundle as SVGSVGElement
   }
 
@@ -254,8 +254,6 @@ export class RegroupClass {
         xSpacing += grapeBBox.width * self.globalScale
       }
     }
-    /*
-    const self = this
     this.tl.to(this.findElement('grapes'), {
       onComplete: function () {
         if (self.numValue == self.startingNumber) {
@@ -266,12 +264,20 @@ export class RegroupClass {
         }
       }
     })
-    */
   }
 
   //#region SLIDER FUNCTIONS
   inputFieldPressed() {
     if (!this.sliderOpen && !this.animationFinished) {
+      if (this.firstTimeOpen){
+        const self = this
+        let start = self.findElement('slider').getBoundingClientRect().x
+        gsap.to(this.findElement("pointerHand"), {x:"+=50", yoyo:true, repeat: 1, delay: 0.5, duration: 2, onComplete: () => {gsap.set(this.findElement('pointerHand'), {visibility: "hidden"})}})
+        gsap.to(this.findElement('slider'), {x:"+=50", yoyo: true, repeat: 1, delay: 0.5, duration: 2, onUpdate: function() {
+          self.num.textContent = String(Math.round((self.findElement('slider').getBoundingClientRect().x - start)/ self.increment))
+          gsap.set(self.num, { x: -(self.num.getBBox().width / 2) })
+        }})
+      }
       if (this.num.style.display == "none") {
         this.num.textContent = String(this.min)
         this.numValue = this.min
@@ -288,7 +294,20 @@ export class RegroupClass {
   }
 
   buttonPressed(button) {
-    let newNumber = parseInt(this.num.textContent) + parseInt(button.getAttribute("val"))
+    let value;
+    if (button.id == "largeInc") {
+      value = 5
+    }
+    else if (button.id == "smallInc"){
+      value = 1
+    }
+    else if (button.id == "smallDec"){
+      value = -1
+    }
+    else if (button.id == "largeDec"){
+      value = -5
+    }
+    let newNumber = parseInt(this.num.textContent) + value
     if (newNumber > this.max) {
       newNumber = this.max
     }
@@ -303,6 +322,7 @@ export class RegroupClass {
   sliderValueHasBeenUpdated(value) {
     this.num.textContent = value
     this.numValue = value
+
     gsap.set(this.num, { x: -(this.num.getBBox().width / 2) })
     gsap.set(this.slider, { x: this.increment * (value - this.min) })
   }
@@ -375,28 +395,10 @@ export class RegroupClass {
 
   private init(): void {
 
-    //this.createGrapeBundle(100, 400)
-    //console.log(this.findElement('emptyVine').getBoundingClientRect(), this.findElement('fullVine').getBBox())
-
-    /*
-    var pt = this.gsvg.createSVGPoint()
-    pt.x = this.findElement('emptyVine').getBoundingClientRect().x
-    pt.y = this.findElement('emptyVine').getBoundingClientRect().y
-    pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
-
-    //console.log(pt.x, pt.y)
-    let group = this.fillVine(pt.x, pt.y) as SVGSVGElement
-
-    //gsap.set(this.findElement('emptyVine'), { visibility: 'hidden' })
-
-    document.addEventListener('pointerdown', () => this.play(pt.x, pt.y, group))
-    */
-    //document.addEventListener('pointerdown', () => this.playBundle())
-
     gsap.registerPlugin(Draggable)
 
     //calculating increments for slider
-    let barWidth = Math.round(this.sliderBar.getBBox().width - this.slider.getBBox().width)
+    let barWidth = Math.round(this.sliderBar.getBBox().width - this.slider.getBBox().width) - 1
     this.increment = barWidth / (this.max - this.min);
 
     gsap.set(this.sliderControls, { display: "none" })
@@ -405,9 +407,9 @@ export class RegroupClass {
     //gsap.set(this.num, { display: "none" })
 
     //setting slider max and mins and repositioning the max
-    this.gsvg.getElementById("maxTextInner").textContent = String(this.max)
+    this.gsvg.getElementById("maxText").textContent = String(this.max)
     gsap.set(this.maxText, { x: `-=${this.maxText.getBBox().width}` })
-    this.gsvg.getElementById("minTextInner").textContent = String(this.min)
+    this.gsvg.getElementById("minText").textContent = String(this.min)
 
     let leaves = document.createElementNS(svgns, 'use')
     gsap.set(leaves, { attr: { href: "#leaves" }, opacity: 0 })
@@ -418,7 +420,7 @@ export class RegroupClass {
 
     let tempBundle = this.createGrapeBundle(0, 0, this.globalScale, false)
     this.gsvg.appendChild(tempBundle)
-    //gsap.set(tempBundle, {visibility: "hidden"})
+    gsap.set(tempBundle, {visibility: "hidden"})
     let bundleBBox = tempBundle.getBBox()
 
     let leafBBox = this.findElement('leaves').getBBox()
@@ -474,5 +476,8 @@ export class RegroupClass {
 
     //this.gsvg.appendChild(this.createVine(250,250,1))
     //this.gsvg.appendChild(this.createVine(250,250,0.5))
+
+    gsap.set(this.findElement('displayBox'), {transformOrigin: "center"})
+    gsap.to(this.findElement('displayBox'), {scale: '+=0.2', yoyo: true, repeat: 5, delay: 1})
   }
 }
