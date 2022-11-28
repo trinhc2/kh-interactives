@@ -438,13 +438,13 @@ export class RegroupClass {
       cursor: "pointer",
       onPress: function () {
         //disable controller drag if we are dragging slider
-        this.controllerDraggable[0].disable()
+        self.controllerDraggable[0].disable()
       },
       onDrag: function () {
         self.sliderValueHasBeenUpdated(Math.round(this.x / self.increment) + Number(self.min))
       },
       onDragEnd: function () {
-        this.controllerDraggable[0].enable()
+        self.controllerDraggable[0].enable()
       }
 
     })
@@ -486,7 +486,7 @@ export class RegroupClass {
     gsap.registerPlugin(Draggable)
 
     //calculating increments for slider
-    let barWidth = Math.round(this.sliderBar.getBBox().width - this.slider.getBBox().width) - 1
+    let barWidth = Math.round(this.sliderBar.getBBox().width - this.slider.getBBox().width)
     this.increment = barWidth / (this.max - this.min);
 
     gsap.set(this.sliderControls, { display: "none" })
