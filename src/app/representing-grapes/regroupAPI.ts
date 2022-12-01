@@ -12,8 +12,8 @@ export class RegroupClass {
   private grapeLocationFlipped = [[23, 4], [11, 0], [0, 6], [12, 12], [25, 14], [16, 23], [3, 18], [14, 32], [3, 27], [6, 40]];
 
   private startingNumber;
-  private startingGrapes = 0; //26
-  private startingBundles = 50;
+  private startingGrapes = 26; //26
+  private startingBundles = 26;
 
   private globalScale = 0.5;
 
