@@ -7,15 +7,13 @@ export class RegroupClass {
   private gsvg: SVGSVGElement;
   private tl: any;
 
-  private bundleLocation = [[58, 21, 1], [107, 23, -1], [21, 66, 1], [62, 86, -1], [117, 81, -1], [163, 71, 1], [8, 126, 1], [47, 151, -1], [88, 136, 1], [132, 136, -1]];
-  private grapeLocation = [[2, 4], [14, 0], [25, 6], [13, 12], [0, 14], [9, 23], [22, 18], [11, 32], [22, 27], [19, 40]];
-  private grapeLocationFlipped = [[23, 4], [11, 0], [0, 6], [12, 12], [25, 14], [16, 23], [3, 18], [14, 32], [3, 27], [6, 40]];
+  private bundleLocation = [[29, 10.5, 1], [53.5, 11.5, -1], [10.5, 33, 1], [31, 43, -1], [58.5, 40.5, -1], [81.5, 35.5, 1], [4, 63, 1], [23.5, 75.5, -1], [44, 68, 1], [66, 68, -1]];
+  private grapeLocation = [[1, 2], [7, 0], [12.5, 3], [6.5, 6], [0, 7], [4.5, 11.5], [11, 9], [5.5, 16], [11, 13.5], [9.5, 20]];
+  private grapeLocationFlipped = [[11.5, 2], [5.5, 0], [0, 3], [6, 6], [12.5, 7], [8, 11.5], [1.5, 9], [7, 16], [1.5, 13.5], [3, 20]];
 
   private startingNumber;
   private startingGrapes = 26; //26
   private startingBundles = 26;
-
-  private globalScale = 0.5;
 
   private regroupSpacingX = 0;
 
@@ -76,7 +74,7 @@ export class RegroupClass {
     });
   }
 
-  private createGrapeBundle(x: number, y: number, scale: number, flip: boolean): SVGSVGElement {
+  private createGrapeBundle(x: number, y: number, flip: boolean): SVGSVGElement {
     let bundle = document.createElementNS(svgns, 'g');
     let bbox = this.findElement('grape').getBBox();
 
@@ -98,13 +96,11 @@ export class RegroupClass {
       bundle.appendChild(use);
     }
 
-    gsap.set(bundle, { scale: scale });
-
     this.redrawElements(Array.from(bundle.children));
     return bundle as SVGSVGElement;
   }
 
-  private createVine(x: number, y: number, scale: number): SVGSVGElement {
+  private createVine(x: number, y: number): SVGSVGElement {
     let vine = document.createElementNS(svgns, 'g');
 
     let use = document.createElementNS(svgns, 'use');
@@ -117,17 +113,16 @@ export class RegroupClass {
     for (let i = 0; i < this.bundleLocation.length; i++) {
 
       if (this.bundleLocation[i][2] == -1) {
-        let grapeBundle = this.createGrapeBundle(x, y, 1, true);
+        let grapeBundle = this.createGrapeBundle(x, y, true);
         gsap.set(grapeBundle, { x: this.bundleLocation[i][0], y: this.bundleLocation[i][1], visibility: "hidden" });
         bundles.appendChild(grapeBundle);
       }
       else {
-        let grapeBundle = this.createGrapeBundle(x, y, 1, false);
+        let grapeBundle = this.createGrapeBundle(x, y, false);
         gsap.set(grapeBundle, { x: this.bundleLocation[i][0], y: this.bundleLocation[i][1], visibility: "hidden" });
         bundles.appendChild(grapeBundle);
       }
     }
-    gsap.set(vine, { scale: scale });
     vine.appendChild(bundles);
 
     return vine as SVGSVGElement;
@@ -194,8 +189,8 @@ export class RegroupClass {
 
       let textX, textY;
       if (textContent != "10") {
-        textX = pt.x + elementBBox.width / 2 * this.globalScale - elementText.getBBox().width / 2;
-        textY = pt.y + elementBBox.height / 2 * this.globalScale - elementText.getBBox().height / 2;
+        textX = pt.x + elementBBox.width / 2 - elementText.getBBox().width / 2;
+        textY = pt.y + elementBBox.height / 2 - elementText.getBBox().height / 2;
       }
       else {
         textX = pt.x + elementBBox.width / 2 - elementText.getBBox().width / 2;
@@ -287,8 +282,8 @@ export class RegroupClass {
   
         let newX, newY;
         if (type == "grapes") {
-          newX = -currentElBBox.x * this.globalScale + this.regroupSpacingX;
-          newY = -currentElBBox.y * this.globalScale + ySpacing;
+          newX = -currentElBBox.x + this.regroupSpacingX;
+          newY = -currentElBBox.y + ySpacing;
         }
         else {
           newX = -currentElBBox.x + this.regroupSpacingX;
@@ -297,11 +292,11 @@ export class RegroupClass {
   
         timeline.to(currentEl, { x: newX, y: newY, duration: "1" }, "<+=0.09");
   
-        ySpacing += currentEl.getBBox().height * this.globalScale + offset;
+        ySpacing += currentEl.getBBox().height + offset;
   
         columnCounter++;
         if (columnCounter % 5 == 0 || i == elementArr.length - 1) {
-          this.regroupSpacingX += currentElBBox.width * this.globalScale + offset;
+          this.regroupSpacingX += currentElBBox.width + offset;
           if (columnCounter % 10 == 0) {
             this.regroupSpacingX += 15;
           }
@@ -310,16 +305,8 @@ export class RegroupClass {
       }
     }
   }
-  private playRegroup(): void {
-    if (!this.animationFinished) {
-    this.sliderControls.style.display = "none";
-    this.sliderOpen = false;
 
-    const self = this;
-
-    let timeline = gsap.timeline({ onComplete: this.decompose, callbackScope: self });
-
-    //animating grapes to bundles
+  private animateGrapesToBundles(timeline) {
     let leafBBox = this.findElement('leaves').getBBox();
     let columnCounter = 0;
 
@@ -331,12 +318,12 @@ export class RegroupClass {
       let group = document.createElementNS(svgns, 'g');
 
       let leaves = document.createElementNS(svgns, 'use');
-      let leafX = (this.regroupSpacingX + (-leafBBox.x - leafBBox.width / 4) * this.globalScale);
-      let leafY = ySpacing + (-leafBBox.height / 3 - leafBBox.y) * this.globalScale;
-      gsap.set(leaves, { attr: { href: "#leaves" }, x: leafX, y: leafY, scale: this.globalScale, opacity: 0 });
+      let leafX = (this.regroupSpacingX -leafBBox.x - leafBBox.width / 4);
+      let leafY = ySpacing -leafBBox.height / 3 - leafBBox.y;
+      gsap.set(leaves, { attr: { href: "#leaves" }, x: leafX, y: leafY, opacity: 0 });
       group.appendChild(leaves);
 
-      let bundle = this.createGrapeBundle(0, 0, 0.5, false);
+      let bundle = this.createGrapeBundle(0, 0, false);
       gsap.set(bundle, { x: this.regroupSpacingX, y: ySpacing, visibility: "hidden" });
       group.appendChild(bundle);
 
@@ -347,8 +334,8 @@ export class RegroupClass {
 
         let grape = this.findElement('grapes').children[i * 10 + j] as SVGSVGElement;
         let grapeBBox = grape.getBBox();
-        let newX = (-grapeBBox.x + this.grapeLocation[j][0]) * this.globalScale + this.regroupSpacingX;
-        let newY = (-grapeBBox.y + this.grapeLocation[j][1]) * this.globalScale + ySpacing;
+        let newX = -grapeBBox.x + this.grapeLocation[j][0] + this.regroupSpacingX;
+        let newY = -grapeBBox.y + this.grapeLocation[j][1] + ySpacing;
 
         timeline.to(grape, {
           x: newX, y: newY, duration: "1", onComplete: function () {
@@ -356,22 +343,24 @@ export class RegroupClass {
           }
         }, "<+=0.09");
       }
-      ySpacing += bundle.getBBox().height * this.globalScale + 10;
+      ySpacing += bundle.getBBox().height + 10;
 
       columnCounter++
       if (columnCounter % 5 == 0 || i == Math.floor(this.startingGrapes / 10) - 1) {
-        this.regroupSpacingX += bundle.getBBox().width * self.globalScale + 10;
+        this.regroupSpacingX += bundle.getBBox().width + 10;
         ySpacing = 80;
       }
       timeline.set(this.findElement('grapes'), { delay: 0 }); //pause slight pause after each row animation
     }
+  }
 
-    //animating bundles to vines
-    columnCounter = 0;
+  private animateBundlesToVines(timeline): void {
+    let columnCounter = 0;
+    let ySpacing = 80
     this.regroupSpacingX = 0;
     for (let i = 0; i < Math.floor(this.findElement('bundles').children.length / 10); i++) {
 
-      let vines = this.createVine(this.regroupSpacingX, ySpacing, this.globalScale);
+      let vines = this.createVine(this.regroupSpacingX, ySpacing);
       let vinesEls = gsap.utils.toArray("g", vines.children[1]);
       this.findElement('vines').appendChild(vines);
 
@@ -381,8 +370,8 @@ export class RegroupClass {
         let bundle = this.findElement('bundles').children[i * 10 + j] as SVGSVGElement;
         let bundleBBox = bundle.getBBox();
 
-        let newX = -bundleBBox.x - bundleBBox.width + this.regroupSpacingX + ((bundle.children[1] as SVGSVGElement).getBBox().width + this.bundleLocation[j][0]) * this.globalScale;
-        let newY = -bundleBBox.y - bundleBBox.height + ySpacing + ((bundle.children[1] as SVGSVGElement).getBBox().height + this.bundleLocation[j][1]) * this.globalScale;
+        let newX = -bundleBBox.x - bundleBBox.width + this.regroupSpacingX + (bundle.children[1] as SVGSVGElement).getBBox().width + this.bundleLocation[j][0];
+        let newY = -bundleBBox.y - bundleBBox.height + ySpacing + (bundle.children[1] as SVGSVGElement).getBBox().height + this.bundleLocation[j][1];
 
         timeline.to(bundle, {
           x: newX, y: newY, duration: "1", onComplete: function () {
@@ -390,19 +379,33 @@ export class RegroupClass {
           }
         }, "<+=0.09");
       }
-      ySpacing += vines.getBBox().height * this.globalScale + 15;
+      ySpacing += vines.getBBox().height + 15;
 
       columnCounter++
       if (columnCounter % 3 == 0 || i == Math.floor(this.findElement('bundles').children.length / 10) - 1) {
-        this.regroupSpacingX += vines.getBBox().width * this.globalScale + 15;
+        this.regroupSpacingX += vines.getBBox().width + 15;
         ySpacing = 80;
       }
     }
     timeline.set(this.findElement('grapes'), { delay: 0 }); //pause slight pause after each row animation
+  }
+  private playRegroup(): void {
+    if (!this.animationFinished) {
+    this.sliderControls.style.display = "none";
+    this.sliderOpen = false;
+
+    const self = this;
+
+    let timeline = gsap.timeline({ onComplete: this.decompose, callbackScope: self });
+    
+    this.animateGrapesToBundles(timeline);
+
+    //animating bundles to vines
+    this.animateBundlesToVines(timeline);
 
     //animating remaining bundles
     let remainingBundles = Array.from(self.findElement('bundles').children);
-    this.animateRemainingEls(remainingBundles, timeline, 20, "bundles");
+    this.animateRemainingEls(remainingBundles, timeline, 5, "bundles");
 
     //animating remaining grapes
     this.regroupSpacingX += 20;
@@ -519,7 +522,7 @@ export class RegroupClass {
     let xSpacing = 150;
     let ySpacing = 80;
 
-    let tempBundle = this.createGrapeBundle(0, 0, this.globalScale, false);
+    let tempBundle = this.createGrapeBundle(0, 0, false);
     this.gsvg.appendChild(tempBundle);
     gsap.set(tempBundle, { visibility: "hidden" });
     let bundleBBox = tempBundle.getBBox();
@@ -528,24 +531,24 @@ export class RegroupClass {
     for (let i = 0; i < this.startingBundles; i++) {
       let group = document.createElementNS(svgns, 'g');
       if (i % 5 == 0 && i > 0) {
-        xSpacing += bundleBBox.width * this.globalScale + 5;
+        xSpacing += bundleBBox.width + 5;
         if (i % 10 == 0) {
           xSpacing += 15;
         }
         ySpacing = 80;
       }
       let leaves = document.createElementNS(svgns, 'use');
-      let leafX = (-bundleBBox.x + xSpacing + (-leafBBox.x - leafBBox.width / 4) * this.globalScale);
-      let leafY = ySpacing - bundleBBox.x + (-leafBBox.height / 3 - leafBBox.y) * this.globalScale;
-      gsap.set(leaves, { attr: { href: "#leaves" }, x: leafX, y: leafY, scale: this.globalScale });
+      let leafX = -bundleBBox.x + xSpacing -leafBBox.x - leafBBox.width / 4;
+      let leafY = ySpacing - bundleBBox.x -leafBBox.height / 3 - leafBBox.y;
+      gsap.set(leaves, { attr: { href: "#leaves" }, x: leafX, y: leafY});
       group.appendChild(leaves);
 
-      let bundle = this.createGrapeBundle(xSpacing, ySpacing, this.globalScale, false);
+      let bundle = this.createGrapeBundle(xSpacing, ySpacing, false);
       gsap.set(bundle, { visibility: "visible" });
 
       group.appendChild(bundle);
       this.findElement('bundles').appendChild(group);
-      ySpacing += bundleBBox.height * this.globalScale + 10;
+      ySpacing += bundleBBox.height + 10;
     }
 
     let grapeBBox = this.findElement('grape').getBBox();
@@ -554,16 +557,16 @@ export class RegroupClass {
     ySpacing = 80;
     for (let i = 0; i < this.startingGrapes; i++) {
       if (i % 5 == 0) {
-        xSpacing += grapeBBox.width * this.globalScale + 5;
+        xSpacing += grapeBBox.width + 5;
         if (i % 10 == 0) {
           xSpacing += 10;
         }
         ySpacing = 80;
       }
       let temp = document.createElementNS(svgns, 'use');
-      gsap.set(temp, { attr: { href: "#grape" }, x: (-grapeBBox.x * 0.5 + xSpacing), y: (-grapeBBox.y * 0.5 + ySpacing), scale: 0.5 });
+      gsap.set(temp, { attr: { href: "#grape" }, x: (-grapeBBox.x + xSpacing), y: (-grapeBBox.y + ySpacing)});
       this.findElement('grapes').appendChild(temp);
-      ySpacing += grapeBBox.height * this.globalScale + 5;
+      ySpacing += grapeBBox.height + 5;
     }
   }
 
