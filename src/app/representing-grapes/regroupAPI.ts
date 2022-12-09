@@ -5,7 +5,8 @@ const svgns = 'http://www.w3.org/2000/svg'
 export class RegroupClass {
 
   private gsvg: SVGSVGElement;
-  private tl: any;
+  private alternateTimeline: any;
+  private mainTimeline: any;
 
   private bundleLocation = [[29, 10.5, 1], [53.5, 11.5, -1], [10.5, 33, 1], [31, 43, -1], [58.5, 40.5, -1], [81.5, 35.5, 1], [4, 63, 1], [23.5, 75.5, -1], [44, 68, 1], [66, 68, -1]];
   private grapeLocation = [[1, 2], [7, 0], [12.5, 3], [6.5, 6], [0, 7], [4.5, 11.5], [11, 9], [5.5, 16], [11, 13.5], [9.5, 20]];
@@ -14,9 +15,9 @@ export class RegroupClass {
   private truckLocation = [[80, 55], [93, 63], [106, 71], [119, 79], [132, 87], [145, 95], [158, 103], [171, 111], [184, 119], [197, 127]]
   private barrelLocation = [[31.5, 1], [27.5, 3], [23, 5], [18.5, 8], [14, 10.5], [36.5, 4], [32.5, 6], [28, 8], [23.5, 10], [19, 12.5]]
 
-  private startingNumber;
-  private startingOnes = 26; //26
-  private startingTens = 26;
+  private startingNumber: number;
+  private startingOnes: number;
+  private startingTens: number;
 
   private regroupSpacingX = 0;
 
@@ -39,6 +40,7 @@ export class RegroupClass {
 
   private animationFinished = false;
   private firstTimeOpen = true;
+  private tutorialFinished = false;
   private tryAgain: SVGSVGElement;
   private correct: SVGSVGElement;
 
@@ -47,11 +49,11 @@ export class RegroupClass {
   private hundredsGroup: SVGSVGElement;
 
   private boatScale = 0.5
-  private elementType = "barrels"
+  private elementType: string
 
-  public constructor(gsvg: SVGSVGElement) {
+  public constructor(gsvg: SVGSVGElement, type: string, tens: number, ones: number) {
     this.gsvg = gsvg;
-    this.tl = gsap.timeline();
+    this.alternateTimeline = gsap.timeline();
 
     this.sliderNumber = this.findElement("num");
     this.sliderControls = this.findElement("sliderControls");
@@ -68,6 +70,9 @@ export class RegroupClass {
     this.tensGroup = this.findElement('tens');
     this.hundredsGroup = this.findElement('hundreds');
 
+    this.startingTens = tens;
+    this.startingOnes = ones
+    this.elementType = type
     this.startingNumber = this.startingTens * 10 + this.startingOnes;
     this.init();
   }
@@ -112,6 +117,16 @@ export class RegroupClass {
 
     this.redrawElements(Array.from(bundle.children));
     return bundle as SVGSVGElement;
+  }
+
+  private createLeaves(xSpacing: number, ySpacing: number, opacity: number): SVGUseElement {
+    let leafBBox = this.findElement('leaves').getBBox();
+    let leaves = document.createElementNS(svgns, 'use');
+    let leafX = xSpacing - leafBBox.x - leafBBox.width / 4;
+    let leafY = ySpacing - leafBBox.y - leafBBox.height / 3;
+    gsap.set(leaves, { attr: { href: "#leaves" }, x: leafX, y: leafY, opacity: opacity });
+
+    return leaves
   }
 
   private createVine(x: number, y: number): SVGSVGElement {
@@ -170,7 +185,7 @@ export class RegroupClass {
       for (let i = 1; i < textArr.length; i++) {
         let currentText = textArr[i] as SVGSVGElement;
 
-        this.tl.to(currentText, {
+        this.alternateTimeline.to(currentText, {
           x: totalTextX, y: totalTextY, onComplete: () => {
             total.textContent = String(parseInt(total.textContent) + parseInt(currentText.textContent));
             currentText.remove();
@@ -182,7 +197,7 @@ export class RegroupClass {
 
   private groupPlaceValues(total: SVGSVGElement, value: SVGSVGElement): void {
     if (value) {
-      this.tl.to(value, {
+      this.alternateTimeline.to(value, {
         x: total.getAttribute('xPos'), y: total.getAttribute('yPos'), delay: 0.1, onComplete: () => {
           if (total != value) {
             total.textContent = String(parseInt(total.textContent) + parseInt(value.textContent));
@@ -220,7 +235,7 @@ export class RegroupClass {
 
       elementBBox = currentEl.getBBox();
 
-      this.tl.to(currentEl, { scale: 0, duration: 0.5 });
+      this.alternateTimeline.to(currentEl, { scale: 0, duration: 0.5 });
 
       let textX, textY;
       textX = pt.x + elementBBox.width / 2 - elementText.getBBox().width / 2;
@@ -239,7 +254,7 @@ export class RegroupClass {
         attr: { xPos: textX, yPos: textY },
         x: textX, y: textY, transformOrigin: 'center', scale: 0
       });
-      this.tl.to(elementText, {
+      this.alternateTimeline.to(elementText, {
         scale: 1, onComplete: function () {
           currentEl.remove();
         }
@@ -250,17 +265,17 @@ export class RegroupClass {
   private checkAnswer(): void {
     const self = this;
 
-    this.tl.to(this.onesGroup, {
+    this.alternateTimeline.to(this.onesGroup, {
       onComplete: function () {
         if (self.sliderNumberValue == self.startingNumber) {
           gsap.set(self.correct, { visibility: "visible", transformOrigin: "center", scale: 0 });
-          self.tl.to(self.correct, { scale: 1, duration: 0.5 });
+          self.alternateTimeline.to(self.correct, { scale: 1, duration: 0.5 });
         }
         else {
-          self.tl.to(self.sliderNumber, { x: '-=5', yoyo: true, repeat: 1, duration: 0.1 });
-          self.tl.to(self.sliderNumber, { x: '+=5', yoyo: true, repeat: 1, duration: 0.1 });
-          self.tl.to(self.sliderNumber, { x: '-=5', yoyo: true, repeat: 1, duration: 0.1 });
-          self.tl.to(self.tryAgain, { y: 0 });
+          self.alternateTimeline.to(self.sliderNumber, { x: '-=5', yoyo: true, repeat: 1, duration: 0.1 });
+          self.alternateTimeline.to(self.sliderNumber, { x: '+=5', yoyo: true, repeat: 1, duration: 0.1 });
+          self.alternateTimeline.to(self.sliderNumber, { x: '-=5', yoyo: true, repeat: 1, duration: 0.1 });
+          self.alternateTimeline.to(self.tryAgain, { y: 0 });
         }
       }
     });
@@ -301,17 +316,17 @@ export class RegroupClass {
     let ten = tensTextArr[0] as SVGSVGElement;
     let one = onesTextArr[0] as SVGSVGElement;
     if (ten) {
-      this.tl.to(ten, { y: total.getAttribute('yPos'), delay: 0.1 });
+      this.alternateTimeline.to(ten, { y: total.getAttribute('yPos'), delay: 0.1 });
     }
 
     if (one) {
-      this.tl.to(one, { y: total.getAttribute('yPos') });
+      this.alternateTimeline.to(one, { y: total.getAttribute('yPos') });
     }
     this.groupPlaceValues(total, ten);
     this.groupPlaceValues(total, one);
 
     let totalBBox = total.getBBox();
-    this.tl.to(total, { x: displayBBox.x + displayBBox.width / 2 - totalBBox.width / 2, y: displayBBox.y + displayBBox.height + 40, delay: 0.1 });
+    this.alternateTimeline.to(total, { x: displayBBox.x + displayBBox.width / 2 - totalBBox.width / 2, y: displayBBox.y + displayBBox.height + 40, delay: 0.1 });
 
     this.checkAnswer();
   }
@@ -351,24 +366,27 @@ export class RegroupClass {
       this.gsvg.appendChild(tempBundle);
       gsap.set(tempBundle, { visibility: "hidden" });
       tensBBox = tempBundle.getBBox();
+      tensBBox.width += 5
+      tensBBox.height += 5
     }
     else {
       tensBBox = this.findElement('truck').getBBox()
     }
-    let leafBBox = this.findElement('leaves').getBBox();
 
     let tensGroupBBox = this.tensGroup.getBBox();
     this.regroupSpacingX = tensGroupBBox.x + tensGroupBBox.width + 25;
+    if (this.startingTens == 0){
+      this.regroupSpacingX += 100
+    }
     let ySpacing = 80
     let columnCounter = 0
+
     for (let i = 0; i < Math.floor(this.startingOnes / 10); i++) {
       let tenElement, tenElementChildren;
       if (this.elementType == "grapes") {
         tenElement = document.createElementNS(svgns, 'g');
-        let leaves = document.createElementNS(svgns, 'use');
-        let leafX = this.regroupSpacingX - leafBBox.x - leafBBox.width / 4;
-        let leafY = ySpacing - leafBBox.height / 3 - leafBBox.y;
-        gsap.set(leaves, { attr: { href: "#leaves" }, x: leafX, y: leafY, opacity: 0 });
+
+        let leaves = this.createLeaves(this.regroupSpacingX, ySpacing, 0)
         tenElement.appendChild(leaves);
 
         let bundle = this.createGrapeBundle(0, 0, false);
@@ -413,12 +431,15 @@ export class RegroupClass {
           }
         }, "<+=0.09");
       }
-      ySpacing += tenElement.getBBox().height + 10;
+      ySpacing += tenElement.getBBox().height;
 
       columnCounter++
       if (columnCounter % 5 == 0 || i == Math.floor(this.startingOnes / 10) - 1) {
-        this.regroupSpacingX += tenElement.getBBox().width + 10;
+        this.regroupSpacingX += tenElement.getBBox().width;
         ySpacing = 80;
+      }
+      if (columnCounter % 10 == 0) {
+        this.regroupSpacingX += 15
       }
       timeline.set(this.onesGroup, { delay: 0 }); //pause slight pause after each row animation
     }
@@ -487,6 +508,7 @@ export class RegroupClass {
 
       let timeline = gsap.timeline({ onComplete: this.decompose, callbackScope: self });
 
+      this.mainTimeline = timeline
 
       this.animateOnesToTens(timeline)
 
@@ -511,197 +533,232 @@ export class RegroupClass {
     }
   }
 
-  private drawElements() {
-    let xSpacing = 150;
-    let ySpacing = 80;
+  private drawTensElements() {
+    if (this.startingTens > 0) {
 
-    let tensBBox;
-    if (this.elementType == "grapes") {
-      let tempBundle = this.createGrapeBundle(0, 0, false);
-      this.gsvg.appendChild(tempBundle);
-      gsap.set(tempBundle, { visibility: "hidden" });
-      tensBBox = tempBundle.getBBox();
-    }
-    else {
-      tensBBox = this.findElement('truck').getBBox()
-    }
+      this.regroupSpacingX = 130;
+      let ySpacing = 80;
 
-    let leafBBox = this.findElement('leaves').getBBox();
-
-    for (let i = 0; i < this.startingTens; i++) {
-      if (i % 5 == 0 && i > 0) {
-        xSpacing += tensBBox.width;
-        if (this.elementType == "grapes") {
-          xSpacing += 5
-        }
-        if (i % 10 == 0) {
-          xSpacing += 15;
-        }
-        ySpacing = 80;
-      }
+      let tensBBox;
       if (this.elementType == "grapes") {
-        let group = document.createElementNS(svgns, 'g');
-
-        let leaves = document.createElementNS(svgns, 'use');
-        let leafX = xSpacing - leafBBox.x - leafBBox.width / 4;
-        let leafY = ySpacing - leafBBox.y - leafBBox.height / 3;
-        gsap.set(leaves, { attr: { href: "#leaves" }, x: leafX, y: leafY });
-        group.appendChild(leaves);
-
-        let bundle = this.createGrapeBundle(xSpacing, ySpacing, false);
-        gsap.set(bundle, { visibility: "visible" });
-
-        group.appendChild(bundle);
-        this.tensGroup.appendChild(group);
+        let tempBundle = this.createGrapeBundle(0, 0, false);
+        this.gsvg.appendChild(tempBundle);
+        gsap.set(tempBundle, { visibility: "hidden" });
+        tensBBox = tempBundle.getBBox();
+        tensBBox.width += 5
+        tensBBox.height += 5
       }
-
       else {
-        let truck = this.findElement('truck').cloneNode(true)
-        gsap.set(truck, { x: -tensBBox.x + xSpacing, y: -tensBBox.y + ySpacing, visibility: "visible" })
-
-        this.tensGroup.appendChild(truck);
+        tensBBox = this.findElement('truck').getBBox()
       }
-      ySpacing += tensBBox.height;
-      if (this.elementType == "grapes") {
-        ySpacing += 10
-      }
-    }
+      let secondRow = false
 
-    let onesBBox;
-    let scale;
-    let href;
-    if (this.elementType == "grapes") {
-      onesBBox = this.findElement('grape').getBBox();
-      scale = 1
-      href = "#grape"
-    }
-    else {
-      onesBBox = this.findElement('barrel').getBBox();
-      scale = 2
-      href = "#barrel"
-    }
-
-    xSpacing += 50;
-    ySpacing = 80;
-    for (let i = 0; i < this.startingOnes; i++) {
-      if (i % 5 == 0) {
-        xSpacing += onesBBox.width * scale + 5;
-        if (i % 10 == 0) {
-          xSpacing += 10;
+      for (let i = 0; i < this.startingTens; i++) {
+        if (i % 5 == 0 && i % 10 != 0 && i > 0) {
+          if (secondRow) {
+            this.regroupSpacingX += tensBBox.width;
+            ySpacing -= tensBBox.height * 5
+          }
+          else {
+            this.regroupSpacingX += tensBBox.width;
+            ySpacing = 80;
+          }
         }
-        ySpacing = 80;
+        if (i % 10 == 0 && i > 0) {
+          if (secondRow) {
+            ySpacing = 80
+            this.regroupSpacingX += tensBBox.width + 20
+            secondRow = false
+          }
+          else {
+            this.regroupSpacingX -= tensBBox.width
+            ySpacing += 20
+            secondRow = true
+          }
+        }
+
+        if (this.elementType == "grapes") {
+          let bundleGroup = document.createElementNS(svgns, 'g');
+
+          bundleGroup.appendChild(this.createLeaves(this.regroupSpacingX, ySpacing, 1));
+
+          let bundle = this.createGrapeBundle(this.regroupSpacingX, ySpacing, false);
+          gsap.set(bundle, { visibility: "visible" });
+
+          bundleGroup.appendChild(bundle);
+          this.tensGroup.appendChild(bundleGroup);
+        }
+
+        else {
+          let truck = this.findElement('truck').cloneNode(true)
+          gsap.set(truck, { x: -tensBBox.x + this.regroupSpacingX, y: -tensBBox.y + ySpacing, visibility: "visible" })
+
+          this.tensGroup.appendChild(truck);
+        }
+        ySpacing += tensBBox.height;
       }
-      let temp = document.createElementNS(svgns, 'use');
-      gsap.set(temp, { attr: { href: href }, x: (-onesBBox.x * scale + xSpacing), y: (-onesBBox.y * scale + ySpacing), scale: scale });
-      this.findElement('ones').appendChild(temp);
-      ySpacing += onesBBox.height * scale + 5;
     }
   }
 
-    //#region SLIDER FUNCTIONS
-    private inputFieldPressed(): void {
-      if (!this.sliderOpen && !this.animationFinished) {
-        if (this.firstTimeOpen) {
-          //gsap.set(this.gsvg, {pointerEvents: "none"})
-          this.controllerDraggable[0].disable();
-          const self = this;
-          let start = self.findElement('slider').getBoundingClientRect().x;
-          gsap.to(this.findElement("pointerHand"), {
-            x: "+=50", yoyo: true, repeat: 1, delay: 0.5, duration: 2, onComplete: () => {
-              gsap.set(this.findElement('pointerHand'), { visibility: "hidden" });
-              this.controllerDraggable[0].enable();
-            }
-          });
-          gsap.to(this.findElement('slider'), {
-            x: "+=50", yoyo: true, repeat: 1, delay: 0.5, duration: 2, onUpdate: function () {
-              self.sliderNumber.textContent = String(Math.round((self.findElement('slider').getBoundingClientRect().x - start) / self.sliderIncrements));
-              gsap.set(self.sliderNumber, { x: -(self.sliderNumber.getBBox().width / 2) });
-            }
-          });
-          this.firstTimeOpen = false;
-        }
-        if (this.sliderNumber.style.display == "none") {
-          this.sliderNumber.textContent = String(this.min);
-          this.sliderNumberValue = this.min;
-          this.sliderNumber.style.display = "block";
-        }
-        gsap.set(this.sliderNumber, { x: -(this.sliderNumber.getBBox().width / 2) });
-        this.sliderControls.style.display = "block";
-        this.sliderOpen = true;
+  private drawOnesElements(): void {
+    if (this.startingOnes > 0) {
+      let onesBBox;
+      let scale;
+      let href;
+      if (this.elementType == "grapes") {
+        onesBBox = this.findElement('grape').getBBox();
+        scale = 1
+        href = "#grape"
       }
       else {
+        onesBBox = this.findElement('barrel').getBBox();
+        scale = 2
+        href = "#barrel"
+      }
+
+      onesBBox.height += 3
+      onesBBox.width += 3
+
+      this.regroupSpacingX += 120;
+      if (this.startingTens == 0){
+        this.regroupSpacingX += 100
+      }
+      let ySpacing = 80;
+      let secondRow = false
+      for (let i = 0; i < this.startingOnes; i++) {
+        if (i % 5 == 0 && i % 10 != 0 && i > 0) {
+          if (secondRow) {
+            this.regroupSpacingX += onesBBox.width * scale;
+            ySpacing -= onesBBox.height * 5 * scale
+          }
+          else {
+            this.regroupSpacingX += onesBBox.width * scale;
+            ySpacing = 80;
+          }
+        }
+        if (i % 10 == 0 && i > 0) {
+          if (secondRow) {
+            ySpacing = 80
+            this.regroupSpacingX += onesBBox.width * scale + 15
+            secondRow = false
+          }
+          else {
+            this.regroupSpacingX -= onesBBox.width * scale
+            ySpacing += 15
+            secondRow = true
+          }
+        }
+        let temp = document.createElementNS(svgns, 'use');
+        gsap.set(temp, { attr: { href: href }, x: (-onesBBox.x * scale + this.regroupSpacingX), y: (-onesBBox.y * scale + ySpacing), scale: scale });
+        this.findElement('ones').appendChild(temp);
+        ySpacing += onesBBox.height * scale;
+      }
+    }
+  }
+
+  //#region SLIDER FUNCTIONS
+  private inputFieldPressed(): void {
+    if (!this.sliderOpen && !this.animationFinished) {
+      if (this.firstTimeOpen) {
+        //gsap.set(this.gsvg, {pointerEvents: "none"})
+        this.controllerDraggable[0].disable();
+        const self = this;
+        let start = self.findElement('slider').getBoundingClientRect().x;
+        gsap.to(this.findElement("pointerHand"), {
+          x: "+=50", yoyo: true, repeat: 1, delay: 0.5, duration: 2, onComplete: () => {
+            gsap.set(this.findElement('pointerHand'), { visibility: "hidden" });
+            this.controllerDraggable[0].enable();
+            this.tutorialFinished = true;
+          },
+        });
+        gsap.to(this.findElement('slider'), {
+          x: "+=50", yoyo: true, repeat: 1, delay: 0.5, duration: 2, onUpdate: function () {
+            self.sliderNumber.textContent = String(Math.round((self.findElement('slider').getBoundingClientRect().x - start) / self.sliderIncrements));
+            gsap.set(self.sliderNumber, { x: -(self.sliderNumber.getBBox().width / 2) });
+          }
+        });
+        this.firstTimeOpen = false;
+      }
+      this.sliderControls.style.display = "block";
+      this.sliderOpen = true;
+    }
+    else {
+      if (this.tutorialFinished) {
         this.sliderControls.style.display = "none";
         this.sliderOpen = false;
       }
     }
-  
-    private sliderButtonPressed(button: Element): void {
-      let value;
-      if (button.id == "largeInc") {
-        value = 5;
-      }
-      else if (button.id == "smallInc") {
-        value = 1;
-      }
-      else if (button.id == "smallDec") {
-        value = -1;
-      }
-      else if (button.id == "largeDec") {
-        value = -5;
-      }
-      let newNumber = parseInt(this.sliderNumber.textContent) + value;
-      if (newNumber > this.max) {
-        newNumber = this.max;
-      }
-      else if (newNumber < this.min) {
-        newNumber = this.min;
-      }
-      if (newNumber <= this.max && newNumber >= this.min) {
-        this.sliderValueHasBeenUpdated(newNumber);
-      }
+  }
+
+  private sliderButtonPressed(button: Element): void {
+    let value;
+    if (button.id == "largeInc") {
+      value = 5;
     }
-  
-    private sliderValueHasBeenUpdated(value: number): void {
-      this.sliderNumber.textContent = String(value);
-      this.sliderNumberValue = value;
-  
-      gsap.set(this.sliderNumber, { x: -(this.sliderNumber.getBBox().width / 2) });
-      gsap.set(this.slider, { x: this.sliderIncrements * (value - this.min) });
+    else if (button.id == "smallInc") {
+      value = 1;
     }
-  
-    private addSliderEventListenersAndInteractivity(): void {
-  
-      this.numberDisplay.addEventListener("pointerdown", () => this.inputFieldPressed());
-  
-      for (let i = 0; i < this.buttons.children.length; i++) {
-        this.buttons.children[i].addEventListener("pointerdown", () => this.sliderButtonPressed(this.buttons.children[i]));
-      }
-  
-      //Initializing draggables, controller and slider
-      this.controllerDraggable = Draggable.create(this.sliderControls, {
-        type: 'x,y',
-      });
-  
-      const self = this;
-  
-      Draggable.create(this.slider, {
-        type: 'x',
-        bounds: this.sliderBar,
-        cursor: "pointer",
-        onPress: function () {
-          //disable controller drag if we are dragging slider
-          self.controllerDraggable[0].disable();
-        },
-        onDrag: function () {
-          self.sliderValueHasBeenUpdated(Math.round(this.x / self.sliderIncrements) + Number(self.min));
-        },
-        onDragEnd: function () {
-          self.controllerDraggable[0].enable();
-        }
-      });
+    else if (button.id == "smallDec") {
+      value = -1;
+    }
+    else if (button.id == "largeDec") {
+      value = -5;
+    }
+    let newNumber = parseInt(this.sliderNumber.textContent) + value;
+    if (newNumber > this.max) {
+      newNumber = this.max;
+    }
+    else if (newNumber < this.min) {
+      newNumber = this.min;
+    }
+    if (newNumber <= this.max && newNumber >= this.min) {
+      this.sliderValueHasBeenUpdated(newNumber);
+    }
+  }
+
+  private sliderValueHasBeenUpdated(value: number): void {
+    this.sliderNumber.textContent = String(value);
+    this.sliderNumberValue = value;
+
+    gsap.set(this.sliderNumber, { x: -(this.sliderNumber.getBBox().width / 2) });
+    gsap.set(this.slider, { x: this.sliderIncrements * (value - this.min) });
+  }
+
+  private addSliderEventListenersAndInteractivity(): void {
+
+    this.numberDisplay.addEventListener("pointerdown", () => this.inputFieldPressed());
+
+    for (let i = 0; i < this.buttons.children.length; i++) {
+      this.buttons.children[i].addEventListener("pointerdown", () => this.sliderButtonPressed(this.buttons.children[i]));
     }
 
+    //Initializing draggables, controller and slider
+    this.controllerDraggable = Draggable.create(this.sliderControls, {
+      type: 'x,y',
+    });
+
+    const self = this;
+
+    Draggable.create(this.slider, {
+      type: 'x',
+      bounds: this.sliderBar,
+      cursor: "pointer",
+      onPress: function () {
+        //disable controller drag if we are dragging slider
+        self.controllerDraggable[0].disable();
+      },
+      onDrag: function () {
+        self.sliderValueHasBeenUpdated(Math.round(this.x / self.sliderIncrements) + Number(self.min));
+      },
+      onDragEnd: function () {
+        self.controllerDraggable[0].enable();
+      }
+    });
+  }
+
   private restart(): void {
+    this.mainTimeline.clear()
+    this.alternateTimeline.clear()
     Array.from(this.onesGroup.children).forEach(e => e.remove());
     Array.from(this.tensGroup.children).forEach(e => e.remove());
     Array.from(this.hundredsGroup.children).forEach(e => e.remove());
@@ -710,12 +767,14 @@ export class RegroupClass {
     Array.from(this.findElement('hundredsText').childNodes).forEach(e => e.remove());
     this.animationFinished = false;
     this.sliderOpen = false;
+    this.regroupSpacingX = 0;
     this.sliderValueHasBeenUpdated(this.min);
 
     gsap.set(this.tryAgain, { y: -this.tryAgain.getBBox().height });
     gsap.set(this.correct, { visibility: "hidden" });
 
-    this.drawElements();
+    this.drawTensElements();
+    this.drawOnesElements();
   }
 
   private init(): void {
@@ -737,7 +796,7 @@ export class RegroupClass {
 
     const self = this;
     this.gsvg.addEventListener("pointerdown", (event) => {
-      if (self.sliderOpen && event.target == this.gsvg) {
+      if (self.sliderOpen && event.target == this.gsvg && this.tutorialFinished) {
         self.sliderControls.style.display = "none";
         self.sliderOpen = false;
       }
@@ -749,7 +808,8 @@ export class RegroupClass {
     gsap.set(this.tryAgain, { y: -this.tryAgain.getBBox().height });
     gsap.set(this.correct, { visibility: "hidden" });
 
-    this.drawElements()
+    this.drawTensElements()
+    this.drawOnesElements()
 
     this.goButton.addEventListener("pointerdown", e => this.playRegroup());
     this.findElement('restart').addEventListener("pointerdown", () => this.restart());

@@ -8,12 +8,19 @@ import { RegroupClass } from "./regroupAPI"
 })
 export class RepresentingGrapesComponent implements AfterViewInit {
   @ViewChild('lowerRenderEl') public lowerRenderEl?: ElementRef<SVGSVGElement>;
-  
-  constructor() { }
+
+  @Input()
+  private type: string = "barrels"
+
+  @Input()
+  private tens: number = 10
+
+  @Input()
+  private ones: number = 10
 
   public ngAfterViewInit(): void {
 
-    const interactive = new RegroupClass(this.lowerRenderEl.nativeElement)
+    const interactive = new RegroupClass(this.lowerRenderEl.nativeElement, this.type, this.tens, this.ones)
 
   }
 
