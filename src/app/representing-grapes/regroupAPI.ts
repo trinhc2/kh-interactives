@@ -48,8 +48,8 @@ export class RegroupClass {
   private tensGroup: SVGSVGElement;
   private hundredsGroup: SVGSVGElement;
 
-  private boatScale = 0.5
-  private elementType: string
+  private boatScale = 0.5;
+  private elementType: string;
 
   public constructor(gsvg: SVGSVGElement, type: string, tens: number, ones: number) {
     this.gsvg = gsvg;
@@ -71,8 +71,8 @@ export class RegroupClass {
     this.hundredsGroup = this.findElement('hundreds');
 
     this.startingTens = tens;
-    this.startingOnes = ones
-    this.elementType = type
+    this.startingOnes = ones;
+    this.elementType = type;
     this.startingNumber = this.startingTens * 10 + this.startingOnes;
     this.init();
   }
@@ -162,19 +162,19 @@ export class RegroupClass {
     let truckGroup = document.createElementNS(svgns, 'g');
 
     let temp = document.createElementNS(svgns, 'use');
-    gsap.set(temp, { attr: { href: "#emptyBoat" }, x: x, y: y, opacity: 0 })
-    boat.appendChild(temp)
+    gsap.set(temp, { attr: { href: "#emptyBoat" }, x: x, y: y, opacity: 0 });
+    boat.appendChild(temp);
 
-    let truckBBox = this.findElement('truck').getBBox()
+    let truckBBox = this.findElement('truck').getBBox();
 
     for (let i = 0; i < 10; i++) {
-      let truck = this.findElement('truck').cloneNode(true)
-      gsap.set(truck, { x: -truckBBox.x + this.truckLocation[i][0] + x, y: -truckBBox.y + this.truckLocation[i][1] + y })
-      truckGroup.appendChild(truck)
+      let truck = this.findElement('truck').cloneNode(true);
+      gsap.set(truck, { x: -truckBBox.x + this.truckLocation[i][0] + x, y: -truckBBox.y + this.truckLocation[i][1] + y });
+      truckGroup.appendChild(truck);
     }
-    boat.appendChild(truckGroup)
-    gsap.set(boat, { scale: this.boatScale })
-    return boat as SVGSVGElement
+    boat.appendChild(truckGroup);
+    gsap.set(boat, { scale: this.boatScale });
+    return boat as SVGSVGElement;
   }
 
   private sumDecomposeTexts(textArr: HTMLCollection): void {
@@ -358,7 +358,7 @@ export class RegroupClass {
     }
   }
 
-  private animateOnesToTens(timeline) {
+  private animateOnesToTens(timeline): void {
 
     let tensBBox;
     if (this.elementType == "grapes") {
@@ -366,27 +366,27 @@ export class RegroupClass {
       this.gsvg.appendChild(tempBundle);
       gsap.set(tempBundle, { visibility: "hidden" });
       tensBBox = tempBundle.getBBox();
-      tensBBox.width += 5
-      tensBBox.height += 5
+      tensBBox.width += 5;
+      tensBBox.height += 5;
     }
     else {
-      tensBBox = this.findElement('truck').getBBox()
+      tensBBox = this.findElement('truck').getBBox();
     }
 
     let tensGroupBBox = this.tensGroup.getBBox();
     this.regroupSpacingX = tensGroupBBox.x + tensGroupBBox.width + 25;
     if (this.startingTens == 0){
-      this.regroupSpacingX += 100
+      this.regroupSpacingX += 100;
     }
-    let ySpacing = 80
-    let columnCounter = 0
+    let ySpacing = 80;
+    let columnCounter = 0;
 
     for (let i = 0; i < Math.floor(this.startingOnes / 10); i++) {
       let tenElement, tenElementChildren;
       if (this.elementType == "grapes") {
         tenElement = document.createElementNS(svgns, 'g');
 
-        let leaves = this.createLeaves(this.regroupSpacingX, ySpacing, 0)
+        let leaves = this.createLeaves(this.regroupSpacingX, ySpacing, 0);
         tenElement.appendChild(leaves);
 
         let bundle = this.createGrapeBundle(0, 0, false);
@@ -396,15 +396,15 @@ export class RegroupClass {
         this.tensGroup.appendChild(tenElement);
         timeline.to(leaves, { opacity: 1, duration: 0.5 });
 
-        tenElementChildren = Array.from(bundle.children).reverse()
+        tenElementChildren = Array.from(bundle.children).reverse();
       }
       else {
         tenElement = this.findElement('truck').cloneNode(true) as SVGSVGElement
         tenElementChildren = gsap.utils.toArray(".barrels", tenElement)[0].children;
         for (let j = 0; j < 10; j++) {
-          gsap.set(tenElementChildren[j], { visibility: "hidden" })
+          gsap.set(tenElementChildren[j], { visibility: "hidden" });
         }
-        gsap.set(tenElement, { x: -tensBBox.x + this.regroupSpacingX, y: -tensBBox.y + ySpacing, visibility: "visible", opacity: 0 })
+        gsap.set(tenElement, { x: -tensBBox.x + this.regroupSpacingX, y: -tensBBox.y + ySpacing, visibility: "visible", opacity: 0 });
         this.tensGroup.appendChild(tenElement);
 
         timeline.to(tenElement, { opacity: 1, duration: 0.5 })
@@ -445,7 +445,7 @@ export class RegroupClass {
     }
   }
 
-  private animateTensToHundreds(timeline) {
+  private animateTensToHundreds(timeline): void {
     let columnCounter = 0;
     let ySpacing = 80
     this.regroupSpacingX = 0;
@@ -456,12 +456,12 @@ export class RegroupClass {
       if (this.elementType == "grapes") {
         hundredElement = this.createVine(this.regroupSpacingX, ySpacing);
         hundredElementChildren = gsap.utils.toArray("g", hundredElement.children[1]);
-        scale = 1
+        scale = 1;
       }
       else {
         hundredElement = this.createBoat(this.regroupSpacingX, ySpacing);
-        hundredElementChildren = hundredElement.children[1].children
-        scale = 0.5
+        hundredElementChildren = hundredElement.children[1].children;
+        scale = 0.5;
       }
       this.hundredsGroup.appendChild(hundredElement);
 
@@ -471,7 +471,7 @@ export class RegroupClass {
         let currentTen = this.tensGroup.children[i * 10 + j] as SVGSVGElement;
         let currentTenBBox = currentTen.getBBox();
 
-        let newX, newY
+        let newX, newY;
 
         if (this.elementType == "grapes") {
           newX = -currentTenBBox.x - currentTenBBox.width + this.regroupSpacingX + (currentTen.children[1] as SVGSVGElement).getBBox().width + this.bundleLocation[j][0];
@@ -508,12 +508,12 @@ export class RegroupClass {
 
       let timeline = gsap.timeline({ onComplete: this.decompose, callbackScope: self });
 
-      this.mainTimeline = timeline
+      this.mainTimeline = timeline;
 
-      this.animateOnesToTens(timeline)
+      this.animateOnesToTens(timeline);
 
       //animating bundles to vines
-      this.animateTensToHundreds(timeline)
+      this.animateTensToHundreds(timeline);
 
       //animating remaining bundles
       let remainingTens = Array.from(this.tensGroup.children) as ChildNode[];
@@ -533,7 +533,7 @@ export class RegroupClass {
     }
   }
 
-  private drawTensElements() {
+  private drawTensElements(): void {
     if (this.startingTens > 0) {
 
       this.regroupSpacingX = 130;
@@ -545,13 +545,13 @@ export class RegroupClass {
         this.gsvg.appendChild(tempBundle);
         gsap.set(tempBundle, { visibility: "hidden" });
         tensBBox = tempBundle.getBBox();
-        tensBBox.width += 5
-        tensBBox.height += 5
+        tensBBox.width += 5;
+        tensBBox.height += 5;
       }
       else {
-        tensBBox = this.findElement('truck').getBBox()
+        tensBBox = this.findElement('truck').getBBox();
       }
-      let secondRow = false
+      let secondRow = false;
 
       for (let i = 0; i < this.startingTens; i++) {
         if (i % 5 == 0 && i % 10 != 0 && i > 0) {
@@ -566,14 +566,14 @@ export class RegroupClass {
         }
         if (i % 10 == 0 && i > 0) {
           if (secondRow) {
-            ySpacing = 80
-            this.regroupSpacingX += tensBBox.width + 20
-            secondRow = false
+            ySpacing = 80;
+            this.regroupSpacingX += tensBBox.width + 20;
+            secondRow = false;
           }
           else {
-            this.regroupSpacingX -= tensBBox.width
-            ySpacing += 20
-            secondRow = true
+            this.regroupSpacingX -= tensBBox.width;
+            ySpacing += 20;
+            secondRow = true;
           }
         }
 
@@ -590,8 +590,8 @@ export class RegroupClass {
         }
 
         else {
-          let truck = this.findElement('truck').cloneNode(true)
-          gsap.set(truck, { x: -tensBBox.x + this.regroupSpacingX, y: -tensBBox.y + ySpacing, visibility: "visible" })
+          let truck = this.findElement('truck').cloneNode(true);
+          gsap.set(truck, { x: -tensBBox.x + this.regroupSpacingX, y: -tensBBox.y + ySpacing, visibility: "visible" });
 
           this.tensGroup.appendChild(truck);
         }
@@ -607,29 +607,29 @@ export class RegroupClass {
       let href;
       if (this.elementType == "grapes") {
         onesBBox = this.findElement('grape').getBBox();
-        scale = 1
-        href = "#grape"
+        scale = 1;
+        href = "#grape";
       }
       else {
         onesBBox = this.findElement('barrel').getBBox();
-        scale = 2
-        href = "#barrel"
+        scale = 2;
+        href = "#barrel";
       }
 
-      onesBBox.height += 3
-      onesBBox.width += 3
+      onesBBox.height += 3;
+      onesBBox.width += 3;
 
       this.regroupSpacingX += 120;
       if (this.startingTens == 0){
-        this.regroupSpacingX += 100
+        this.regroupSpacingX += 100;
       }
       let ySpacing = 80;
-      let secondRow = false
+      let secondRow = false;
       for (let i = 0; i < this.startingOnes; i++) {
         if (i % 5 == 0 && i % 10 != 0 && i > 0) {
           if (secondRow) {
             this.regroupSpacingX += onesBBox.width * scale;
-            ySpacing -= onesBBox.height * 5 * scale
+            ySpacing -= onesBBox.height * 5 * scale;
           }
           else {
             this.regroupSpacingX += onesBBox.width * scale;
@@ -638,14 +638,14 @@ export class RegroupClass {
         }
         if (i % 10 == 0 && i > 0) {
           if (secondRow) {
-            ySpacing = 80
-            this.regroupSpacingX += onesBBox.width * scale + 15
-            secondRow = false
+            ySpacing = 80;
+            this.regroupSpacingX += onesBBox.width * scale + 15;
+            secondRow = false;
           }
           else {
-            this.regroupSpacingX -= onesBBox.width * scale
-            ySpacing += 15
-            secondRow = true
+            this.regroupSpacingX -= onesBBox.width * scale;
+            ySpacing += 15;
+            secondRow = true;
           }
         }
         let temp = document.createElementNS(svgns, 'use');
@@ -669,7 +669,7 @@ export class RegroupClass {
             gsap.set(this.findElement('pointerHand'), { visibility: "hidden" });
             this.controllerDraggable[0].enable();
             this.tutorialFinished = true;
-          },
+          }
         });
         gsap.to(this.findElement('slider'), {
           x: "+=50", yoyo: true, repeat: 1, delay: 0.5, duration: 2, onUpdate: function () {
@@ -757,8 +757,8 @@ export class RegroupClass {
   }
 
   private restart(): void {
-    this.mainTimeline.clear()
-    this.alternateTimeline.clear()
+    this.mainTimeline.clear();
+    this.alternateTimeline.clear();
     Array.from(this.onesGroup.children).forEach(e => e.remove());
     Array.from(this.tensGroup.children).forEach(e => e.remove());
     Array.from(this.hundredsGroup.children).forEach(e => e.remove());

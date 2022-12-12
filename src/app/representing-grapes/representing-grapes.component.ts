@@ -10,13 +10,13 @@ export class RepresentingGrapesComponent implements AfterViewInit {
   @ViewChild('lowerRenderEl') public lowerRenderEl?: ElementRef<SVGSVGElement>;
 
   @Input()
-  private type: string = "barrels"
+  private type: string = "grapes"
 
   @Input()
-  private tens: number = 10
+  private tens: number = 16
 
   @Input()
-  private ones: number = 10
+  private ones: number = 42
 
   public ngAfterViewInit(): void {
 
