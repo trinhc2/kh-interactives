@@ -18,7 +18,7 @@ export class WindowTestComponent implements AfterViewInit {
     "https://res.cloudinary.com/dg9cqf9zn/image/upload/v1662135529/windows/barn_uc5p78.svg",
     "https://res.cloudinary.com/dg9cqf9zn/image/upload/v1662135529/windows/oneAcreSign_zhbw6c.svg",
     "https://res.cloudinary.com/dg9cqf9zn/image/upload/v1662130916/windows/grapeplant_bqybrl.png",
-    "../../assets/farmPlotsRasteredFlowersMorePixel.svg"
+    "assets/farmPlotsRasteredFlowersMorePixel.svg"
   ]
 
   public ngAfterViewInit(): void {
