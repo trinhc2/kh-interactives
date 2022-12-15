@@ -1,5 +1,6 @@
 import { Component, ElementRef, Input, AfterViewInit, ViewChild, Output, EventEmitter } from '@angular/core';
 import { RegroupClass } from "./regroupAPI"
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-representing-grapes',
@@ -18,9 +19,17 @@ export class RepresentingGrapesComponent implements AfterViewInit {
   @Input()
   private ones: number = 42
 
+  constructor(private route: ActivatedRoute) {}
+
   public ngAfterViewInit(): void {
 
-    const interactive = new RegroupClass(this.lowerRenderEl.nativeElement, this.type, this.tens, this.ones)
+  console.log(this.route.snapshot.queryParams["type"])
+  let urlType = this.route.snapshot.queryParams["type"]
+  let urlTens = this.route.snapshot.queryParams["tens"]
+  let urlOnes = this.route.snapshot.queryParams["ones"]
+
+    //const interactive = new RegroupClass(this.lowerRenderEl.nativeElement, this.type, this.tens, this.ones)
+    const interactive = new RegroupClass(this.lowerRenderEl.nativeElement, urlType, urlTens, urlOnes)
 
   }
 
