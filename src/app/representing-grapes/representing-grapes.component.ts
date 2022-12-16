@@ -25,8 +25,8 @@ export class RepresentingGrapesComponent implements AfterViewInit {
 
   console.log(this.route.snapshot.queryParams["type"])
   let urlType = this.route.snapshot.queryParams["type"]
-  let urlTens = this.route.snapshot.queryParams["tens"]
-  let urlOnes = this.route.snapshot.queryParams["ones"]
+  let urlTens = Number(this.route.snapshot.queryParams["tens"])
+  let urlOnes = Number(this.route.snapshot.queryParams["ones"])
 
     //const interactive = new RegroupClass(this.lowerRenderEl.nativeElement, this.type, this.tens, this.ones)
     const interactive = new RegroupClass(this.lowerRenderEl.nativeElement, urlType, urlTens, urlOnes)
