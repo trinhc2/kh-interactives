@@ -209,7 +209,9 @@ export class RegroupClass {
   }
 
   private decomposeElementToText(array: ChildNode[], textContent: String): void {
+    this.alternateTimeline.to({}, {delay: 1});
     for (let i = 0; i < array.length; i++) {
+      let timeline = gsap.timeline()
       let currentEl = array[i] as SVGSVGElement;
       gsap.set(currentEl, { transformOrigin: 'center' });
 
@@ -235,7 +237,7 @@ export class RegroupClass {
 
       elementBBox = currentEl.getBBox();
 
-      this.alternateTimeline.to(currentEl, { scale: 0, duration: 0.5 });
+      this.alternateTimeline.to(currentEl, { scale: 0, duration: 0.5 }, "<-=0.5");
 
       let textX, textY;
       textX = pt.x + elementBBox.width / 2 - elementText.getBBox().width / 2;
@@ -255,10 +257,10 @@ export class RegroupClass {
         x: textX, y: textY, transformOrigin: 'center', scale: 0
       });
       this.alternateTimeline.to(elementText, {
-        scale: 1, onComplete: function () {
+        scale: 1, duration: 0.5, onComplete: function () {
           currentEl.remove();
         }
-      });
+      }, "<+=0.5");
     }
   }
 
