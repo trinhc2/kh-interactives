@@ -23,7 +23,7 @@ export class RegroupClass {
 
   //#region slider variables
   private sliderNumber: SVGSVGElement;
-  private sliderNumberValue: number;
+  private sliderNumberValue = 0;
   private sliderControls: SVGSVGElement;
   private controllerDraggable: any;
   private numberDisplay: SVGSVGElement;
@@ -51,7 +51,9 @@ export class RegroupClass {
   private boatScale = 0.5;
   private elementType: string;
 
-  public constructor(gsvg: SVGSVGElement, type: string, tens: number, ones: number) {
+  private feedback
+
+  public constructor(gsvg: SVGSVGElement, type: string, tens: number, ones: number, feedback: string) {
     this.gsvg = gsvg;
     this.alternateTimeline = gsap.timeline();
 
@@ -74,6 +76,8 @@ export class RegroupClass {
     this.startingOnes = ones;
     this.elementType = type;
     this.startingNumber = this.startingTens * 10 + this.startingOnes;
+
+    this.feedback = feedback
     this.init();
   }
 
@@ -209,7 +213,7 @@ export class RegroupClass {
   }
 
   private decomposeElementToText(array: ChildNode[], textContent: String): void {
-    this.alternateTimeline.to({}, {delay: 1});
+    this.alternateTimeline.to({}, { delay: 1 });
     for (let i = 0; i < array.length; i++) {
       let timeline = gsap.timeline()
       let currentEl = array[i] as SVGSVGElement;
@@ -264,6 +268,12 @@ export class RegroupClass {
     }
   }
 
+  private wiggleGroupElement(groupElement: SVGSVGElement, timeline = gsap.timeline()): void {
+    timeline.to(groupElement, { x: '-=5', yoyo: true, repeat: 1, duration: 0.1 });
+    timeline.to(groupElement, { x: '+=5', yoyo: true, repeat: 1, duration: 0.1 });
+    timeline.to(groupElement, { x: '-=5', yoyo: true, repeat: 1, duration: 0.1 });
+  }
+
   private checkAnswer(): void {
     const self = this;
 
@@ -274,9 +284,25 @@ export class RegroupClass {
           self.alternateTimeline.to(self.correct, { scale: 1, duration: 0.5 });
         }
         else {
-          self.alternateTimeline.to(self.sliderNumber, { x: '-=5', yoyo: true, repeat: 1, duration: 0.1 });
-          self.alternateTimeline.to(self.sliderNumber, { x: '+=5', yoyo: true, repeat: 1, duration: 0.1 });
-          self.alternateTimeline.to(self.sliderNumber, { x: '-=5', yoyo: true, repeat: 1, duration: 0.1 });
+          if (self.feedback === "half") {
+            let remainder = self.startingNumber - self.sliderNumberValue;
+            let hundredsPlace = Math.floor(remainder/100 % 10)
+            let tensPlace = Math.floor(remainder/10 % 10)
+            let onesPlace = Math.floor(remainder/1 % 10)
+            console.log(remainder)
+            if (hundredsPlace != 0 || hundredsPlace < 0){
+              console.log("bro?", Math.floor(remainder/100 % 10))
+              self.wiggleGroupElement(self.hundredsGroup)
+            }
+            if (tensPlace != 0 || tensPlace < 0){
+              self.wiggleGroupElement(self.tensGroup)
+            }
+            if (onesPlace != 0 || onesPlace < 0){
+              self.wiggleGroupElement(self.onesGroup)
+            }
+          }
+
+          self.wiggleGroupElement(self.sliderNumber, self.alternateTimeline)
           self.alternateTimeline.to(self.tryAgain, { y: 0 });
         }
       }
@@ -285,51 +311,53 @@ export class RegroupClass {
 
   private decompose(): void {
     //decomposing the elements into place values
-    let remainingHundreds = Array.from(this.hundredsGroup.childNodes) as ChildNode[];
-    let remainingTens = Array.from(this.tensGroup.childNodes) as ChildNode[];
-    let remainingOnes = Array.from(this.onesGroup.childNodes) as ChildNode[];
+    if (this.feedback === "full" || this.startingNumber == this.sliderNumberValue) {
+      let remainingHundreds = Array.from(this.hundredsGroup.childNodes) as ChildNode[];
+      let remainingTens = Array.from(this.tensGroup.childNodes) as ChildNode[];
+      let remainingOnes = Array.from(this.onesGroup.childNodes) as ChildNode[];
 
-    this.decomposeElementToText(remainingHundreds, "100");
-    this.decomposeElementToText(remainingTens, "10");
-    this.decomposeElementToText(remainingOnes, "1");
+      this.decomposeElementToText(remainingHundreds, "100");
+      this.decomposeElementToText(remainingTens, "10");
+      this.decomposeElementToText(remainingOnes, "1");
 
-    //grouping/summing the elements
-    let hundredsTextArr = this.findElement('hundredsText').children;
-    let tensTextArr = this.findElement('tensText').children;
-    let onesTextArr = this.findElement('onesText').children;
+      //grouping/summing the elements
+      let hundredsTextArr = this.findElement('hundredsText').children;
+      let tensTextArr = this.findElement('tensText').children;
+      let onesTextArr = this.findElement('onesText').children;
 
-    this.sumDecomposeTexts(hundredsTextArr);
-    this.sumDecomposeTexts(tensTextArr);
-    this.sumDecomposeTexts(onesTextArr);
+      this.sumDecomposeTexts(hundredsTextArr);
+      this.sumDecomposeTexts(tensTextArr);
+      this.sumDecomposeTexts(onesTextArr);
 
-    let displayBBox = this.findElement('displayBox').getBBox();
+      let displayBBox = this.findElement('displayBox').getBBox();
 
-    let total;
+      let total;
 
-    if (hundredsTextArr.length > 0) {
-      total = hundredsTextArr[0] as SVGSVGElement;
+      if (hundredsTextArr.length > 0) {
+        total = hundredsTextArr[0] as SVGSVGElement;
+      }
+      else if (tensTextArr.length > 0) {
+        total = tensTextArr[0] as SVGSVGElement;
+      }
+      else {
+        total = onesTextArr[0] as SVGSVGElement;
+      }
+      let ten = tensTextArr[0] as SVGSVGElement;
+      let one = onesTextArr[0] as SVGSVGElement;
+      if (ten) {
+        this.alternateTimeline.to(ten, { y: total.getAttribute('yPos'), delay: 0.1 });
+      }
+
+      if (one) {
+        this.alternateTimeline.to(one, { y: total.getAttribute('yPos') });
+      }
+      this.groupPlaceValues(total, ten);
+      this.groupPlaceValues(total, one);
+
+      let totalBBox = total.getBBox();
+      this.alternateTimeline.to(total, { x: displayBBox.x + displayBBox.width / 2 - totalBBox.width / 2, y: displayBBox.y + displayBBox.height + 40, delay: 0.1 });
+
     }
-    else if (tensTextArr.length > 0) {
-      total = tensTextArr[0] as SVGSVGElement;
-    }
-    else {
-      total = onesTextArr[0] as SVGSVGElement;
-    }
-    let ten = tensTextArr[0] as SVGSVGElement;
-    let one = onesTextArr[0] as SVGSVGElement;
-    if (ten) {
-      this.alternateTimeline.to(ten, { y: total.getAttribute('yPos'), delay: 0.1 });
-    }
-
-    if (one) {
-      this.alternateTimeline.to(one, { y: total.getAttribute('yPos') });
-    }
-    this.groupPlaceValues(total, ten);
-    this.groupPlaceValues(total, one);
-
-    let totalBBox = total.getBBox();
-    this.alternateTimeline.to(total, { x: displayBBox.x + displayBBox.width / 2 - totalBBox.width / 2, y: displayBBox.y + displayBBox.height + 40, delay: 0.1 });
-
     this.checkAnswer();
   }
 
@@ -377,7 +405,7 @@ export class RegroupClass {
 
     let tensGroupBBox = this.tensGroup.getBBox();
     this.regroupSpacingX = tensGroupBBox.x + tensGroupBBox.width + 25;
-    if (this.startingTens == 0){
+    if (this.startingTens == 0) {
       this.regroupSpacingX += 100;
     }
     let ySpacing = 80;
@@ -515,11 +543,13 @@ export class RegroupClass {
       this.animateOnesToTens(timeline);
 
       //animating bundles to vines
-      this.animateTensToHundreds(timeline);
+      if (this.feedback !== "hint" || this.startingNumber == this.sliderNumberValue) {
 
-      //animating remaining bundles
-      let remainingTens = Array.from(this.tensGroup.children) as ChildNode[];
-      this.animateRemainingEls(remainingTens, timeline, 1);
+        this.animateTensToHundreds(timeline);
+        //animating remaining bundles
+        let remainingTens = Array.from(this.tensGroup.children) as ChildNode[];
+        this.animateRemainingEls(remainingTens, timeline, 1);
+      }
 
       //animating remaining grapes
       this.regroupSpacingX += 20;
@@ -622,7 +652,7 @@ export class RegroupClass {
       onesBBox.width += 3;
 
       this.regroupSpacingX += 120;
-      if (this.startingTens == 0){
+      if (this.startingTens == 0) {
         this.regroupSpacingX += 100;
       }
       let ySpacing = 80;

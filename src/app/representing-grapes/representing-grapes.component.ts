@@ -19,6 +19,9 @@ export class RepresentingGrapesComponent implements AfterViewInit {
   @Input()
   private ones: number = 42
 
+  @Input()
+  private feedback: string = "full"
+
   constructor(private route: ActivatedRoute) {}
 
   public ngAfterViewInit(): void {
@@ -27,9 +30,10 @@ export class RepresentingGrapesComponent implements AfterViewInit {
   let urlType = this.route.snapshot.queryParams["type"]
   let urlTens = Number(this.route.snapshot.queryParams["tens"])
   let urlOnes = Number(this.route.snapshot.queryParams["ones"])
+  let urlFeedback = this.route.snapshot.queryParams["feedback"]
 
     //const interactive = new RegroupClass(this.lowerRenderEl.nativeElement, this.type, this.tens, this.ones)
-    const interactive = new RegroupClass(this.lowerRenderEl.nativeElement, urlType, urlTens, urlOnes)
+    const interactive = new RegroupClass(this.lowerRenderEl.nativeElement, urlType, urlTens, urlOnes, urlFeedback)
 
   }
 
