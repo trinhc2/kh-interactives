@@ -284,18 +284,19 @@ export class RegroupClass {
           self.alternateTimeline.to(self.correct, { scale: 1, duration: 0.5 });
         }
         else {
-          if (self.feedback === "half") {
-            let remainder = self.startingNumber - self.sliderNumberValue;
-            let hundredsPlace = Math.floor(remainder/100 % 10)
-            let tensPlace = Math.floor(remainder/10 % 10)
-            let onesPlace = Math.floor(remainder/1 % 10)
-            if (hundredsPlace != 0 || hundredsPlace < 0){
+          if (self.feedback === 'half') {
+
+            const sliderHundredsPlace = Math.floor(self.sliderNumberValue/100 % 10)
+            const sliderTensPlace = Math.floor(self.sliderNumberValue/10 % 10)
+            const sliderOnesPlace = Math.floor(self.sliderNumberValue % 10)
+
+            if (sliderHundredsPlace !== Math.floor(self.startingNumber/100 % 10)){
               self.wiggleGroupElement(self.hundredsGroup)
             }
-            if (tensPlace != 0 || tensPlace < 0){
+            if (sliderTensPlace !== Math.floor(self.startingNumber/10 % 10)){
               self.wiggleGroupElement(self.tensGroup)
             }
-            if (onesPlace != 0 || onesPlace < 0){
+            if (sliderOnesPlace !== Math.floor(self.startingNumber % 10)){
               self.wiggleGroupElement(self.onesGroup)
             }
           }
