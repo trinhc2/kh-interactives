@@ -737,6 +737,7 @@ export class FarmClass {
 
   //https://stackoverflow.com/questions/23218174/how-do-i-save-export-an-svg-file-after-creating-an-svg-with-d3-js-ie-safari-an
   saveSvg(svgEl, name) {
+    gsap.set(this.gsvg, {attr: {viewBox: '0 0 500 500'}})
     svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     var svgData = svgEl.outerHTML;
     var preface = '<?xml version="1.0" standalone="no"?>\r\n';

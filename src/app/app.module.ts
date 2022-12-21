@@ -51,6 +51,7 @@ import { GrapeZoomAndrewComponent } from './grape-zoom-andrew/grape-zoom-andrew.
 import { ToTheNearestGrapeComponent } from './to-the-nearest-grape/to-the-nearest-grape.component';
 import { KhFarmGrapeTwoComponent } from './kh-farm-grape-two/kh-farm-grape-two.component';
 import { RepresentingGrapesComponent } from './representing-grapes/representing-grapes.component';
+import { FarmShoreComponent } from './farm-shore/farm-shore.component';
 
 @NgModule({
   declarations: [
@@ -99,7 +100,8 @@ import { RepresentingGrapesComponent } from './representing-grapes/representing-
     GrapeZoomAndrewComponent,
     ToTheNearestGrapeComponent,
     KhFarmGrapeTwoComponent,
-    RepresentingGrapesComponent
+    RepresentingGrapesComponent,
+    FarmShoreComponent
   ],
   imports: [
     BrowserModule,
