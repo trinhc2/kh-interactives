@@ -289,9 +289,7 @@ export class RegroupClass {
             let hundredsPlace = Math.floor(remainder/100 % 10)
             let tensPlace = Math.floor(remainder/10 % 10)
             let onesPlace = Math.floor(remainder/1 % 10)
-            console.log(remainder)
             if (hundredsPlace != 0 || hundredsPlace < 0){
-              console.log("bro?", Math.floor(remainder/100 % 10))
               self.wiggleGroupElement(self.hundredsGroup)
             }
             if (tensPlace != 0 || tensPlace < 0){
