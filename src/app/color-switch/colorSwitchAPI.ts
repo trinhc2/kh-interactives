@@ -25,10 +25,9 @@ export function colorSwitchAPI(_els) {
         sectionWidth = 125
         sectionHeight = 36
         svgns = "http://www.w3.org/2000/svg";
-        colorDict = { 0: "#92c47d", 1: '#f1c331', 2: '#38cdff', 3: "#e06666", 4: "#9955ff" }
         viewboxWidth = 500
         viewboxHeight = 750
-        dotSpeed = -4
+        dotSpeed = -3
         maxSpeed = 4
         dotBBox: any
         badCollision = false
@@ -70,19 +69,17 @@ export function colorSwitchAPI(_els) {
         handlePointerDown(e) {
             e.preventDefault()
             this.mousedown = true
-            self.viewboxOffset += 130
+            self.viewboxOffset += 170
             console.log(this.viewboxOffset, this.baroffset)
             //gsap.to(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset, duration: 1 })
             //gsap.to(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` }, duration:1 })
 
             if (self.viewboxOffset < self.viewboxHeight / 3) {
-                console.log("boop")
                 //shifting entire viewbox first to make dot seem like its moving initially
                 gsap.to(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset, duration: 1 })
                 gsap.to(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` }, duration: 1 })
             }
             else if (self.viewboxOffset >= self.viewboxHeight / 3) {
-                console.log("woop")
                 //if dot is moving then we can just translate the bars now
                 gsap.to(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset, duration: 1 })
                 self.baroffset += self.viewboxOffset - self.viewboxHeight / 3 
