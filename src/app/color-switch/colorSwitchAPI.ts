@@ -67,9 +67,10 @@ export function colorSwitchAPI(_els) {
         }
 
         handlePointerDown(e) {
+            if (!this.badCollision) {
             e.preventDefault()
             this.mousedown = true
-            self.viewboxOffset += 170
+            self.viewboxOffset += 130
             console.log(this.viewboxOffset, this.baroffset)
             //gsap.to(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset, duration: 1 })
             //gsap.to(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` }, duration:1 })
@@ -91,6 +92,7 @@ export function colorSwitchAPI(_els) {
                 this.gameStarted = true
                 window.requestAnimationFrame(self.gameloop)
             }
+        }
         }
 
         generateBarRandom(barGroup, offset = 0) {
@@ -175,7 +177,7 @@ export function colorSwitchAPI(_els) {
                         gsap.set(rect, { fill: `rgb(246,0,0)` })
                     }
 
-                    gsap.to(self.bar, { y: self.baroffset + self.viewboxOffset })
+                    gsap.to(self.bar, { y: self.baroffset + self.viewboxOffset }, ">")
                     gsap.to(self.gsvg, {
                         attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` },
                         onComplete: function () {
