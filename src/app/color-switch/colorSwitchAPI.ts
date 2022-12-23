@@ -28,7 +28,7 @@ export function colorSwitchAPI(_els) {
         colorDict = { 0: "#92c47d", 1: '#f1c331', 2: '#38cdff', 3: "#e06666", 4: "#9955ff" }
         viewboxWidth = 500
         viewboxHeight = 750
-        dotSpeed = 1
+        dotSpeed = -4
         maxSpeed = 4
         dotBBox: any
         badCollision = false
@@ -45,6 +45,9 @@ export function colorSwitchAPI(_els) {
         equationPosition = 0
         equationIndex = 0
         currentBarArr = []
+        galaxy: SVGSVGElement
+
+        galaxyHit = false;
 
 
         constructor(els) {
@@ -58,6 +61,7 @@ export function colorSwitchAPI(_els) {
             this.nextBar = document.getElementById("nextBar") as unknown as SVGSVGElement
             this.dotBBox = this.dot.getBBox()
             this.scoreText = document.getElementById("score") as unknown as SVGTextElement
+            this.galaxy = document.getElementById("galaxy") as unknown as SVGSVGElement
             //this.gsvgu = els[1]
 
             this.init()
@@ -66,39 +70,30 @@ export function colorSwitchAPI(_els) {
         handlePointerDown(e) {
             e.preventDefault()
             this.mousedown = true
-            this.dotSpeed = Math.max(this.dotSpeed, this.maxSpeed - 2)
+            self.viewboxOffset += 130
+            console.log(this.viewboxOffset, this.baroffset)
+            //gsap.to(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset, duration: 1 })
+            //gsap.to(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` }, duration:1 })
+
+            if (self.viewboxOffset < self.viewboxHeight / 3) {
+                console.log("boop")
+                //shifting entire viewbox first to make dot seem like its moving initially
+                gsap.to(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset, duration: 1 })
+                gsap.to(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` }, duration: 1 })
+            }
+            else if (self.viewboxOffset >= self.viewboxHeight / 3) {
+                console.log("woop")
+                //if dot is moving then we can just translate the bars now
+                gsap.to(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset, duration: 1 })
+                self.baroffset += self.viewboxOffset - self.viewboxHeight / 3 
+                self.viewboxOffset -= self.viewboxOffset - self.viewboxHeight / 3
+                //self.dotSpeed = Math.min(self.dotSpeed * 1.03, self.maxSpeed)
+            }
+
             if (!this.gameStarted) {
                 this.gameStarted = true
                 window.requestAnimationFrame(self.gameloop)
             }
-        }
-
-        handlePointerUp(e) {
-            e.preventDefault()
-            this.mousedown = false
-            this.dotSpeed = Math.min(-1, this.dotSpeed)
-
-        }
-
-        handleMove(e) {
-            //get point in svg space 
-            var pt = this.gsvg.createSVGPoint()
-            pt.x = e.clientX
-            pt.y = e.clientY
-            pt = pt.matrixTransform(this.gsvg.getScreenCTM().inverse())
-
-            //making sure dot does not move out of vertical bounds
-            if (pt.x <= self.dotBBox.width / 2) {
-                pt.x = self.dotBBox.width / 2
-            }
-            else if (pt.x >= self.viewboxWidth - self.dotBBox.width / 2) {
-                pt.x = self.viewboxWidth - self.dotBBox.width / 2
-            }
-
-            let xPos = pt.x - self.dotBBox.x - self.dotBBox.width / 2
-
-            //translate dot
-            gsap.set(self.dot, { x: xPos })
         }
 
         generateBarRandom(barGroup, offset = 0) {
@@ -119,11 +114,11 @@ export function colorSwitchAPI(_els) {
                 let group = document.createElementNS(this.svgns, "g");
 
                 let section = document.createElementNS(self.svgns, "rect")
-                gsap.set(section, { width: self.sectionWidth, height: self.sectionHeight, fill: self.colorDict[i], rx: 5, ry: 5 })
+                gsap.set(section, { width: self.sectionWidth, height: self.sectionHeight, fill: "#C80D70", rx: 5, ry: 5 })
                 group.appendChild(section)
 
                 let sectionText = document.createElementNS(this.svgns, "text") as SVGTextElement
-                gsap.set(sectionText, { x: 0, y: 0, fontFamily: 'Arial', fontWeight: 'bold', textContent: `${firstNum} x ${secondNum}`, fontSize: `20px`, userSelect: 'none' })
+                gsap.set(sectionText, { x: 0, y: 0, fontFamily: 'Arial', fontWeight: 'bold', textContent: `${firstNum} x ${secondNum}`, fontSize: `20px`, userSelect: 'none', fill: "#ffffff" })
                 group.appendChild(sectionText)
                 let textBBox = sectionText.getBBox()
                 gsap.set(sectionText, { x: self.sectionWidth / 2 - textBBox.width / 2, y: self.sectionHeight / 2 + textBBox.height / 4 })
@@ -150,11 +145,11 @@ export function colorSwitchAPI(_els) {
                 let group = document.createElementNS(this.svgns, "g");
 
                 let section = document.createElementNS(self.svgns, "rect")
-                gsap.set(section, { width: self.sectionWidth, height: self.sectionHeight, fill: self.colorDict[i], rx: 5, ry: 5 })
+                gsap.set(section, { width: self.sectionWidth, height: self.sectionHeight, fill: "#C80D70", rx: 5, ry: 5 })
                 group.appendChild(section)
 
                 let sectionText = document.createElementNS(this.svgns, "text") as SVGTextElement
-                gsap.set(sectionText, { x: 0, y: 0, fontFamily: 'Arial', fontWeight: 'bold', textContent: `${firstNum} x ${secondNum}`, fontSize: `20px`, userSelect: 'none' })
+                gsap.set(sectionText, { x: 0, y: 0, fontFamily: 'Arial', fontWeight: 'bold', textContent: `${firstNum} x ${secondNum}`, fontSize: `20px`, userSelect: 'none', fill: "#ffffff" })
                 group.appendChild(sectionText)
                 let textBBox = sectionText.getBBox()
                 gsap.set(sectionText, { x: self.sectionWidth / 2 - textBBox.width / 2, y: self.sectionHeight / 2 + textBBox.height / 4 })
@@ -170,6 +165,8 @@ export function colorSwitchAPI(_els) {
 
         gameloop() {
             if (self.gameStarted) {
+                //console.log(self.viewboxOffset, self.baroffset)
+
                 if (self.badCollision) {
                     self.baroffset -= self.viewboxHeight / 3
                     self.viewboxOffset = 0
@@ -183,7 +180,7 @@ export function colorSwitchAPI(_els) {
 
                     gsap.to(self.bar, { y: self.baroffset + self.viewboxOffset })
                     gsap.to(self.gsvg, {
-                        attr: { viewBox: `0 0 ${self.viewboxWidth} ${self.viewboxHeight}` },
+                        attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` },
                         onComplete: function () {
                             self.badCollision = false
                             for (let i = 0; i < self.collidedElement.length; i++) {
@@ -194,63 +191,28 @@ export function colorSwitchAPI(_els) {
                         }
                     }, "<")
                 }
-                else if (self.goodCollision) {
-
-                    self.baroffset += 200
-
-                    //gsap.set(self.gsvg.getElementById("line"), { y: `-=100` })
-                    gsap.to(self.bar,
-                        {
-                            y: self.baroffset + self.viewboxOffset,
-                            duration: 0.3,
-                            ease: CustomEase.create("custom", "M0,0,C0.394,0.18,0.924,0.862,1,1"),
-                            onComplete: function () {
-                                self.goodCollision = false
-                                window.requestAnimationFrame(self.gameloop)
-                            },
-                        }
-                    )
-                }
                 else {
-                    if (self.mousedown) {
-                        if (self.viewboxOffset < self.viewboxHeight / 3) {
-                            //shifting entire viewbox first to make dot seem like its moving initially
-                            gsap.set(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
-                            gsap.set(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` } })
-                            self.viewboxOffset += self.dotSpeed
-                            self.dotSpeed = Math.min(self.dotSpeed * 1.03, self.maxSpeed)
-                        }
-                        else if (self.viewboxOffset >= self.viewboxHeight / 3) {
-                            //if dot is moving then we can just translate the bars now
-                            gsap.set(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
-                            self.baroffset += self.dotSpeed
-                            self.dotSpeed = Math.min(self.dotSpeed * 1.03, self.maxSpeed)
-                        }
-                    }
-                    if (!self.mousedown) {
-                        if (self.viewboxOffset > -110) {
+                        if (self.viewboxOffset > -110) { //dont want the dot to be too below the screen
                             //"decelerate" dot
-                            gsap.set(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
-                            gsap.set(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` } })
                             self.viewboxOffset += self.dotSpeed
-                            self.dotSpeed -= 0.1
-                            self.dotSpeed = Math.max(self.dotSpeed, -7)
+                            gsap.to(self.gsvg.getElementById("bar"), { y: self.baroffset + self.viewboxOffset })
+                            gsap.to(self.gsvg, { attr: { viewBox: `0 ${self.viewboxOffset} ${self.viewboxWidth} ${self.viewboxHeight}` } })
                         }
-                    }
-
-                    self.collisionTest()
 
                     self.animateBar()
 
-                    self.checkBarOOB()
+                    self.collisionTest()
+
+                    self.checkGalaxyHit()
 
                     window.requestAnimationFrame(self.gameloop)
                 }
             }
         }
 
-        checkBarOOB() {
-            if (self.baroffset >= self.windowHeight * (self.score + 1)) {
+        checkGalaxyHit() {
+            if (Draggable.hitTest(self.dot, self.galaxy) && !this.galaxyHit) {
+                self.galaxyHit = true
                 console.log("hit")
                 //if a bar goes off screen we remove it and generate a new one, we also update our what our currentBar "points" to
                 self.dotText.textContent = self.currentBar.getAttribute("product")
@@ -260,7 +222,10 @@ export function colorSwitchAPI(_els) {
                 if (self.barsIndex >= 4) {
                     self.barsIndex = 0
                 }
-                gsap.set(self.gsvg.getElementById("line"), { y: 0 - (self.baroffset) })
+                gsap.to(self.galaxy, {transformOrigin: "center", scale: 0, duration : 0.5, onComplete: function () {
+                    gsap.set(self.galaxy, { y: `-=${self.windowHeight}`, scale: 1 })
+                    self.galaxyHit = false
+                }})
 
                 self.score++;
                 self.scoreText.textContent = String(self.score)
@@ -377,25 +342,17 @@ export function colorSwitchAPI(_els) {
             this.dotText.textContent = this.currentBar.getAttribute("product")
             gsap.set(this.dotText, { x: 0 - this.dotText.getBBox().width / 2 })
 
-            let line = document.createElementNS(this.svgns, "line")
-            gsap.set(line, { attr: { x1: 0, y1: 0 - this.viewboxHeight / 2 + this.dotBBox.height / 2, x2: this.viewboxWidth, y2: 0 - this.viewboxHeight / 2 + this.dotBBox.height / 2, stroke: "#000000" }, strokeWidth: 2 })
-            this.gsvg.getElementById("line").appendChild(line)
 
-            gsap.set(this.gsvg, { backgroundColor: "rgb(26,43,86)" })
+            gsap.set(this.galaxy, { x: this.viewboxWidth/2 - this.galaxy.getBBox().width/2, y: 0 - this.viewboxHeight / 2 - this.galaxy.getBBox().height/2})
+
+            gsap.set(this.gsvg, { backgroundImage: "url(assets/Back.svg)" })
 
             console.log(this.currentBar.getAttribute("product"), this.nextBar.getAttribute("product"))
 
             document.addEventListener("pointerdown", e => this.handlePointerDown(e))
-            document.addEventListener("pointerup", e => this.handlePointerUp(e))
             document.addEventListener('keydown', event => {
                 if (event.code === 'Space') {
                     this.handlePointerDown(event)
-                }
-            })
-
-            document.addEventListener('keyup', event => {
-                if (event.code === 'Space') {
-                    this.handlePointerUp(event)
                 }
             })
 
